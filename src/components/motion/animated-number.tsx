@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
+import { useInView, useReducedMotion } from "framer-motion";
 
 interface AnimatedNumberProps {
   value: number;
@@ -10,14 +10,19 @@ interface AnimatedNumberProps {
   className?: string;
 }
 
-/** Counts up from 0 to `value` once it scrolls into view. */
+/** Counts up from 0 to `value` once it scrolls into view. Renders tĩnh khi người dùng yêu cầu giảm chuyển động. */
 export function AnimatedNumber({ value, duration = 1.1, className }: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
+  const reduced = useReducedMotion();
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
     if (!inView) return;
+    if (reduced) {
+      setDisplay(value);
+      return;
+    }
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
@@ -28,7 +33,7 @@ export function AnimatedNumber({ value, duration = 1.1, className }: AnimatedNum
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [inView, value, duration]);
+  }, [inView, value, duration, reduced]);
 
   return (
     <span ref={ref} className={className}>

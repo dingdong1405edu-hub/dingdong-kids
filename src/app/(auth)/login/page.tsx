@@ -51,6 +51,18 @@ export default function LoginPage() {
               Hệ thống chỉ hỗ trợ đăng nhập bằng tài khoản Google. Lần đầu đăng nhập sẽ tự động tạo tài khoản
               cho bạn.
             </p>
+
+            <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+              Bằng việc tiếp tục, bạn đồng ý với{" "}
+              <Link href="/dieu-khoan" className="underline hover:text-foreground">
+                Điều khoản sử dụng
+              </Link>{" "}
+              và{" "}
+              <Link href="/chinh-sach" className="underline hover:text-foreground">
+                Chính sách bảo mật
+              </Link>
+              .
+            </p>
           </CardContent>
         </Card>
 

@@ -13,7 +13,7 @@ const MESSAGES: Record<string, string> = {
   Configuration:
     "Hệ thống đăng nhập đang gặp sự cố cấu hình. Vui lòng thử lại sau ít phút.",
   AccessDenied:
-    "Tài khoản Google của bạn chưa được cấp quyền truy cập. Nếu ứng dụng đang ở chế độ thử nghiệm, hãy liên hệ quản trị viên để được thêm vào danh sách, hoặc thử lại sau khi ứng dụng được phát hành công khai.",
+    "Tài khoản Google của bạn hiện chưa đăng nhập được. Vui lòng thử lại sau, hoặc email dingdong1405edu@gmail.com để được hỗ trợ.",
   Verification: "Liên kết xác thực đã hết hạn. Vui lòng đăng nhập lại.",
   OAuthSignin: "Không thể bắt đầu đăng nhập với Google. Vui lòng thử lại.",
   OAuthCallback: "Đăng nhập với Google thất bại. Vui lòng thử lại.",

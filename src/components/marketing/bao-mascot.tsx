@@ -87,7 +87,8 @@ export function BaoMascot({ transparent = false }: { transparent?: boolean }) {
   }, []);
 
   return (
-    <div className={styles.wrap}>
+    // Mascot thuần trang trí — ẩn khỏi screen reader để không phát sinh noise.
+    <div className={styles.wrap} aria-hidden="true">
       <div ref={panelRef} className={`${styles.panel}${transparent ? ` ${styles.bare}` : ""}`}>
         <div className={styles.bubble}>
           NǏ HǍO <b>🥟</b>

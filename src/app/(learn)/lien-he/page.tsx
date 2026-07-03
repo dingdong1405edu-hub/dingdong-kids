@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeedbackForm } from "@/components/learn/feedback-form";
 
 export const metadata: Metadata = {
-  title: "Liên hệ & Góp ý — DingDong HSK",
+  title: "Liên hệ & Góp ý",
   description: "Liên hệ đội ngũ DingDong HSK và gửi góp ý để giúp nền tảng tốt hơn mỗi ngày.",
 };
 

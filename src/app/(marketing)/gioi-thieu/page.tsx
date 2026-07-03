@@ -2,25 +2,29 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, GraduationCap, Rocket, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
+import { SITE_NAME } from "@/lib/site";
 import { BaoMascot } from "@/components/marketing/bao-mascot";
-import { Logo } from "@/components/shared/logo";
 import { Reveal } from "@/components/motion/reveal";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { MarketingNav } from "../_components/marketing-nav";
+import { MarketingFooter } from "../_components/marketing-footer";
 import { BackToTop } from "../_components/back-to-top";
 import styles from "../landing.module.css";
 
 export const metadata: Metadata = {
-  title: "Giới thiệu — DingDong HSK | Nền tảng học tiếng Trung cùng AI cho người Việt",
+  title: "Giới thiệu",
   description:
-    "Câu chuyện, thành tích và người sáng lập DingDong HSK — nền tảng học tiếng Trung HSK 1–6 & HSKK cho người Việt: 6 module kỹ năng, 5000+ từ vựng & mẫu câu, được AI Claude chấm điểm.",
+    "Câu chuyện và giá trị của DingDong HSK, nền tảng học tiếng Trung cho người Việt: 7 module kỹ năng theo chuẩn HSK 1–6 và HSKK, hơn 3000 từ vựng và mẫu câu, AI chấm bài viết và luyện nói.",
   alternates: { canonical: "/gioi-thieu" },
   openGraph: {
     title: "Giới thiệu DingDong HSK — Học tiếng Trung cùng AI",
     description:
-      "Sứ mệnh, thành tích và người đứng sau nền tảng học tiếng Trung HSK 1–6 & HSKK được AI chấm điểm cho người Việt.",
+      "Sứ mệnh, hành trình và đội ngũ đứng sau nền tảng học tiếng Trung HSK 1–6 và HSKK cho người Việt.",
+    url: "/gioi-thieu",
     type: "website",
     locale: "vi_VN",
+    siteName: SITE_NAME,
+    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
   },
 };
 
@@ -35,18 +39,18 @@ const audiences = [
 
 // Nỗi đau người học (cột trái)
 const painPoints = [
-  "Tài liệu rời rạc, toàn tiếng Anh hoặc tiếng Trung — khó cho người mới mất gốc.",
-  "Viết luận, luyện nói mà không ai sửa; chẳng biết mình sai thanh điệu hay ngữ pháp ở đâu.",
+  "Tài liệu rời rạc, toàn tiếng Anh hoặc tiếng Trung, khó cho người mới mất gốc.",
+  "Viết luận, luyện nói mà không ai sửa, chẳng biết mình sai thanh điệu hay ngữ pháp ở đâu.",
   "Chữ Hán khó nhớ vì học vẹt, không nắm được thứ tự nét.",
-  "Học vài hôm là nản, dễ bỏ vì không thấy mình tiến bộ mỗi ngày.",
+  "Học vài hôm là nản, dễ bỏ vì không thấy mình tiến bộ.",
 ];
 
 // Giải pháp (cột phải)
 const solutions = [
-  "Lộ trình HSK 1–6 bằng tiếng Việt, chia nhỏ dễ tiêu hoá — học như chơi.",
-  "AI Claude chấm bài viết & luyện nói, chỉ rõ lỗi ngữ pháp, từ vựng, thanh điệu kèm bản sửa.",
+  "Lộ trình HSK 1–6 bằng tiếng Việt, chia nhỏ từng bài, học như chơi.",
+  "AI chấm bài viết và bài nói, chỉ rõ lỗi ngữ pháp, từ vựng, thanh điệu kèm bản sửa.",
   "Viết chữ Hán theo từng nét trên ô 田字格, có animation thứ tự nét chuẩn.",
-  "XP, streak, tim và chú bánh bao đồng hành — giữ lửa cho bạn mỗi ngày.",
+  "XP, chuỗi ngày học, tim và chú bánh bao Bao giữ lửa cho bạn mỗi ngày.",
 ];
 
 // 4 giá trị cốt lõi — tái dùng featureCard + tint có sẵn
@@ -54,131 +58,86 @@ const values = [
   {
     icon: "🤖",
     cls: styles.iconAi,
-    title: "Học Cùng AI Thật Sự",
-    desc: "AI Claude không chỉ chấm đúng/sai — nó giải thích vì sao bạn sai và sửa lại cho đúng, như một gia sư kiên nhẫn luôn ở bên.",
+    title: "Học cùng AI thật sự",
+    desc: "AI của DingDong không chỉ báo đúng hay sai: nó giải thích vì sao bạn sai và đưa bản sửa, như một gia sư kiên nhẫn luôn ở bên.",
   },
   {
     icon: "🇻🇳",
     cls: styles.iconHsk,
-    title: "100% Tiếng Việt, Vì Người Việt",
-    desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc — như nhầm thanh 3 với thanh 4.",
+    title: "100% tiếng Việt, vì người Việt",
+    desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc, như nhầm thanh 3 với thanh 4.",
   },
   {
     icon: "🥟",
     cls: styles.iconCommunity,
-    title: "Nhẹ Nhàng & Vui Mỗi Ngày",
-    desc: "Giao diện ấm áp như tiệm bánh bao, chú linh vật dễ thương, XP và streak biến việc học thành thói quen chứ không phải áp lực.",
+    title: "Nhẹ nhàng và vui mỗi ngày",
+    desc: "Giao diện ấm áp như tiệm bánh bao, linh vật dễ thương, XP và chuỗi ngày học biến việc học thành thói quen chứ không phải áp lực.",
   },
   {
     icon: "🎯",
     cls: styles.iconWriting,
-    title: "Bám Sát Đề Thi Thật",
-    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format HSK 1–6 & HSKK — bạn luyện đúng thứ sẽ gặp trong phòng thi.",
+    title: "Bám sát đề thi thật",
+    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format HSK 1–6 và HSKK. Bạn luyện đúng thứ sẽ gặp trong phòng thi.",
   },
 ];
 
-// SỐ LIỆU SẢN PHẨM THẬT — đừng bịa số người dùng.
+// SỐ LIỆU THẬT của nền tảng — đã đối chiếu với dữ liệu bài học, đừng phóng đại.
 const stats = [
   { to: 6, suffix: "", label: "Cấp độ HSK 1–6" },
-  { to: 5000, suffix: "+", label: "Từ vựng & mẫu câu" },
-  { to: 6, suffix: "", label: "Module kỹ năng" },
-  { to: 3, suffix: "", label: "Kỹ năng được AI chấm" },
+  { to: 3000, suffix: "+", label: "Từ vựng & mẫu câu" },
+  { to: 7, suffix: "", label: "Module kỹ năng" },
+  { to: 2, suffix: "", label: "Kỹ năng AI chấm chi tiết" },
 ];
 
-// CỘT MỐC — MẪU: chủ DingDong tự chỉnh năm & nội dung.
+// Cột mốc phát triển của nền tảng.
 const milestones = [
   {
     year: "2025",
     tag: "Khởi nguồn",
-    title: "Một Ý Tưởng Nhỏ Trên Trang Giấy",
-    desc: "Từ chính trải nghiệm tự học tiếng Trung của người sáng lập, ý tưởng về một nền tảng “học mà ấm áp” cho người Việt ra đời.",
-    sample: true,
+    title: "Ý tưởng ra đời",
+    desc: "Từ chính trải nghiệm tự học tiếng Trung của người sáng lập, ý tưởng về một nền tảng học ấm áp dành riêng cho người Việt được phác thảo.",
   },
   {
     year: "2026",
     tag: "Nền móng",
-    title: "Hoàn Thiện 6 Module Kỹ Năng",
-    desc: "Từ vựng, chữ Hán, đọc, nghe, viết, nói được dựng xong với lộ trình HSK 1–6 bằng tiếng Việt.",
-    sample: true,
+    title: "Hoàn thiện 7 module kỹ năng",
+    desc: "Từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói được xây dựng xong cùng lộ trình HSK 1–6 bằng tiếng Việt.",
   },
   {
     year: "2026",
     tag: "Trí tuệ",
-    title: "Đưa AI Vào Chấm Bài Viết & Luyện Nói",
-    desc: "Tích hợp Claude AI chấm ngữ pháp, từ vựng, thanh điệu và độ lưu loát — phản hồi tức thì kèm bản sửa lỗi.",
-    sample: true,
+    title: "Đưa AI vào chấm bài viết & luyện nói",
+    desc: "AI chấm ngữ pháp, từ vựng, thanh điệu, độ lưu loát và trả nhận xét kèm bản sửa lỗi ngay sau khi bạn nộp bài.",
   },
   {
     year: "Mục tiêu",
     tag: "Lớn lên",
-    title: "Đồng Hành Cùng 10.000+ Người Học",
-    desc: "Mục tiêu của DingDong: đồng hành cùng hơn mười nghìn người Việt chinh phục tiếng Trung trong chặng tiếp theo.",
-    sample: true,
+    title: "Đồng hành cùng 10.000+ người học",
+    desc: "Chặng tiếp theo của DingDong: giúp hơn mười nghìn người Việt học tiếng Trung đến nơi đến chốn.",
     target: true,
   },
 ];
 
-// ====== NỘI DUNG MẪU — DỄ CHỈNH SỬA (sửa object `founder` ở đây) ======
-// Thay tên, ảnh, chức danh, câu trích và 2 đoạn tiểu sử bằng thông tin thật.
-const founder = {
-  initial: "A", // MẪU — khi có ảnh thật, thay khối .founderAvatar bằng <Image>/<img object-fit:cover>
-  name: "Nguyễn Văn A", // MẪU
-  role: "Người sáng lập & Chủ biên nội dung — DingDong HSK", // MẪU
-  tags: ["🏆 HSK 6", "📚 8 năm học & dạy tiếng Trung", "💻 Mê công nghệ giáo dục"], // MẪU
+// Lời nhắn từ đội ngũ — nội dung thật, không dùng hồ sơ cá nhân dựng sẵn.
+const team = {
+  avatar: "🥟",
+  name: "Đội ngũ DingDong HSK",
+  role: "Những người Việt từng tự học tiếng Trung",
+  tags: ["🎯 Bám sát chuẩn HSK & HSKK", "🇻🇳 Nội dung 100% tiếng Việt", "🤖 Ứng dụng AI vào việc học"],
   quote:
-    "“Mình từng học tiếng Trung trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong là món quà mình gửi cho chính mình của ngày xưa — và cho bất cứ ai đang thấy tiếng Trung thật khó.”", // MẪU
-  bioParas: [
-    "Xin chào, mình là [Tên người sáng lập]. Mình bắt đầu học tiếng Trung từ con số 0 và hiểu rõ cảm giác choáng ngợp khi đứng trước hàng nghìn chữ Hán cùng bốn thanh điệu khó nhằn. Học chữ rồi quên, nói thì sợ sai, luyện thi HSK mà chẳng biết mình yếu ở đâu — chính những năm “tự bơi” ấy dạy mình rằng việc học cần một lộ trình tử tế và một người đồng hành kiên nhẫn.", // MẪU
-    "Vì thế mình gói tất cả những gì mình ước có ngày xưa vào DingDong HSK: nội dung tiếng Việt gần gũi, AI chấm bài tận tình, và một chú bánh bao dễ thương để bạn luôn mỉm cười khi học. Cảm ơn bạn đã ghé thăm câu chuyện của DingDong — hẹn gặp bạn trong bài học đầu tiên nhé, dễ như ăn một chiếc bánh bao nóng hổi!", // MẪU
+    "“Chúng mình từng học tiếng Trung trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong là thứ chúng mình ước gì đã có ngày ấy: một lộ trình tử tế và một người đồng hành kiên nhẫn.”",
+  paras: [
+    "DingDong HSK bắt đầu từ trải nghiệm rất thật: đứng trước hàng nghìn chữ Hán và bốn thanh điệu, học chữ rồi quên, nói thì sợ sai, luyện thi HSK mà chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng người học cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải.",
+    "Vì thế chúng mình gói tất cả vào DingDong HSK: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình, cùng một chú bánh bao dễ thương để bạn mỉm cười mỗi khi mở app. Cảm ơn bạn đã ghé thăm. Hẹn gặp bạn ở bài học đầu tiên nhé!",
   ],
-  sign: "— A, với tất cả yêu thương 🥟", // MẪU
+  sign: "— Đội ngũ DingDong HSK 🥟",
 };
-
-const footerColsBase = [
-  {
-    title: "Học tập",
-    links: [
-      { label: "Từ vựng & Ngữ pháp", href: "/#features" },
-      { label: "Viết chữ Hán", href: "/#features" },
-      { label: "Đọc & Nghe hiểu", href: "/#features" },
-      { label: "Viết luận & Luyện nói", href: "/#features" },
-    ],
-  },
-  {
-    title: "Khám phá",
-    links: [
-      { label: "Tính năng", href: "/#features" },
-      { label: "Cách học", href: "/#how" },
-      { label: "Lộ trình HSK", href: "/#levels" },
-      { label: "Giới thiệu", href: "/gioi-thieu" },
-    ],
-  },
-];
 
 const anchor = { scrollMarginTop: "96px" } as const;
 
 export default async function AboutPage() {
   const session = await auth();
   const isAuthed = !!session?.user;
-  const primaryHref = isAuthed ? "/dashboard" : "/register";
-
-  const footerCols = [
-    ...footerColsBase,
-    {
-      title: "Tài khoản",
-      links: isAuthed
-        ? [
-            { label: "Vào học", href: "/dashboard" },
-            { label: "Hồ sơ của tôi", href: "/profile" },
-            { label: "dingdong1405edu@gmail.com", href: "mailto:dingdong1405edu@gmail.com" },
-          ]
-        : [
-            { label: "Đăng nhập", href: "/login" },
-            { label: "Đăng ký miễn phí", href: "/register" },
-            { label: "dingdong1405edu@gmail.com", href: "mailto:dingdong1405edu@gmail.com" },
-          ],
-    },
-  ];
 
   return (
     <div className={styles.page}>
@@ -199,14 +158,14 @@ export default async function AboutPage() {
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Câu chuyện DingDong HSK
             </div>
             <h1 id="gioi-thieu-hero-title" className={styles.heroTitle}>
-              Học Tiếng Trung Cho Người Việt —<br />
-              Tử Tế, Thông Minh &amp;<br />
-              <span className={styles.highlight}>Ấm Như Bánh Bao</span>
+              Học tiếng Trung cho người Việt:<br />
+              tử tế, thông minh<br />
+              <span className={styles.highlight}>và ấm như bánh bao</span>
             </h1>
             <p className={styles.heroDesc}>
-              DingDong HSK là nền tảng học tiếng Trung toàn diện, thiết kế riêng cho người Việt. Một
-              nơi duy nhất để học từ vựng, ngữ pháp, viết chữ Hán và luyện đọc – nghe – viết – nói
-              theo chuẩn HSK 1–6 &amp; HSKK — có AI đồng hành và chấm điểm mỗi ngày.
+              DingDong HSK là nền tảng học tiếng Trung toàn diện, thiết kế riêng cho người Việt.
+              Một nơi duy nhất để học từ vựng, ngữ pháp, viết chữ Hán và luyện đọc, nghe, viết, nói
+              theo chuẩn HSK 1–6 và HSKK, có AI chấm điểm từng bài.
             </p>
             <div className={styles.heroButtons}>
               {isAuthed ? (
@@ -247,27 +206,27 @@ export default async function AboutPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>📖 DingDong HSK là gì?</div>
               <h2 id="cau-chuyen-title" className={styles.sectionTitle}>
-                Một Nền Tảng, Trọn Hành Trình Tiếng Trung
+                Một nền tảng, trọn hành trình tiếng Trung
               </h2>
               <p className={styles.sectionSubtitle}>
-                Không còn cảnh nhảy giữa năm app khác nhau. Tất cả những gì người Việt cần để chinh
-                phục HSK, gói gọn trong một nơi ấm áp và dễ thương.
+                Không còn cảnh nhảy giữa năm ứng dụng khác nhau. Tất cả những gì người Việt cần để
+                học tiếng Trung nghiêm túc, gói gọn trong một nơi ấm áp.
               </p>
             </div>
           </Reveal>
 
           <Reveal>
             <p className={`${styles.aboutProse} ${styles.aboutProseLead}`}>
-              Cái tên “DingDong” là tiếng chuông lảnh lót báo một điều vui sắp đến, còn chú bánh bao
-              mũm mĩm là lời nhắc rằng học tiếng Trung có thể ấm áp và “dễ như ăn bánh bao”. DingDong
-              ra đời để bạn không bao giờ phải học một mình nữa.
+              Cái tên DingDong là tiếng chuông lảnh lót báo một điều vui sắp đến, còn chú bánh bao
+              mũm mĩm là lời nhắc rằng học tiếng Trung có thể ấm áp và dễ như ăn bánh bao. DingDong
+              ra đời để bạn không phải học một mình nữa.
             </p>
           </Reveal>
 
           <div className={styles.aboutSplit}>
             <Reveal className="h-full">
               <div className={`${styles.aboutSplitCard} ${styles.aboutSplitProblem}`}>
-                <h3>Học Tiếng Trung Kiểu Cũ Thật Mệt</h3>
+                <h3>Học tiếng Trung kiểu cũ thật mệt</h3>
                 <ul className={styles.aboutList}>
                   {painPoints.map((p) => (
                     <li key={p}>
@@ -279,7 +238,7 @@ export default async function AboutPage() {
             </Reveal>
             <Reveal delay={0.1} className="h-full">
               <div className={`${styles.aboutSplitCard} ${styles.aboutSplitSolution}`}>
-                <h3>Với DingDong Thì Khác</h3>
+                <h3>Với DingDong thì khác</h3>
                 <ul className={styles.aboutList}>
                   {solutions.map((s) => (
                     <li key={s}>
@@ -300,7 +259,7 @@ export default async function AboutPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>💛 Giá trị cốt lõi</div>
               <h2 id="gia-tri-title" className={styles.sectionTitle}>
-                Điều Khiến DingDong Khác Biệt
+                Điều khiến DingDong khác biệt
               </h2>
               <p className={styles.sectionSubtitle}>
                 Bốn nguyên tắc định hình mọi bài học, mọi dòng phản hồi và mọi nét vẽ bánh bao trên
@@ -324,12 +283,11 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* ============ THÀNH TÍCH — DẢI SỐ LIỆU THẬT ============ */}
-      {/* SỐ LIỆU SẢN PHẨM THẬT — đừng bịa số người dùng. */}
+      {/* ============ DẢI SỐ LIỆU ============ */}
       <section className={styles.statsSection} aria-label="Những con số của DingDong">
         <div className={styles.container}>
           <Reveal>
-            <h2 className={styles.statsBandHeading}>Những Con Số Làm Nên DingDong HSK</h2>
+            <h2 className={styles.statsBandHeading}>Những con số làm nên DingDong HSK</h2>
           </Reveal>
           <div className={styles.statsGrid}>
             {stats.map((s) => (
@@ -346,27 +304,24 @@ export default async function AboutPage() {
           </div>
           <Reveal>
             <p className={styles.statsBandNote}>
-              Viết · Nói được Claude AI chấm chi tiết — Đọc · Nghe chấm tự động theo đề HSK thật.
+              Viết · Nói được AI chấm chi tiết; Đọc · Nghe chấm tự động theo đáp án đề HSK.
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* ============ THÀNH TÍCH — TIMELINE CỘT MỐC (MẪU) ============ */}
+      {/* ============ TIMELINE CỘT MỐC ============ */}
       <section className={styles.section} id="thanh-tich" style={anchor} aria-labelledby="thanh-tich-title">
         <div className={styles.container}>
           <Reveal>
             <div className={styles.sectionHeader}>
-              <div className={styles.sectionLabel}>🏆 Cột mốc &amp; thành tích</div>
+              <div className={styles.sectionLabel}>🏆 Cột mốc &amp; hành trình</div>
               <h2 id="thanh-tich-title" className={styles.sectionTitle}>
-                Hành Trình DingDong HSK
+                Hành trình DingDong HSK
               </h2>
               <p className={styles.sectionSubtitle}>
-                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Trung tử tế cho người Việt.
-              </p>
-              <p className={styles.editNote}>
-                📝 Mục này gồm các cột mốc mẫu — chủ DingDong có thể chỉnh sửa năm và nội dung cho
-                khớp thực tế.
+                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Trung tử tế cho người
+                Việt.
               </p>
             </div>
           </Reveal>
@@ -381,9 +336,7 @@ export default async function AboutPage() {
                   <div>
                     <h3>
                       {m.title}
-                      {m.sample && (
-                        <span className={styles.sampleBadge}>{m.target ? "Mục tiêu" : "mẫu"}</span>
-                      )}
+                      {m.target && <span className={styles.sampleBadge}>Mục tiêu</span>}
                     </h3>
                     <p>{m.desc}</p>
                   </div>
@@ -394,28 +347,23 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* ============ NGƯỜI SÁNG LẬP ============ */}
-      {/* ====== NỘI DUNG MẪU — DỄ CHỈNH SỬA (sửa object `founder` ở đầu file) ====== */}
+      {/* ============ LỜI NHẮN TỪ ĐỘI NGŨ ============ */}
       <section
         className={styles.sectionCream}
-        id="nguoi-sang-lap"
+        id="doi-ngu"
         style={anchor}
-        aria-labelledby="nguoi-sang-lap-title"
+        aria-labelledby="doi-ngu-title"
       >
         <div className={styles.container}>
           <Reveal>
             <div className={styles.sectionHeader}>
-              <div className={styles.sectionLabel}>👋 Người sáng lập</div>
-              <h2 id="nguoi-sang-lap-title" className={styles.sectionTitle}>
-                Người Đứng Sau Chú Bánh Bao
+              <div className={styles.sectionLabel}>👋 Đội ngũ</div>
+              <h2 id="doi-ngu-title" className={styles.sectionTitle}>
+                Những người đứng sau chú bánh bao
               </h2>
               <p className={styles.sectionSubtitle}>
-                Một người Việt từng tự học tiếng Trung, nay muốn con đường ấy nhẹ nhàng hơn cho những
+                Những người Việt từng tự học tiếng Trung, nay muốn con đường ấy nhẹ nhàng hơn cho
                 người đi sau.
-              </p>
-              <p className={styles.editNote}>
-                📝 Phần này đang dùng nội dung mẫu. Chủ DingDong vui lòng thay tên, ảnh, chức danh và
-                phần giới thiệu thật của mình.
               </p>
             </div>
           </Reveal>
@@ -423,12 +371,12 @@ export default async function AboutPage() {
             <div className={styles.founderCard}>
               <aside className={styles.founderAside}>
                 <div className={styles.founderAvatar} aria-hidden>
-                  {founder.initial}
+                  {team.avatar}
                 </div>
-                <p className={styles.founderName}>{founder.name}</p>
-                <p className={styles.founderRole}>{founder.role}</p>
+                <p className={styles.founderName}>{team.name}</p>
+                <p className={styles.founderRole}>{team.role}</p>
                 <div className={styles.founderTags}>
-                  {founder.tags.map((t) => (
+                  {team.tags.map((t) => (
                     <span key={t} className={styles.founderTag}>
                       {t}
                     </span>
@@ -436,13 +384,13 @@ export default async function AboutPage() {
                 </div>
               </aside>
               <div>
-                <blockquote className={styles.founderQuote}>{founder.quote}</blockquote>
+                <blockquote className={styles.founderQuote}>{team.quote}</blockquote>
                 <div className={styles.aboutProse}>
-                  {founder.bioParas.map((p, i) => (
+                  {team.paras.map((p, i) => (
                     <p key={i}>{p}</p>
                   ))}
                 </div>
-                <p className={styles.founderSign}>{founder.sign}</p>
+                <p className={styles.founderSign}>{team.sign}</p>
               </div>
             </div>
           </Reveal>
@@ -456,22 +404,19 @@ export default async function AboutPage() {
             <div className={styles.ctaContent}>
               {isAuthed ? (
                 <>
-                  <h2 id="cta-title">Tiếp Tục Học Cùng DingDong Nhé!</h2>
-                  <p>
-                    Quay lại lộ trình của bạn và chinh phục bài học tiếng Trung tiếp theo cùng bạn
-                    bánh bao DingDong.
-                  </p>
+                  <h2 id="cta-title">Tiếp tục học cùng DingDong nhé!</h2>
+                  <p>Quay lại lộ trình của bạn và học tiếp bài tiếng Trung dang dở cùng bạn bánh bao.</p>
                   <Link href="/dashboard" className={styles.btnWhite}>
                     <GraduationCap className="h-[18px] w-[18px]" aria-hidden="true" /> Vào học ngay
                   </Link>
-                  <p className={styles.ctaSub}>Học mọi lúc trên điện thoại · Giữ vững chuỗi streak.</p>
+                  <p className={styles.ctaSub}>Học mọi lúc trên điện thoại · Giữ vững chuỗi ngày học.</p>
                 </>
               ) : (
                 <>
-                  <h2 id="cta-title">Cùng DingDong Bắt Đầu Hôm Nay Nhé!</h2>
+                  <h2 id="cta-title">Cùng DingDong bắt đầu hôm nay nhé!</h2>
                   <p>
-                    Tạo tài khoản miễn phí trong 30 giây và học bài tiếng Trung đầu tiên cùng bạn bánh
-                    bao DingDong.
+                    Tạo tài khoản miễn phí trong 30 giây và học bài tiếng Trung đầu tiên cùng bạn
+                    bánh bao DingDong.
                   </p>
                   <Link href="/register" className={styles.btnWhite}>
                     <Rocket className="h-[18px] w-[18px]" aria-hidden="true" /> Đăng ký miễn phí ngay
@@ -484,42 +429,7 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* ============ FOOTER ============ */}
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <div className={styles.footerGrid}>
-            <div className={styles.footerBrand}>
-              <Link href="/" className={styles.footerLogo} aria-label="DingDong HSK — về trang chủ">
-                <Logo className={styles.footerLogoIcon} />
-                DingDong HSK
-              </Link>
-              <p>
-                Nền tảng học tiếng Trung chuẩn HSK 1–6 &amp; HSKK cho người Việt, được AI chấm điểm và
-                đồng hành mỗi ngày.
-              </p>
-            </div>
-            {footerCols.map((col) => (
-              <div key={col.title}>
-                <h4>{col.title}</h4>
-                <ul className={styles.footerLinks}>
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      {l.href.startsWith("/") && !l.href.includes("#") ? (
-                        <Link href={l.href}>{l.label}</Link>
-                      ) : (
-                        <a href={l.href}>{l.label}</a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className={styles.footerBottom}>
-            © 2026 DingDong HSK · Học tiếng Trung cùng AI · dingdong1405edu@gmail.com
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter isAuthed={isAuthed} />
 
       <BackToTop />
     </div>

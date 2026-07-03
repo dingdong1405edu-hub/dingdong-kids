@@ -12,7 +12,7 @@ const LINKS = [
   { href: "/#features", label: "Tính năng" },
   { href: "/#how", label: "Cách học" },
   { href: "/#levels", label: "Lộ trình HSK" },
-  { href: "/#testimonials", label: "Đánh giá" },
+  { href: "/#pricing", label: "Bảng giá" },
   { href: "/gioi-thieu", label: "Giới thiệu" },
 ];
 
@@ -107,6 +107,7 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
             className={styles.mobileBtn}
             aria-label={open ? "Đóng menu" : "Mở menu"}
             aria-expanded={open}
+            aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
@@ -158,10 +159,11 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
     </nav>
 
     {/* Lớp phủ — đặt NGOÀI <nav> (navbar có backdrop-filter nên sẽ "giam" phần tử
-        fixed bên trong); để đây mới phủ đúng toàn màn hình. Chạm để đóng menu. */}
+        fixed bên trong); để đây mới phủ đúng toàn màn hình. Chạm để đóng menu.
+        aria-hidden cố định: nút X trong menu đã đảm nhận việc đóng cho screen reader. */}
     <button
       type="button"
-      aria-hidden={!open}
+      aria-hidden="true"
       tabIndex={-1}
       className={`${styles.mobileBackdrop}${open ? ` ${styles.mobileBackdropOpen}` : ""}`}
       onClick={close}

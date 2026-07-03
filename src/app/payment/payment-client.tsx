@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatVnd, type PaymentPlan } from "@/lib/payment-plans";
+import { SUPPORT_EMAIL } from "@/lib/site";
 import { createPaymentOrder } from "@/server/actions/payment";
 
 interface Props {
@@ -141,9 +142,10 @@ export function PaymentClient({
           </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Bảng giá DingDong HSK</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Học theo lộ trình từng cấp HSK, hoặc dùng Gói Tự do để mở mọi tính năng. Mọi gói trả phí
-            đều có <span className="font-semibold text-foreground">tim không giới hạn</span>. Thanh
-            toán an toàn qua PayOS.
+            Học theo lộ trình từng cấp HSK, hoặc dùng Gói Tự do để mở mọi tính năng luyện tập ngoài
+            lộ trình. Mọi gói trả phí đều có{" "}
+            <span className="font-semibold text-foreground">tim không giới hạn</span>. Thanh toán an
+            toàn qua PayOS.
           </p>
         </div>
 
@@ -163,10 +165,10 @@ export function PaymentClient({
           </div>
         )}
 
-        {/* Thông tin người mua (tuỳ chọn) */}
+        {/* Thông tin người mua (tùy chọn) */}
         <div className="mx-auto mb-12 grid max-w-xl gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="buyerName">Họ tên (tuỳ chọn)</Label>
+            <Label htmlFor="buyerName">Họ tên (tùy chọn)</Label>
             <Input
               id="buyerName"
               value={name}
@@ -176,7 +178,7 @@ export function PaymentClient({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="buyerEmail">Email (tuỳ chọn)</Label>
+            <Label htmlFor="buyerEmail">Email (tùy chọn)</Label>
             <Input
               id="buyerEmail"
               type="email"
@@ -195,7 +197,7 @@ export function PaymentClient({
             <h2 className="text-xl font-bold">Học theo lộ trình (HSK 1–6)</h2>
           </div>
           <p className="mb-5 text-sm text-muted-foreground">
-            Mỗi gói mở khoá toàn bộ lộ trình một cấp HSK trong 6 tháng. Từ HSK 3 trở lên được{" "}
+            Mỗi gói mở khóa toàn bộ lộ trình một cấp HSK trong 6 tháng. Từ HSK 3 trở lên được{" "}
             <span className="font-semibold text-foreground">tặng kèm Gói Tự do</span>.
           </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{roadmapPlans.map(renderCard)}</div>
@@ -213,10 +215,51 @@ export function PaymentClient({
           <div className="grid gap-6 sm:grid-cols-2 lg:max-w-2xl">{freestylePlans.map(renderCard)}</div>
         </section>
 
+        {/* FAQ mua hàng */}
+        <section className="mx-auto mt-14 max-w-2xl">
+          <h2 className="mb-4 text-center text-lg font-bold">Câu hỏi thường gặp</h2>
+          <div className="space-y-3 text-sm">
+            {[
+              {
+                q: "Thanh toán bằng cách nào?",
+                a: "Quét mã QR hoặc chuyển khoản ngân hàng qua cổng PayOS. Bạn được chuyển sang trang PayOS để hoàn tất giao dịch.",
+              },
+              {
+                q: "Bao lâu thì gói được kích hoạt?",
+                a: "Ngay khi PayOS xác nhận thanh toán thành công, quyền lợi được kích hoạt tự động trên tài khoản của bạn.",
+              },
+              {
+                q: "Gói có tự động gia hạn không?",
+                a: "Không. Gói hết hạn thì tài khoản trở về chế độ miễn phí; toàn bộ tiến độ học của bạn được giữ nguyên.",
+              },
+              {
+                q: "Nếu thanh toán rồi mà chưa được kích hoạt?",
+                a: `Hãy gửi email tới ${SUPPORT_EMAIL} kèm thông tin giao dịch; chúng tôi sẽ kiểm tra và kích hoạt lại hoặc hoàn tiền theo từng trường hợp.`,
+              },
+            ].map((f) => (
+              <details key={f.q} className="group rounded-lg border bg-card px-4 py-3">
+                <summary className="cursor-pointer list-none font-semibold text-foreground">
+                  {f.q}
+                </summary>
+                <p className="mt-2 leading-relaxed text-muted-foreground">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* Trust footer */}
-        <div className="mt-12 flex items-center justify-center gap-2 text-center text-xs text-muted-foreground">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          Thanh toán bảo mật qua PayOS · Thông tin thẻ/ngân hàng không lưu trên hệ thống của chúng tôi.
+        <div className="mt-10 flex flex-col items-center gap-2 text-center text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            Thanh toán bảo mật qua PayOS · Thông tin thẻ/ngân hàng không lưu trên hệ thống của chúng tôi.
+          </div>
+          <div>
+            Bằng việc thanh toán, bạn đồng ý với{" "}
+            <Link href="/dieu-khoan" className="underline hover:text-foreground">
+              Điều khoản sử dụng
+            </Link>{" "}
+            của DingDong HSK.
+          </div>
         </div>
       </div>
     </div>

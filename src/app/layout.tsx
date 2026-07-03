@@ -1,12 +1,34 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DingDong HSK — Học tiếng Trung chuẩn HSK",
-  description: "Nền tảng học tiếng Trung chuẩn HSK 1-6 với AI grading, gamification và luyện nói HSKK",
-  keywords: ["học tiếng Trung", "HSK", "HSKK", "tiếng Trung online", "DingDong"],
+  // metadataBase để Next resolve canonical/og:image tương đối về domain thật
+  // (thiếu nó, canonical trên Railway sẽ trỏ về localhost).
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "DingDong HSK — Học tiếng Trung chuẩn HSK cho người Việt",
+    template: `%s — ${SITE_NAME}`,
+  },
+  description:
+    "Nền tảng học tiếng Trung chuẩn HSK 1–6 cho người Việt: từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói và luyện thi HSKK, có AI chấm điểm từng bài.",
+  keywords: ["học tiếng Trung", "học tiếng Trung online", "HSK", "HSKK", "luyện thi HSK", "DingDong HSK"],
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "vi_VN",
+    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/bao-cover.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

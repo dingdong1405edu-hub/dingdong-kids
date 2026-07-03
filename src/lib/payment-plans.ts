@@ -6,7 +6,7 @@
 //  • durationDays : số ngày quyền lợi có hiệu lực (180 = 6 tháng, 30 = 1 tháng…).
 //  • code         : nội dung chuyển khoản (≤ 25 ký tự, không dấu).
 //  • grants       : quyền lợi được cấp khi thanh toán thành công.
-//      - { type: "ROADMAP", hskLevel } → mở khoá lộ trình cấp đó.
+//      - { type: "ROADMAP", hskLevel } → mở khóa lộ trình cấp đó.
 //      - { type: "FREESTYLE" }         → mọi tính năng ngoài lộ trình + tim ∞.
 //    (Mọi gói trả phí đều cho TIM KHÔNG GIỚI HẠN — xem src/lib/entitlements.ts.)
 // ===========================================================================
@@ -54,7 +54,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK1",
     period: "/ 6 tháng",
     description: "Toàn bộ lộ trình HSK 1 trong 6 tháng.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 1", "Tim không giới hạn", "Theo dõi tiến độ & XP"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 1", "Tim không giới hạn", "Theo dõi tiến độ & XP"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK1" }],
   },
   {
@@ -67,7 +67,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK2",
     period: "/ 6 tháng",
     description: "Toàn bộ lộ trình HSK 2 trong 6 tháng.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 2", "Tim không giới hạn", "Theo dõi tiến độ & XP"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 2", "Tim không giới hạn", "Theo dõi tiến độ & XP"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK2" }],
   },
   {
@@ -80,7 +80,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK3",
     period: "/ 6 tháng",
     description: "Lộ trình HSK 3 + tặng Gói Tự do.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 3", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 3", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK3" }, { type: "FREESTYLE" }],
     highlighted: true,
   },
@@ -94,7 +94,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK4",
     period: "/ 6 tháng",
     description: "Lộ trình HSK 4 + tặng Gói Tự do.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 4", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 4", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK4" }, { type: "FREESTYLE" }],
   },
   {
@@ -107,7 +107,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK5",
     period: "/ 6 tháng",
     description: "Lộ trình HSK 5 + tặng Gói Tự do.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 5", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 5", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK5" }, { type: "FREESTYLE" }],
   },
   {
@@ -120,7 +120,7 @@ export const ROADMAP_PLANS: PaymentPlan[] = [
     hskLevel: "HSK6",
     period: "/ 6 tháng",
     description: "Lộ trình HSK 6 + tặng Gói Tự do.",
-    features: ["Mở khoá toàn bộ bài lộ trình HSK 6", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
+    features: ["Mở khóa toàn bộ bài lộ trình HSK 6", "🎁 Tặng kèm Gói Tự do", "Tim không giới hạn"],
     grants: [{ type: "ROADMAP", hskLevel: "HSK6" }, { type: "FREESTYLE" }],
   },
 ];
