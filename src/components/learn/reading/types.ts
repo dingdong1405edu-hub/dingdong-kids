@@ -24,6 +24,16 @@ export interface ReadingQuestion {
   order: number;
 }
 
+/** Một câu trong phần "phân tích từng câu" của đoạn đọc (hiện khi chữa bài). */
+export interface PassageAnalysisSentence {
+  /** Câu tiếng Trung (giản thể) — chép nguyên văn từ đoạn để đối chiếu. */
+  zh: string;
+  /** Bản dịch tiếng Việt của câu. */
+  vi: string;
+  /** Phân tích ngắn (ngữ pháp / từ vựng, tiếng Việt) — tuỳ chọn. */
+  note?: string;
+}
+
 export interface ReadingTestData {
   id: string;
   title: string;
@@ -31,6 +41,10 @@ export interface ReadingTestData {
   hskLevel: HSKLevel;
   passage: string;
   passagePinyin?: string | null;
+  /** Bản dịch tiếng Việt toàn bộ đoạn văn (hiện khi chữa bài). */
+  passageTranslation?: string | null;
+  /** Phân tích từng câu (hiện khi chữa bài). Prisma trả JsonValue → coerce ở component. */
+  passageAnalysis?: unknown;
   imageUrl?: string | null;
   timeLimit: number;
   questions: ReadingQuestion[];

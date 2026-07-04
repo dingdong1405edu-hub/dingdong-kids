@@ -674,6 +674,65 @@ Trả về JSON đúng cấu trúc sau (không thêm gì ngoài JSON):
   return { explanation: asStr(p.explanation), supportingQuote: asStr(p.supportingQuote) };
 }
 
+const PASSAGE_ANALYSIS_SYSTEM = `You are a Chinese reading teacher for Vietnamese HSK learners. Given ONE Chinese reading passage, produce (in Vietnamese) a full translation AND a sentence-by-sentence breakdown so the learner fully understands the text. Return ONLY valid JSON.
+
+Rules:
+- "translation": dịch TOÀN BỘ đoạn văn sang tiếng Việt TỰ NHIÊN, mượt và đúng nghĩa. Mỗi câu/đoạn một dòng. Chỉ tiếng Việt — KHÔNG chèn chữ Hán, KHÔNG phiên âm.
+- "sentences": tách đoạn văn thành TỪNG CÂU theo dấu câu (。！？…). Mỗi phần tử là { "zh": "<nguyên văn câu, chữ Hán giản thể — chép ĐÚNG từ đoạn, không thêm/bớt/sửa>", "vi": "<dịch câu sang tiếng Việt>", "note": "<phân tích NGẮN GỌN bằng tiếng Việt: cấu trúc ngữ pháp, từ/cụm quan trọng, điểm dễ nhầm>" }.
+- "zh" PHẢI chép nguyên văn để học viên đối chiếu được với đoạn gốc.
+- Bám sát trình độ HSK đã cho: HSK1-2 phân tích gọn; HSK5-6 nêu rõ cấu trúc/ngữ pháp tinh tế.
+
+Output: Return ONLY one valid JSON object of the form { "translation": "...", "sentences": [ ... ] }. No markdown fences, no text before or after.
+/no_think`;
+
+export interface PassageAnalysisResult {
+  /** Bản dịch tiếng Việt toàn bộ đoạn văn. */
+  translation: string;
+  /** Phân tích từng câu: câu Hán + dịch + giải thích ngắn (tiếng Việt). */
+  sentences: Array<{ zh: string; vi: string; note: string }>;
+}
+
+/**
+ * Cho admin: dịch + phân tích TỪNG CÂU của một đoạn đọc (tiếng Việt) để lưu vào
+ * ReadingTest.passageTranslation + passageAnalysis và hiện ở phần chữa bài. Trả
+ * về shape đã chuẩn hoá (không tin shape thô từ AI).
+ */
+export async function generatePassageAnalysis(params: {
+  passage: string;
+  hskLevel: string;
+}): Promise<PassageAnalysisResult> {
+  const { passage, hskLevel } = params;
+
+  const parsed = await runGroqJson({
+    models: GRADING_MODELS,
+    system: PASSAGE_ANALYSIS_SYSTEM,
+    // Đoạn dài (HSK5-6) sinh ra dịch + phân tích từng câu khá nặng token → co giãn
+    // theo độ dài đoạn để JSON không bị cắt cụt, có trần chống tràn.
+    maxTokens: Math.max(4096, Math.min(16000, passage.length * 12)),
+    temperature: 0.2,
+    user: `Dịch & phân tích đoạn đọc sau (trình độ ${hskLevel}).
+
+=== ĐOẠN VĂN (Hán tự) ===
+${passage}
+
+=== YÊU CẦU ===
+Trả về DUY NHẤT một JSON object đúng cấu trúc:
+{
+  "translation": "<dịch toàn bộ đoạn văn sang tiếng Việt, mỗi câu một dòng>",
+  "sentences": [
+    { "zh": "<nguyên văn câu Hán>", "vi": "<dịch câu>", "note": "<phân tích ngắn: ngữ pháp/từ vựng, tiếng Việt>" }
+  ]
+}`,
+  });
+
+  const r = isRecord(parsed) ? parsed : {};
+  const sentences = (Array.isArray(r.sentences) ? r.sentences : [])
+    .filter(isRecord)
+    .map((s) => ({ zh: asStr(s.zh).trim(), vi: asStr(s.vi).trim(), note: asStr(s.note).trim() }))
+    .filter((s) => s.zh);
+  return { translation: asStr(r.translation).trim(), sentences };
+}
+
 // ===== Hán-Việt dictionary lookup (click-to-lookup trong bài đọc) =====
 // Bảng HanziCharacter chỉ có vài chữ được seed/curate, nên khi học viên bấm vào
 // một chữ chưa có, ta sinh nghĩa bằng AI rồi cache lại (xem hanzi-lookup.ts).

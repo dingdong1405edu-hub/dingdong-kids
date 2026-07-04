@@ -355,6 +355,12 @@ model ReadingTest {
   hskLevel      HSKLevel
   passage       String   @db.Text
   passagePinyin String?  @db.Text
+  // Bản dịch tiếng Việt TOÀN BỘ đoạn văn (Groq sinh hoặc admin nhập) — hiện ở
+  // phần "chữa bài" để học viên hiểu kỹ nội dung đọc.
+  passageTranslation String? @db.Text
+  // Phân tích TỪNG CÂU của đoạn văn: Json mảng [{ zh, vi, note }] — câu Hán +
+  // dịch + giải thích ngữ pháp/từ vựng (tiếng Việt). Hiện khi chữa bài.
+  passageAnalysis Json?
   imageUrl      String?
   timeLimit     Int
   order         Int      @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)

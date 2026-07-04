@@ -55,6 +55,11 @@ const READING_SAMPLE = `[
     "hskLevel": "HSK3",
     "timeLimit": 600,
     "passage": "周末我去了公园。早上我和朋友一起跑步，下午我们一起看了电影。",
+    "passageTranslation": "Cuối tuần tôi đã đi công viên. Buổi sáng tôi cùng bạn chạy bộ, buổi chiều chúng tôi cùng xem phim.",
+    "passageAnalysis": [
+      { "zh": "周末我去了公园。", "vi": "Cuối tuần tôi đã đi công viên.", "note": "了 sau động từ 去 chỉ hành động đã hoàn thành." },
+      { "zh": "早上我和朋友一起跑步，下午我们一起看了电影。", "vi": "Buổi sáng tôi cùng bạn chạy bộ, buổi chiều chúng tôi cùng xem phim.", "note": "和…一起 = cùng với… làm gì; hai vế đối theo thời gian (早上 / 下午)." }
+    ],
     "questions": [
       { "type": "MCQ", "prompt": "作者周末去了哪里？", "options": ["公园", "学校", "商店", "医院"], "answer": 0, "explanation": "Đoạn văn nói tác giả đi công viên." },
       { "type": "TRUE_FALSE", "prompt": "作者下午看了电影。", "answer": true },
@@ -87,7 +92,7 @@ export default async function AdminReadingPage() {
           hasQuestions
           sampleJson={READING_SAMPLE}
           sampleFileName="mau-bai-doc.json"
-          description="Mỗi mục = 1 bài đọc đầy đủ: title (VI) · titleZh (ZH) · hskLevel · passage (đoạn văn) · timeLimit (giây, tùy chọn) · questions[]. Câu hỏi: MCQ (kèm options + answer là chỉ số từ 0), TRUE_FALSE (answer true/false), FILL_BLANK (answer là chữ Hán). Không cần nhập pinyin — máy tự sinh."
+          description="Mỗi mục = 1 bài đọc đầy đủ: title (VI) · titleZh (ZH) · hskLevel · passage (đoạn văn) · timeLimit (giây, tùy chọn) · passageTranslation (dịch cả bài, tùy chọn) · passageAnalysis[] (phân tích từng câu: zh·vi·note, tùy chọn) · questions[]. Câu hỏi: MCQ (kèm options + answer là chỉ số từ 0), TRUE_FALSE (answer true/false), FILL_BLANK (answer là chữ Hán). Không cần nhập pinyin — máy tự sinh. Dịch & phân tích hiện cho học viên khi chữa bài."
         />
       </div>
 

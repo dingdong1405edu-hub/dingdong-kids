@@ -13,10 +13,11 @@ import { ImageUpload } from "@/components/admin/image-upload";
 import { revalidatePath } from "next/cache";
 import { db as prisma } from "@/lib/db";
 import { QuestionType, Prisma } from "@prisma/client";
-import { Plus, ArrowLeft, Trash2, Save, Pencil, Sparkles, Wand2 } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, Save, Pencil, Sparkles, Wand2, Languages } from "lucide-react";
 import { deleteQuestionAction, updateReadingAction } from "@/server/actions/admin";
 import { generateReadingExplanation, isGradingConfigured } from "@/lib/groq";
 import { ReadingQuestionsImporter } from "@/components/admin/reading-questions-importer";
+import { ReadingAnalysisEditor } from "@/components/admin/reading-analysis-editor";
 
 const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
 
@@ -181,12 +182,43 @@ export default async function AdminReadingDetailPage({ params }: Props) {
               <Textarea name="passage" className="min-h-32 font-chinese" defaultValue={test.passage} required />
               <p className="text-xs text-muted-foreground">Không cần nhập pinyin — máy tự sinh khi hiển thị cho học viên.</p>
             </div>
+            <div className="space-y-1 md:col-span-2">
+              <Label>Dịch bài đọc (tiếng Việt)</Label>
+              <Textarea
+                name="passageTranslation"
+                className="min-h-24"
+                defaultValue={test.passageTranslation ?? ""}
+                placeholder="Bản dịch toàn bộ đoạn văn — hiện cho học viên khi chữa bài. Có thể để trống rồi bấm AI tạo ở mục dưới."
+              />
+            </div>
             <div className="md:col-span-2">
               <Button type="submit" className="gap-1.5">
                 <Save className="h-4 w-4" /> Lưu thay đổi
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Dịch bài đọc + phân tích từng câu (chữa bài) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Languages className="h-4 w-4 text-primary" /> Dịch &amp; phân tích bài đọc (AI / JSON)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReadingAnalysisEditor
+            readingId={test.id}
+            initialJson={JSON.stringify(
+              {
+                translation: test.passageTranslation ?? "",
+                sentences: Array.isArray(test.passageAnalysis) ? test.passageAnalysis : [],
+              },
+              null,
+              2,
+            )}
+          />
         </CardContent>
       </Card>
 

@@ -20,6 +20,10 @@ const FULL_JSON_PLACEHOLDER = `{
   "passages": [
     {
       "passage": "周末我去了公园，那里有很多人……",
+      "passageTranslation": "Cuối tuần tôi đã đi công viên, ở đó có rất nhiều người……",
+      "passageAnalysis": [
+        { "zh": "周末我去了公园。", "vi": "Cuối tuần tôi đã đi công viên.", "note": "了 chỉ hành động đã hoàn thành." }
+      ],
       "questions": [
         { "type": "MCQ", "prompt": "作者周末去了哪里?", "options": ["公园","学校","商店","医院"], "answer": 0, "explanation": "Đoạn văn nói tác giả đi công viên.", "supportingQuote": "周末我去了公园" },
         { "type": "TRUE_FALSE", "prompt": "公园里人很多。", "answer": true, "explanation": "..." },
@@ -98,7 +102,9 @@ export function ReadingSectionEditor({
             spellCheck={false}
           />
           <p className="text-[11px] text-muted-foreground">
-            Một object có <code>passages</code> (mảng nhiều đoạn), mỗi đoạn kèm <code>questions</code>. Câu hỏi dùng
+            Một object có <code>passages</code> (mảng nhiều đoạn), mỗi đoạn kèm <code>questions</code> và (tùy chọn){" "}
+            <code>passageTranslation</code> (dịch cả đoạn) + <code>passageAnalysis</code> (phân tích từng câu:{" "}
+            <code>zh·vi·note</code>) — hiện khi chữa bài. Câu hỏi dùng
             <code> answer</code> (MCQ: chỉ số từ 0; TRUE_FALSE: true/false; FILL_BLANK: chữ Hán). Pinyin đoạn văn tự sinh nếu thiếu.
             Dán sẽ <b>thay toàn bộ</b> nội dung phần Đọc bên dưới.
           </p>
@@ -159,6 +165,19 @@ export function ReadingSectionEditor({
               className="min-h-28 font-chinese text-sm"
             />
             <p className="text-[11px] text-muted-foreground">Không cần nhập pinyin — máy tự sinh khi hiển thị.</p>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">Dịch đoạn văn (tiếng Việt · tuỳ chọn)</Label>
+            <Textarea
+              value={p.passageTranslation ?? ""}
+              onChange={(e) => setPassage(i, { passageTranslation: e.target.value })}
+              placeholder="Bản dịch cả đoạn — hiện cho học viên khi chữa bài."
+              className="min-h-20 text-sm"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Phân tích từng câu (<code>passageAnalysis</code>) nhập qua ô “Dán JSON cả phần” ở trên.
+            </p>
           </div>
 
           <div className="space-y-1">

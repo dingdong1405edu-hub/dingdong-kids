@@ -160,6 +160,8 @@ export function RoadmapSectionPlayer({
         hskLevel,
         passage: p.passage,
         passagePinyin: p.passagePinyin ?? null,
+        passageTranslation: p.passageTranslation ?? null,
+        passageAnalysis: p.passageAnalysis ?? null,
         imageUrl: p.imageUrl ?? null,
         timeLimit: c.timeLimit ?? 600,
         questions: (p.questions ?? []).map(

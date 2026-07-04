@@ -42,11 +42,27 @@ export function buildReadingContent(input: unknown, fallbackTitle = ""): unknown
 
   const passages = norm.passages.map((p) => {
     const questions: RoadmapQuestion[] = authoringToRoadmapQuestions(p.questions);
+    const analysis = Array.isArray(p.passageAnalysis)
+      ? p.passageAnalysis
+          .map((s) => {
+            const x = (s ?? {}) as Record<string, unknown>;
+            const zh = typeof x.zh === "string" ? x.zh.trim() : "";
+            if (!zh) return null;
+            return {
+              zh,
+              vi: typeof x.vi === "string" ? x.vi.trim() : "",
+              ...(typeof x.note === "string" && x.note.trim() ? { note: x.note.trim() } : {}),
+            };
+          })
+          .filter((s): s is { zh: string; vi: string; note?: string } => s !== null)
+      : [];
     return {
       passage: p.passage,
       passagePinyin: p.passage ? fillPinyin(p.passage, p.passagePinyin) : null,
       ...(p.imageUrl ? { imageUrl: p.imageUrl } : {}),
       ...(p.titleZh ? { titleZh: p.titleZh } : {}),
+      ...(p.passageTranslation ? { passageTranslation: p.passageTranslation } : {}),
+      ...(analysis.length ? { passageAnalysis: analysis } : {}),
       questions,
     };
   });

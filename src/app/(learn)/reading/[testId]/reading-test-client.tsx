@@ -25,6 +25,7 @@ import { ReadingPalette } from "@/components/learn/reading/reading-palette";
 import { SettingsDialog } from "@/components/learn/reading/settings-dialog";
 import { ReviewDialog } from "@/components/learn/reading/review-dialog";
 import { ResultsSummary } from "@/components/learn/reading/results-summary";
+import { PassageAnalysis } from "@/components/learn/reading/passage-analysis";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { CharLookup, type LookupAnchor } from "@/components/learn/reading/char-lookup";
 import { SelectionLookup, type SelectionAnchor } from "@/components/learn/reading/selection-lookup";
@@ -521,6 +522,14 @@ export function ReadingTestClient({
                       />
                     );
                   })}
+
+                  {submitted && (
+                    <PassageAnalysis
+                      translation={test.passageTranslation}
+                      analysis={test.passageAnalysis}
+                      showPinyin={showPinyin}
+                    />
+                  )}
 
                   {submitted &&
                     (onContinue ? (

@@ -15,6 +15,7 @@ import {
   generateReadingQuestions,
   generateListeningQuestions,
   generateTranscriptExplanation,
+  generatePassageAnalysis,
   isGradingConfigured,
 } from "@/lib/groq";
 import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
@@ -118,6 +119,7 @@ const readingSchema = z.object({
   hskLevel: z.nativeEnum(HSKLevel),
   passage: z.string().min(1),
   passagePinyin: z.string().optional(),
+  passageTranslation: z.string().optional(),
   timeLimit: z.coerce.number().min(60),
   imageUrl: z
     .string()
@@ -136,6 +138,7 @@ export async function createReadingAction(fd: FormData) {
       // "has image?" checks stay consistent with updateReadingAction.
       imageUrl: data.imageUrl?.trim() ? data.imageUrl : null,
       passagePinyin: data.passagePinyin?.trim() ? data.passagePinyin : null,
+      passageTranslation: data.passageTranslation?.trim() ? data.passageTranslation : null,
       published: false, // bản nháp: admin xuất bản sau khi kiểm lại
     },
   });
@@ -166,6 +169,7 @@ export async function updateReadingAction(fd: FormData) {
       passage: rest.passage,
       // KHÔNG ghi passagePinyin: form sửa đã bỏ ô pinyin nên field không được gửi lên.
       // Cố ghi sẽ luôn nhận undefined → xoá mất pinyin cũ (vẫn dùng cho xuất PDF). Giữ nguyên giá trị DB.
+      passageTranslation: rest.passageTranslation?.trim() ? rest.passageTranslation : null,
       timeLimit: rest.timeLimit,
       imageUrl: rest.imageUrl?.trim() ? rest.imageUrl : null,
     },
@@ -349,6 +353,117 @@ export async function generateReadingQuestionsAction(readingId: string, count: n
     console.error("generateReadingQuestions error:", e);
     return { ok: false as const, error: "Lỗi khi gọi AI (Groq). Thử lại sau." };
   }
+}
+
+// ===== Reading: dịch bài đọc + phân tích từng câu (chữa bài) =====
+// Một câu trong phần "phân tích từng câu" của đoạn đọc (dịch + giải thích).
+// Định nghĩa SỚM ở đây để dùng lại cho: nhập hàng loạt (bulkReadingTestSchema),
+// AI sinh, và lưu tay trên trang chi tiết bài đọc.
+const passageAnalysisSentenceSchema = z.object({
+  zh: z.string().trim().min(1, "câu phân tích thiếu chữ Hán (zh)"),
+  vi: z.string().trim().default(""),
+  note: z.string().trim().optional(),
+});
+const passageAnalysisSchema = z
+  .array(passageAnalysisSentenceSchema)
+  .max(200, "tối đa 200 câu phân tích/bài");
+const readingAnalysisInputSchema = z.object({
+  translation: z.string().trim().optional(),
+  sentences: passageAnalysisSchema.optional(),
+});
+
+/** Nhờ Groq dịch + phân tích từng câu của đoạn đọc rồi LƯU thẳng vào bài. */
+export async function generateReadingAnalysisAction(readingId: string) {
+  await requireAdmin();
+  if (!readingId) return { ok: false as const, error: "Thiếu mã bài đọc." };
+  if (!isGradingConfigured()) {
+    return { ok: false as const, error: "Máy chủ chưa cấu hình GROQ_API_KEY." };
+  }
+  const reading = await db.readingTest.findUnique({
+    where: { id: readingId },
+    select: { passage: true, hskLevel: true },
+  });
+  if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
+  if (!reading.passage.trim()) {
+    return { ok: false as const, error: "Bài đọc chưa có đoạn văn để AI phân tích." };
+  }
+
+  let result: Awaited<ReturnType<typeof generatePassageAnalysis>>;
+  try {
+    result = await generatePassageAnalysis({ passage: reading.passage, hskLevel: reading.hskLevel });
+  } catch (e) {
+    console.error("generatePassageAnalysis error:", e);
+    return { ok: false as const, error: "Lỗi khi gọi AI (Groq). Thử lại sau." };
+  }
+  if (!result.translation && result.sentences.length === 0) {
+    return { ok: false as const, error: "AI chưa tạo được nội dung — thử lại." };
+  }
+
+  await db.readingTest.update({
+    where: { id: readingId },
+    data: {
+      passageTranslation: result.translation || null,
+      passageAnalysis: result.sentences.length ? asJson(result.sentences) : Prisma.JsonNull,
+    },
+  });
+  revalidatePath(`/admin/reading/${readingId}`);
+  return {
+    ok: true as const,
+    json: JSON.stringify({ translation: result.translation, sentences: result.sentences }, null, 2),
+    sentences: result.sentences.length,
+  };
+}
+
+/** Lưu bản dịch + phân tích (do admin dán/sửa JSON) vào bài đọc. Ô rỗng = xoá. */
+export async function saveReadingAnalysisAction(readingId: string, jsonText: string) {
+  await requireAdmin();
+  if (!readingId) return { ok: false as const, error: "Thiếu mã bài đọc." };
+  const reading = await db.readingTest.findUnique({ where: { id: readingId }, select: { id: true } });
+  if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
+
+  const text = jsonText.trim();
+  if (!text) {
+    await db.readingTest.update({
+      where: { id: readingId },
+      data: { passageTranslation: null, passageAnalysis: Prisma.JsonNull },
+    });
+    revalidatePath(`/admin/reading/${readingId}`);
+    return { ok: true as const, sentences: 0 };
+  }
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false as const, error: "JSON không hợp lệ — kiểm tra lại dấu ngoặc/dấu phẩy." };
+  }
+  // Chấp nhận: MẢNG câu (= sentences) hoặc object { translation?, sentences?/analysis? }.
+  const src = Array.isArray(raw)
+    ? { sentences: raw }
+    : raw && typeof raw === "object"
+      ? (() => {
+          const o = raw as Record<string, unknown>;
+          return { translation: o.translation, sentences: o.sentences ?? o.analysis };
+        })()
+      : {};
+  const parsed = readingAnalysisInputSchema.safeParse(src);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    const where = first?.path.length ? `(ở ${first.path.join(".")}) ` : "";
+    return { ok: false as const, error: `JSON sai cấu trúc ${where}— ${first?.message ?? "không xác định"}` };
+  }
+
+  const translation = parsed.data.translation?.trim() || null;
+  const sentences = parsed.data.sentences ?? [];
+  await db.readingTest.update({
+    where: { id: readingId },
+    data: {
+      passageTranslation: translation,
+      passageAnalysis: sentences.length ? asJson(sentences) : Prisma.JsonNull,
+    },
+  });
+  revalidatePath(`/admin/reading/${readingId}`);
+  return { ok: true as const, sentences: sentences.length };
 }
 
 // ===== Listening =====
@@ -2136,6 +2251,9 @@ const bulkReadingTestSchema = z.object({
   hskLevel: z.nativeEnum(HSKLevel),
   passage: z.string().trim().min(1, "thiếu passage (đoạn văn)"),
   passagePinyin: z.string().trim().optional(),
+  // Dịch toàn bộ đoạn + phân tích từng câu (hiện khi chữa bài) — đều tuỳ chọn.
+  passageTranslation: z.string().trim().optional(),
+  passageAnalysis: passageAnalysisSchema.optional(),
   timeLimit: z.coerce.number().int().min(30).default(600),
   imageUrl: z.string().trim().optional(),
   questions: z.array(bulkQuestionSchema).max(50, "tối đa 50 câu hỏi/bài").optional().default([]),
@@ -2176,6 +2294,8 @@ export async function bulkImportReadingTestsAction(jsonText: string): Promise<Bu
               hskLevel: t.hskLevel,
               passage: t.passage,
               passagePinyin: t.passagePinyin?.trim() ? t.passagePinyin : null,
+              passageTranslation: t.passageTranslation?.trim() ? t.passageTranslation : null,
+              passageAnalysis: t.passageAnalysis?.length ? asJson(t.passageAnalysis) : Prisma.JsonNull,
               imageUrl: t.imageUrl?.trim() ? t.imageUrl : null,
               timeLimit: t.timeLimit,
               order,

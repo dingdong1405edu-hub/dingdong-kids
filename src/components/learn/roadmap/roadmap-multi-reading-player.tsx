@@ -53,6 +53,8 @@ export function RoadmapMultiReadingPlayer({
     hskLevel,
     passage: p.passage,
     passagePinyin: p.passagePinyin ?? null,
+    passageTranslation: p.passageTranslation ?? null,
+    passageAnalysis: p.passageAnalysis ?? null,
     imageUrl: p.imageUrl ?? null,
     // Mỗi đoạn được trọn thời gian đề xuất (không chia nhỏ) — tránh cắt giờ quá ngắn.
     timeLimit,

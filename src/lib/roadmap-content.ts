@@ -165,9 +165,20 @@ export type HanziSectionContent = z.infer<typeof hanziContentSchema>;
 // ({ passage, questions }) vẫn đọc được nhờ `normalizeReadingContent` gói lại
 // thành `passages: [ … ]` trước khi validate (tương thích ngược 100%).
 
+// Một câu trong phần "phân tích từng câu" của đoạn đọc (dịch + giải thích).
+const passageAnalysisSentenceSchema = z.object({
+  zh: z.string().trim().min(1, "Câu phân tích thiếu chữ Hán"),
+  vi: z.string().trim().default(""),
+  note: z.string().trim().optional(),
+});
+export type PassageAnalysisSentenceContent = z.infer<typeof passageAnalysisSentenceSchema>;
+
 const readingPassageSchema = z.object({
   passage: z.string().trim().min(1, "Thiếu đoạn văn"),
   passagePinyin: z.string().nullish(),
+  // Dịch toàn bộ đoạn + phân tích từng câu (hiện khi chữa bài) — đều tuỳ chọn.
+  passageTranslation: z.string().nullish(),
+  passageAnalysis: z.array(passageAnalysisSentenceSchema).nullish(),
   imageUrl: z.string().nullish(),
   titleZh: z.string().trim().optional(),
   questions: z.array(questionSchema).min(1, "Cần ít nhất 1 câu hỏi"),
@@ -182,6 +193,8 @@ export function normalizeReadingContent(raw: unknown): {
   passages: Array<{
     passage: string;
     passagePinyin?: string | null;
+    passageTranslation?: string | null;
+    passageAnalysis?: PassageAnalysisSentenceContent[] | null;
     imageUrl?: string | null;
     titleZh?: string;
     questions: RoadmapQuestion[];
@@ -193,6 +206,10 @@ export function normalizeReadingContent(raw: unknown): {
     return {
       passage: typeof p.passage === "string" ? p.passage : "",
       passagePinyin: typeof p.passagePinyin === "string" ? p.passagePinyin : null,
+      passageTranslation: typeof p.passageTranslation === "string" ? p.passageTranslation : null,
+      passageAnalysis: Array.isArray(p.passageAnalysis)
+        ? (p.passageAnalysis as PassageAnalysisSentenceContent[])
+        : null,
       imageUrl: typeof p.imageUrl === "string" ? p.imageUrl : null,
       titleZh: typeof p.titleZh === "string" ? p.titleZh : undefined,
       questions: Array.isArray(p.questions) ? (p.questions as RoadmapQuestion[]) : [],
