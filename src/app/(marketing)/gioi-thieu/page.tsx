@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Giới thiệu DingDong Kids — Học tiếng Anh cùng AI",
     description:
-      "Sứ mệnh, hành trình và đội ngũ đứng sau nền tảng học tiếng Anh Pre-Starters đến B1 Preliminary cho người Việt.",
+      "Sứ mệnh, hành trình và đội ngũ đứng sau nền tảng học tiếng Anh cho trẻ em Việt, từ Pre-Starters đến B1 Preliminary.",
     url: "/gioi-thieu",
     type: "website",
     locale: "vi_VN",
@@ -95,7 +95,7 @@ const milestones = [
     year: "2025",
     tag: "Khởi nguồn",
     title: "Ý tưởng ra đời",
-    desc: "Từ chính trải nghiệm tự học tiếng Anh của người sáng lập, ý tưởng về một nền tảng học ấm áp dành riêng cho người Việt được phác thảo.",
+    desc: "Từ chính trải nghiệm dạy tiếng Anh cho con của người sáng lập, ý tưởng về một nền tảng học ấm áp dành riêng cho trẻ em Việt được phác thảo.",
   },
   {
     year: "2026",
@@ -158,12 +158,12 @@ export default async function AboutPage() {
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Câu chuyện DingDong Kids
             </div>
             <h1 id="gioi-thieu-hero-title" className={styles.heroTitle}>
-              Học tiếng Anh cho người Việt:<br />
+              Tiếng Anh vui cho bé:<br />
               tử tế, thông minh<br />
               <span className={styles.highlight}>và ấm như gấu Ding</span>
             </h1>
             <p className={styles.heroDesc}>
-              DingDong Kids là nền tảng học tiếng Anh toàn diện, thiết kế riêng cho người Việt.
+              DingDong Kids là nền tảng học tiếng Anh toàn diện, thiết kế riêng cho trẻ em Việt.
               Một nơi duy nhất để học từ vựng, ghép vần, ngữ pháp và luyện đọc, nghe, viết, nói
               theo chuẩn Cambridge Young Learners, có AI chấm điểm từng bài.
             </p>
@@ -416,7 +416,7 @@ export default async function AboutPage() {
                   <h2 id="cta-title">Cùng DingDong bắt đầu hôm nay nhé!</h2>
                   <p>
                     Tạo tài khoản miễn phí trong 30 giây và học bài tiếng Anh đầu tiên cùng bạn
-                    gấu Ding DingDong.
+                    gấu Ding.
                   </p>
                   <Link href="/register" className={styles.btnWhite}>
                     <Rocket className="h-[18px] w-[18px]" aria-hidden="true" /> Đăng ký miễn phí ngay

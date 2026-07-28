@@ -72,7 +72,7 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
               DingDong Kids
             </Link>
             <p>
-              Nền tảng học tiếng Anh cho người Việt: lộ trình Cambridge 1–6, luyện thi CambridgeK, AI chấm
+              Nền tảng học tiếng Anh cho trẻ em Việt: lộ trình Cambridge Young Learners, AI chấm
               bài viết và luyện nói.
             </p>
             <div className={styles.footerSocial}>

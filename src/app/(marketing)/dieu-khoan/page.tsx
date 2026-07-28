@@ -33,7 +33,7 @@ export default async function TermsPage() {
 
           <h2>1. Dịch vụ</h2>
           <p>
-            DingDong Kids là nền tảng học tiếng Anh trực tuyến dành cho người Việt, gồm các nội
+            DingDong Kids là nền tảng học tiếng Anh trực tuyến dành cho trẻ em Việt, gồm các nội
             dung: từ vựng, ghép vần, ngữ pháp, đọc hiểu, nghe hiểu, viết và luyện nói theo chuẩn Cambridge
             1–6 và phần Nói. Một số bài viết và bài nói được chấm bằng công nghệ trí tuệ nhân tạo (AI);
             kết quả chấm mang tính tham khảo cho việc luyện tập, không thay thế kết quả thi chính

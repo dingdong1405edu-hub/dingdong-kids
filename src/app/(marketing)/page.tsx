@@ -14,7 +14,7 @@ import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
   // absolute: trang chủ tự mang tên thương hiệu, không để template root nối đuôi lần nữa.
-  title: { absolute: "DingDong Kids — Học tiếng Anh cùng AI cho người Việt" },
+  title: { absolute: "DingDong Kids — Tiếng Anh vui cho bé 4–15 tuổi" },
   description:
     "Học tiếng Anh online cho trẻ theo chuẩn Cambridge: từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói. AI chấm bài viết và luyện nói, lộ trình hoàn toàn bằng tiếng Việt. Bắt đầu miễn phí.",
   keywords: [
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
     "học tiếng Anh online",
     "app học tiếng Anh",
     "luyện thi Cambridge",
-    "luyện thi CambridgeK",
-    "học tiếng Anh cho người Việt",
+    "luyện thi Cambridge YLE",
+    "học tiếng Anh cho trẻ em",
     "DingDong Kids",
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "DingDong Kids — Học tiếng Anh cùng AI cho người Việt",
+    title: "DingDong Kids — Tiếng Anh vui cho bé 4–15 tuổi",
     description:
       "Từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói theo chuẩn Cambridge Young Learners. AI chấm điểm từng bài. Bắt đầu miễn phí.",
     url: "/",
@@ -249,7 +249,7 @@ export default async function LandingPage() {
               <span className={styles.highlight}>nhẹ nhàng như một trò chơi!</span>
             </h1>
             <p className={styles.heroDesc}>
-              DingDong Kids là nền tảng học tiếng Anh toàn diện cho người Việt: từ vựng, ngữ pháp,
+              DingDong Kids là nền tảng học tiếng Anh toàn diện cho trẻ em Việt: từ vựng, ngữ pháp,
               ghép vần, đọc, nghe, viết, nói theo chuẩn Cambridge Young Learners. AI chấm điểm và sửa lỗi cho
               bạn từng bài.
             </p>
