@@ -42,8 +42,8 @@ export default async function TermsPage() {
 
           <h2>2. Tài khoản</h2>
           <ul>
-            <li>Bạn đăng nhập bằng tài khoản Google; tài khoản DingDong Kids được tạo tự động ở lần đăng nhập đầu tiên.</li>
-            <li>Bạn chịu trách nhiệm bảo mật tài khoản Google của mình và mọi hoạt động thực hiện bằng tài khoản đó.</li>
+            <li>Bạn đăng ký bằng email hoặc đăng nhập bằng tài khoản Google; tài khoản DingDong Kids được tạo ở lần đăng nhập đầu tiên.</li>
+            <li>Bạn chịu trách nhiệm bảo mật mật khẩu / tài khoản Google của mình và mọi hoạt động thực hiện bằng tài khoản đó.</li>
             <li>Mỗi tài khoản dành cho một người học; không chia sẻ tài khoản trả phí cho nhiều người dùng chung.</li>
           </ul>
 

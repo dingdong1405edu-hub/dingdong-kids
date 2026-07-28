@@ -18,8 +18,41 @@
  * `imageUrl` cũng để trống: cần kho ảnh thật, admin tải lên sau.
  */
 import { PrismaClient, EnglishLevel, Skill } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+/**
+ * Tài khoản ADMIN để đăng nhập thử bằng email + mật khẩu.
+ *
+ * CHỈ tạo khi CẢ HAI biến môi trường được đặt. Cố tình KHÔNG có mật khẩu mặc
+ * định: seed chạy trên mỗi lần deploy, một mật khẩu mặc định nằm sẵn trong mã
+ * nguồn sẽ thành cửa sau công khai trên production.
+ *
+ *   SEED_ADMIN_EMAIL=ban@example.com SEED_ADMIN_PASSWORD='...' npm run db:seed
+ */
+async function seedAdmin(): Promise<void> {
+  const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!email || !password) {
+    console.log("[seed] Bỏ qua tài khoản admin (chưa đặt SEED_ADMIN_EMAIL + SEED_ADMIN_PASSWORD).");
+    return;
+  }
+  if (password.length < 8) {
+    console.warn("[seed] SEED_ADMIN_PASSWORD quá ngắn (cần ≥ 8 ký tự) — bỏ qua.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  await prisma.user.upsert({
+    where: { email },
+    // Chạy lại seed thì CẬP NHẬT mật khẩu (tiện khi quên) nhưng KHÔNG đụng tới
+    // xp / tim / streak để không xoá tiến độ đang test.
+    update: { passwordHash, role: "ADMIN", banned: false },
+    create: { email, name: "Quản trị viên", passwordHash, role: "ADMIN" },
+  });
+  console.log(`[seed] Tài khoản ADMIN sẵn sàng: ${email}`);
+}
 
 // ───────────────────────────── Khoá học ─────────────────────────────
 
@@ -1575,6 +1608,7 @@ async function seedMockExam(courseIds: Map<EnglishLevel, string>): Promise<void>
 }
 
 async function main(): Promise<void> {
+  await seedAdmin();
   const courseIds = await seedCourses();
   await seedVocab();
   await seedGrammar();

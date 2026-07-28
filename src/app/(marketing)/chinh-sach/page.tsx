@@ -34,7 +34,7 @@ export default async function PrivacyPage() {
           <h2>1. Dữ liệu chúng tôi thu thập</h2>
           <ul>
             <li>
-              <strong>Thông tin tài khoản:</strong> khi bạn đăng nhập bằng Google, chúng tôi nhận
+              <strong>Thông tin tài khoản:</strong> khi bạn đăng ký bằng email, chúng tôi lưu tên hiển thị, địa chỉ email và mật khẩu đã mã hoá (bcrypt — không lưu mật khẩu gốc). Khi bạn đăng nhập bằng Google, chúng tôi nhận
               tên hiển thị, địa chỉ email và ảnh đại diện từ tài khoản Google của bạn. Chúng tôi
               không nhận và không lưu mật khẩu Google.
             </li>
