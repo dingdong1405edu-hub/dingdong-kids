@@ -1,9 +1,9 @@
 "use client";
 import { cn } from "@/lib/utils";
-import type { ChatRole } from "./use-bao-chat";
+import type { ChatRole } from "./use-ding-chat";
 
 /** Avatar tròn của chú gấu Ding — dùng ở bong bóng trả lời và header panel. */
-export function BaoAvatar({ className }: { className?: string }) {
+export function DingAvatar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
@@ -12,7 +12,7 @@ export function BaoAvatar({ className }: { className?: string }) {
       )}
       aria-hidden
     >
-      🥟
+      🐻
     </div>
   );
 }
@@ -46,7 +46,7 @@ export function ChatMessage({
   if (!isUser && !content && streaming) {
     return (
       <div className="flex items-end gap-2">
-        <BaoAvatar className="h-8 w-8" />
+        <DingAvatar className="h-8 w-8" />
         <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-muted px-4 py-3">
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
@@ -58,7 +58,7 @@ export function ChatMessage({
 
   return (
     <div className={cn("flex items-end gap-2", isUser ? "justify-end" : "justify-start")}>
-      {!isUser && <BaoAvatar className="h-8 w-8" />}
+      {!isUser && <DingAvatar className="h-8 w-8" />}
       <div
         className={cn(
           "max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",

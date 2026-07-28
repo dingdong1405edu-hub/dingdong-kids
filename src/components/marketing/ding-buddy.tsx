@@ -1,9 +1,9 @@
-import styles from "./bao-buddy.module.css";
-import { BaoArt, type BaoPose } from "./bao-art";
+import styles from "./ding-buddy.module.css";
+import { DingArt, type DingPose } from "./ding-art";
 
 /**
- * BaoBuddy — linh vật bánh bao kích thước nhỏ, thuần CSS (không theo dõi con trỏ,
- * không hook → an toàn trong cả Server lẫn Client Component). Dùng để rải Bao quanh
+ * DingBuddy — linh vật gấu con kích thước nhỏ, thuần CSS (không theo dõi con trỏ,
+ * không hook → an toàn trong cả Server lẫn Client Component). Dùng để rải Ding quanh
  * app cho sinh động: lời chào, empty state, màn "vừa làm xong bài".
  *
  * Tư thế (pose):
@@ -13,7 +13,7 @@ import { BaoArt, type BaoPose } from "./bao-art";
  * - think: nghiêng đầu, tay lên cằm — dành cho lúc "đang xử lý".
  * - sad:   mếu nhẹ — dành cho kết quả chưa đạt / động viên.
  */
-export function BaoBuddy({
+export function DingBuddy({
   size = 88,
   pose = "idle",
   message,
@@ -21,7 +21,7 @@ export function BaoBuddy({
   "aria-label": ariaLabel,
 }: {
   size?: number;
-  pose?: BaoPose;
+  pose?: DingPose;
   message?: string | null;
   className?: string;
   "aria-label"?: string;
@@ -29,12 +29,12 @@ export function BaoBuddy({
   return (
     <div
       className={`${styles.wrap}${className ? ` ${className}` : ""}`}
-      style={{ "--bao-size": `${size}px` } as React.CSSProperties}
+      style={{ "--ding-size": `${size}px` } as React.CSSProperties}
       role="img"
       aria-label={ariaLabel ?? "Linh vật gấu Ding"}
     >
       {message ? <div className={styles.bubble}>{message}</div> : null}
-      <BaoArt pose={pose} />
+      <DingArt pose={pose} />
     </div>
   );
 }

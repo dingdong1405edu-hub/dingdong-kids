@@ -7,7 +7,7 @@ import { ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { completeLessonAction } from "@/server/actions/lesson";
 import { emitDing } from "@/lib/ding-bus";
 import { SectionTheory } from "./section-theory";
@@ -84,7 +84,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
   if (!hasAnyContent) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <BaoBuddy size={88} pose="idle" className="mx-auto" />
+        <DingBuddy size={88} pose="idle" className="mx-auto" />
         <h2 className="font-display text-xl font-extrabold">Bài này chưa có nội dung</h2>
         <p className="max-w-sm text-[15px] text-muted-foreground">
           Ding đang chuẩn bị bài mẫu câu này. Bé quay lại sau nhé! 🐻
@@ -158,7 +158,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
       <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md text-center">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
-            <BaoBuddy size={104} pose="cheer" message="Giỏi quá!" className="mx-auto" />
+            <DingBuddy size={104} pose="cheer" message="Giỏi quá!" className="mx-auto" />
             <h2 className="font-display text-2xl font-extrabold">Bé học xong rồi! 🎉</h2>
             <p className="text-[15px] text-muted-foreground">
               Bé vừa hoàn thành bài “{lesson.title || "Mẫu câu"}”. Bài tiếp theo đã mở khoá cho bé.

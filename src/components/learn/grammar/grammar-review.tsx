@@ -6,7 +6,7 @@ import { CheckCircle2, XCircle, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { emitDing } from "@/lib/ding-bus";
 import { EXERCISE_TYPE_LABEL } from "@/lib/grammar";
 import { FlashcardPhase, type FlashResult } from "./flashcard-phase";
@@ -57,7 +57,7 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
   if (exercises.length === 0) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <BaoBuddy size={88} pose="idle" className="mx-auto" />
+        <DingBuddy size={88} pose="idle" className="mx-auto" />
         <h2 className="font-display text-xl font-extrabold">Chưa có gì để ôn</h2>
         <p className="max-w-sm text-[15px] text-muted-foreground">
           Phần này chưa có thẻ hay bài chơi nào. Bé quay lại sau nhé! 🐻
@@ -122,7 +122,7 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
     <div className="mx-auto flex min-h-[60vh] max-w-md items-center justify-center py-6">
       <Card className="w-full text-center">
         <CardContent className="space-y-5 px-6 pb-6 pt-8">
-          <BaoBuddy
+          <DingBuddy
             size={96}
             pose={scorePct >= 80 ? "cheer" : "idle"}
             message={scorePct >= 80 ? "Siêu quá!" : "Cố lên nhé!"}

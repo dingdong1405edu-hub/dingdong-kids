@@ -36,14 +36,12 @@ export interface TopicFormDefaults {
   level?: string;
   topic?: string;
   question?: string;
-  questionPinyin?: string | null;
   questionVi?: string | null;
   outline?: string | null;
   audioUrl?: string | null;
   transcript?: string | null;
   hints?: TopicHint[];
   sampleAnswer?: string | null;
-  sampleAnswerPinyin?: string | null;
   minWords?: number;
   prepSeconds?: number;
   order?: number;
@@ -55,18 +53,19 @@ export interface TopicFormDefaults {
 const TEMPLATE = {
   title: "Movers — Sở thích của bé",
   level: "MOVERS",
-  topic: "爱好 — Sở thích",
+  topic: "Hobbies — Sở thích",
   question: "Tell me about your favourite hobby. Why do you like it?",
-  questionPinyin: "Qǐng tántan nǐ de àihào, bìng shuōmíng yuányīn.",
-  questionVi: "Hãy nói về sở thích của bạn và giải thích lý do.",
-  transcript: "请谈谈你的爱好，并说明原因。",
-  outline: "1. Sở thích của bạn là gì\n2. Vì sao bạn thích\n3. Tần suất / một kỷ niệm\n4. Cảm nghĩ, kết luận",
+  questionVi: "Hãy kể về sở thích của bé. Vì sao bé thích nó?",
+  transcript: "Tell me about your favourite hobby. Why do you like it?",
+  outline: "1. Sở thích của bé là gì\n2. Vì sao bé thích\n3. Bé làm việc đó khi nào\n4. Cảm nghĩ của bé",
   hints: [
     { text: "I like swimming.", vi: "Tớ thích bơi." },
     { text: "It makes me happy.", vi: "Nó làm tớ vui." },
+    { text: "I do it every weekend.", vi: "Tớ làm việc đó mỗi cuối tuần." },
   ],
-  sampleAnswer: "我的爱好是旅游。每次旅游我都觉得很放松，也能认识新朋友。我每年都会去旅游一两次。",
-  minWords: 80,
+  sampleAnswer:
+    "My favourite hobby is swimming. I go to the pool with my dad every Sunday. The water is cool and I feel very happy. I want to swim faster one day.",
+  minWords: 30,
   prepSeconds: 10,
   order: 1,
 };
@@ -97,7 +96,6 @@ export function SpeakingTopicForm({
   const [level, setLevel] = useState(d?.level ?? "MOVERS");
   const [topic, setTopic] = useState(d?.topic ?? "");
   const [question, setQuestion] = useState(d?.question ?? "");
-  const [questionPinyin, setQuestionPinyin] = useState(d?.questionPinyin ?? "");
   const [questionVi, setQuestionVi] = useState(d?.questionVi ?? "");
   const [outline, setOutline] = useState(d?.outline ?? "");
   const [transcript, setTranscript] = useState(d?.transcript ?? "");
@@ -106,8 +104,7 @@ export function SpeakingTopicForm({
     d?.hints && d.hints.length ? d.hints : [{ text: "", vi: "" }],
   );
   const [sampleAnswer, setSampleAnswer] = useState(d?.sampleAnswer ?? "");
-  const [sampleAnswerPinyin, setSampleAnswerPinyin] = useState(d?.sampleAnswerPinyin ?? "");
-  const [minWords, setMinChars] = useState(String(d?.minWords ?? 0));
+  const [minWords, setMinWords] = useState(String(d?.minWords ?? 0));
   const [prepSeconds, setPrepSeconds] = useState(String(d?.prepSeconds ?? 0));
   const [order, setOrder] = useState(String(d?.order ?? 0));
 
@@ -165,14 +162,12 @@ export function SpeakingTopicForm({
     // chấp nhận cả "questionEn" làm bí danh của question
     if (str("question") !== undefined) setQuestion(str("question")!);
     else if (str("questionEn") !== undefined) setQuestion(str("questionEn")!);
-    if (str("questionPinyin") !== undefined) setQuestionPinyin(str("questionPinyin")!);
     if (str("questionVi") !== undefined) setQuestionVi(str("questionVi")!);
     if (str("outline") !== undefined) setOutline(str("outline")!);
     if (str("transcript") !== undefined) setTranscript(str("transcript")!);
     if (str("audioUrl") !== undefined) setAudioUrl(str("audioUrl")!);
     if (str("sampleAnswer") !== undefined) setSampleAnswer(str("sampleAnswer")!);
-    if (str("sampleAnswerPinyin") !== undefined) setSampleAnswerPinyin(str("sampleAnswerPinyin")!);
-    if (numStr("minWords") !== undefined) setMinChars(numStr("minWords")!);
+    if (numStr("minWords") !== undefined) setMinWords(numStr("minWords")!);
     if (numStr("prepSeconds") !== undefined) setPrepSeconds(numStr("prepSeconds")!);
     if (numStr("order") !== undefined) setOrder(numStr("order")!);
     if (Array.isArray(p.hints)) {
@@ -291,7 +286,7 @@ export function SpeakingTopicForm({
                   <li><code>title</code>, <code>topic</code> — chuỗi (tiêu đề nội bộ, nhãn chủ đề).</li>
                   <li><code>level</code> — một trong PRE_STARTERS…PET.</li>
                   <li><code>question</code> (bắt buộc), <code>questionVi</code> — câu hỏi tiếng Anh + dịch tiếng Việt.</li>
-                  <li><code>transcript</code> — lời giám khảo (tiếng Trung); cũng có thể bấm “Tạo transcript từ audio”.</li>
+                  <li><code>transcript</code> — lời giám khảo (tiếng Anh); cũng có thể bấm “Tạo transcript từ audio”.</li>
                   <li><code>outline</code> — dàn ý gợi ý, mỗi ý một dòng (dùng <code>\n</code> trong JSON).</li>
                   <li><code>hints</code> — mảng <code>{`[{ "text": "I like swimming.", "vi": "Tớ thích bơi." }]`}</code>.</li>
                   <li><code>sampleAnswer</code> — bài nói mẫu (tiếng Anh).</li>
@@ -332,7 +327,7 @@ export function SpeakingTopicForm({
         </div>
         <div className="space-y-1">
           <Label>Nhãn chủ đề (hiện cho học viên)</Label>
-          <Input name="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="爱好 — Sở thích" />
+          <Input name="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Hobbies — Sở thích" />
         </div>
         <div className="grid grid-cols-3 gap-2">
           <div className="space-y-1">
@@ -345,42 +340,30 @@ export function SpeakingTopicForm({
           </div>
           <div className="space-y-1">
             <Label>Tối thiểu (chữ)</Label>
-            <Input name="minWords" type="number" value={minWords} onChange={(e) => setMinChars(e.target.value)} />
+            <Input name="minWords" type="number" value={minWords} onChange={(e) => setMinWords(e.target.value)} />
           </div>
         </div>
       </div>
 
       <div className="space-y-1">
-        <Label>Câu hỏi (tiếng Trung) *</Label>
+        <Label>Câu hỏi (tiếng Anh) *</Label>
         <Textarea
           name="question"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           className="font-primer min-h-16"
-          placeholder="请谈谈你的爱好，并说明原因。"
+          placeholder="Tell me about your favourite hobby. Why do you like it?"
           required
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label>Pinyin câu hỏi</Label>
-          <Input
-            name="questionPinyin"
-            value={questionPinyin ?? ""}
-            onChange={(e) => setQuestionPinyin(e.target.value)}
-            className=""
-            placeholder="Qǐng tántan nǐ de àihào…"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label>Dịch câu hỏi (tiếng Việt)</Label>
-          <Input
-            name="questionVi"
-            value={questionVi ?? ""}
-            onChange={(e) => setQuestionVi(e.target.value)}
-            placeholder="Hãy nói về sở thích của bạn và giải thích lý do."
-          />
-        </div>
+      <div className="space-y-1">
+        <Label>Dịch câu hỏi (tiếng Việt)</Label>
+        <Input
+          name="questionVi"
+          value={questionVi ?? ""}
+          onChange={(e) => setQuestionVi(e.target.value)}
+          placeholder="Hãy kể về sở thích của bé. Vì sao bé thích nó?"
+        />
       </div>
 
       {/* Outline */}
@@ -489,14 +472,14 @@ export function SpeakingTopicForm({
 
       {/* Transcript */}
       <div className="space-y-1">
-        <Label htmlFor={`${fieldId}-transcript`}>Transcript lời giám khảo (tiếng Trung)</Label>
+        <Label htmlFor={`${fieldId}-transcript`}>Transcript lời giám khảo (tiếng Anh)</Label>
         <Textarea
           id={`${fieldId}-transcript`}
           name="transcript"
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
           className="font-primer min-h-16"
-          placeholder="请说说你的爱好。"
+          placeholder="Tell me about your favourite hobby."
         />
         <button
           type="button"
@@ -522,13 +505,13 @@ export function SpeakingTopicForm({
                 <Input
                   value={h.text ?? ""}
                   onChange={(e) => setHint(i, { text: e.target.value })}
-                  placeholder="Chữ Hán (旅游)"
+                  placeholder="Từ/cụm tiếng Anh (I like swimming)"
                   className="font-primer text-sm"
                 />
                 <Input
                   value={h.vi ?? ""}
                   onChange={(e) => setHint(i, { vi: e.target.value })}
-                  placeholder="Nghĩa (du lịch)"
+                  placeholder="Nghĩa (Tớ thích bơi)"
                   className="text-sm"
                 />
               </div>
@@ -554,22 +537,13 @@ export function SpeakingTopicForm({
 
       {/* Sample answer */}
       <div className="space-y-1">
-        <Label>Bài trả lời mẫu (tiếng Trung, tham khảo)</Label>
+        <Label>Bài trả lời mẫu (tiếng Anh, tham khảo)</Label>
         <Textarea
           name="sampleAnswer"
           value={sampleAnswer ?? ""}
           onChange={(e) => setSampleAnswer(e.target.value)}
           className="font-primer min-h-20"
-          placeholder="我的爱好是旅游。我觉得旅游可以让我放松，还能认识新朋友…"
-        />
-      </div>
-      <div className="space-y-1">
-        <Label>Pinyin bài mẫu (tuỳ chọn)</Label>
-        <Textarea
-          name="sampleAnswerPinyin"
-          value={sampleAnswerPinyin ?? ""}
-          onChange={(e) => setSampleAnswerPinyin(e.target.value)}
-          className=" min-h-16"
+          placeholder="My favourite hobby is swimming. I go to the pool with my dad every Sunday…"
         />
       </div>
 

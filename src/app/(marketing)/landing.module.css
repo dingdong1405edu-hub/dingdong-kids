@@ -1,6 +1,6 @@
 /*
- * DingDong HSK — landing page visual system.
- * Phong cách "bánh bao" ấm áp: nền kem, xanh ô-liu, bo tròn, font Nunito.
+ * DingDong Kids — hệ thống hình ảnh cho trang chủ.
+ * Phong cách trẻ thơ: nền kem ấm, xanh biển tươi, bo góc lớn, font Baloo 2 + Nunito.
  * Scoped bằng CSS module nên không ảnh hưởng design-token (shadcn) của phần app còn lại.
  */
 
@@ -397,7 +397,7 @@
   font-weight: 600;
 }
 
-/* Hero visual — linh vật bánh bao */
+/* Hero visual — linh vật gấu Ding */
 .heroVisual {
   position: relative;
   animation: slideInRight 1s ease;
@@ -617,7 +617,7 @@
 .iconVocab { background: linear-gradient(135deg, #fff3e0, #ffe0b2); }
 .iconWriting { background: linear-gradient(135deg, #fce4ec, #f8bbd0); }
 .iconSpeaking { background: linear-gradient(135deg, #e3f2fd, #bbdefb); }
-.iconHsk { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
+.iconExam { background: linear-gradient(135deg, #f3e5f5, #e1bee7); }
 .iconCommunity { background: linear-gradient(135deg, #fff9c4, #fff176); }
 .featureCard h3 {
   font-size: 20px;
@@ -716,7 +716,7 @@
   margin: 0;
 }
 
-/* ============ LEVELS (pill HSK 1–6) ============ */
+/* ============ LEVELS (pill 6 cấp Cambridge) ============ */
 .levelPills {
   display: flex;
   flex-wrap: wrap;
@@ -1650,7 +1650,7 @@
 }
 :global(.dark) .editNote { background: rgba(255, 226, 122, 0.1); }
 
-/* Pill cấp độ HSK */
+/* Pill cấp độ Cambridge */
 :global(.dark) .levelPill {
   background: #1a1d27;
   border-color: rgba(143, 178, 101, 0.3);

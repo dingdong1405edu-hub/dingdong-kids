@@ -6,7 +6,7 @@ import Link from "next/link";
 import { BookOpen, Sparkles, ArrowRight } from "lucide-react";
 import { PracticeHub } from "@/components/learn/practice-hub";
 import { TestCard } from "@/components/learn/test-card";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 
 export const metadata: Metadata = {
   title: "Từ vựng",
@@ -104,7 +104,7 @@ export default async function VocabPage() {
 function EmptyState() {
   return (
     <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
-      <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
+      <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
       <p>Chưa có chủ đề từ vựng nào. Bé quay lại sau nhé! 🌟</p>
     </div>
   );

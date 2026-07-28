@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Route } from "lucide-react";
 import { Ambient } from "@/components/motion/ambient";
 import { CourseWorldCard } from "@/components/learn/roadmap/course-world-card";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { levelToSlug } from "@/lib/roadmap";
 
 export const metadata: Metadata = {
@@ -62,7 +62,7 @@ export default async function RoadmapPage() {
       {/* Lưới khóa học */}
       {courses.length === 0 ? (
         <div className="sticker rounded-3xl border-dashed py-16 text-center text-muted-foreground">
-          <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
+          <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
           <p>Bản đồ đang được cô vẽ nốt. Bé quay lại sau nhé 🌟</p>
         </div>
       ) : (

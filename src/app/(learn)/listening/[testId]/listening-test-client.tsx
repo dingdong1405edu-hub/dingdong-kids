@@ -9,7 +9,7 @@ import { TestShell } from "@/components/learn/test-shell";
 import { ReadingPalette } from "@/components/learn/reading/reading-palette";
 import { QuestionCard } from "@/components/learn/reading/question-card";
 import { ResultsSummary } from "@/components/learn/reading/results-summary";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { ReviewDialog } from "@/components/learn/reading/review-dialog";
 import { SelectionLookup, type SelectionAnchor } from "@/components/learn/reading/selection-lookup";
 import { AudioPlayer } from "@/components/learn/listening/audio-player";
@@ -24,14 +24,14 @@ import { submitListeningAction } from "@/server/actions/listening";
 import { emitDing } from "@/lib/ding-bus";
 
 /** Lời khen ngắn của Ding hiện trên bóng thoại. Luôn khen trước, không chê. */
-function baoBubble(score: number): string {
+function dingBubble(score: number): string {
   if (score >= 90) return "Siêu quá!";
   if (score >= 70) return "Giỏi lắm!";
   if (score >= 50) return "Cố lên nhé!";
   return "Mình thử lại nào!";
 }
 /** Lời cổ vũ dài hơn theo điểm số. */
-function baoLine(score: number): string {
+function dingLine(score: number): string {
   if (score >= 90) return "Tuyệt vời! Tai bé nghe tiếng Anh rất tinh 🎉";
   if (score >= 70) return "Bé nghe tốt lắm! Thêm chút nữa là trọn điểm.";
   if (score >= 50) return "Khá rồi đó! Nghe lại các câu còn phân vân nhé.";
@@ -373,7 +373,7 @@ export function ListeningTestClient({
             {/* Instructions (test mode) — kèm linh vật Ding chào bé */}
             {!submitted && (
               <div className="flex items-center gap-3 rounded-2xl border-2 border-teal-100 dark:border-teal-400/25 bg-teal-50/50 dark:bg-teal-500/10 p-3 text-sm text-teal-900 dark:text-teal-200">
-                <BaoBuddy size={54} pose="idle" className="shrink-0" aria-label="Ding chào bé" />
+                <DingBuddy size={54} pose="idle" className="shrink-0" aria-label="Ding chào bé" />
                 <p>
                   {audio.available ? (
                     <>
@@ -409,10 +409,10 @@ export function ListeningTestClient({
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
                   className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50 via-rose-50 to-teal-50 dark:from-amber-500/10 dark:via-rose-500/10 dark:to-teal-500/10 px-5 py-6 text-center"
                 >
-                  <BaoBuddy
+                  <DingBuddy
                     size={120}
                     pose={result.score >= 50 ? "cheer" : "idle"}
-                    message={baoBubble(result.score)}
+                    message={dingBubble(result.score)}
                     className="mx-auto"
                   />
                   <div className="font-display mt-1 text-4xl font-extrabold tracking-tight text-foreground">
@@ -421,7 +421,7 @@ export function ListeningTestClient({
                   <div className="mt-0.5 text-sm font-medium text-muted-foreground">
                     {correctCount}/{total} câu đúng · {formatDuration(elapsed)}
                   </div>
-                  <div className="mt-1.5 text-sm font-bold text-primary">{baoLine(result.score)}</div>
+                  <div className="mt-1.5 text-sm font-bold text-primary">{dingLine(result.score)}</div>
                 </motion.div>
                 <ResultsSummary
                   score={result.score}

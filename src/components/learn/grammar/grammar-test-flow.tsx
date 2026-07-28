@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ClipboardCheck, CheckCircle2, XCircle, Trophy, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { emitDing } from "@/lib/ding-bus";
 import { GrammarTestRunner, type TestResult } from "./grammar-test-runner";
 import { submitGrammarTestAction } from "@/server/actions/lesson";
@@ -48,7 +48,7 @@ export function GrammarTestFlow({ lesson, content, unitId }: Props) {
   if (questions.length === 0) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <BaoBuddy size={88} pose="idle" className="mx-auto" />
+        <DingBuddy size={88} pose="idle" className="mx-auto" />
         <h2 className="font-display text-xl font-extrabold">Bài này chưa có phần thử tài</h2>
         <Button variant="outline" className="font-bold" onClick={() => router.push(closeHref)}>
           Quay lại
@@ -129,7 +129,7 @@ export function GrammarTestFlow({ lesson, content, unitId }: Props) {
     <div className="mx-auto max-w-2xl space-y-5 py-6">
       <Card className="text-center">
         <CardContent className="space-y-3 px-6 pb-6 pt-8">
-          <BaoBuddy
+          <DingBuddy
             size={104}
             pose={passed ? "cheer" : "idle"}
             message={passed ? "Siêu quá!" : "Thử lại nhé!"}

@@ -4,7 +4,7 @@ import { ArrowRight, GraduationCap, Rocket, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { FREESTYLE_PLANS, ROADMAP_PLANS, formatVnd } from "@/lib/payment-plans";
 import { SITE_NAME, SITE_URL, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/site";
-import { BaoMascot } from "@/components/marketing/bao-mascot";
+import { DingMascot } from "@/components/marketing/ding-mascot";
 import { Reveal } from "@/components/motion/reveal";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { MarketingNav } from "./_components/marketing-nav";
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
+    images: [{ url: "/ding-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 
@@ -100,7 +100,7 @@ const features = [
   },
   {
     icon: "📖",
-    cls: styles.iconHsk,
+    cls: styles.iconExam,
     title: "Đọc & nghe hiểu",
     desc: "Đoạn văn và audio theo format đề Cambridge: nghe đọc mẫu, nhấn vào từ để tra nghĩa, chấm điểm tự động sau khi nộp bài.",
   },
@@ -285,7 +285,7 @@ export default async function LandingPage() {
 
           <div className={styles.heroVisual}>
             <div className={styles.heroVisualInner}>
-              <BaoMascot transparent />
+              <DingMascot transparent />
             </div>
           </div>
         </div>

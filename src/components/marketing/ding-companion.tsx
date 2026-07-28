@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { BaoArt, type BaoPose } from "./bao-art";
+import { DingArt, type DingPose } from "./ding-art";
 import { onDing, type DingReaction } from "@/lib/ding-bus";
-import styles from "./bao-companion.module.css";
+import styles from "./ding-companion.module.css";
 
 type Fx = "" | "pop" | "shake";
 
 interface ReactionLook {
-  pose: BaoPose;
+  pose: DingPose;
   fx: Fx;
   bubble: string | null;
   /** Thời gian giữ phản ứng trước khi về idle (ms). */
@@ -40,16 +40,16 @@ function look(reaction: DingReaction): ReactionLook {
 }
 
 /**
- * BaoCompanion — nút nổi nhỏ gọn ở góc màn hình khu vực học: vừa là linh vật Bao
+ * DingCompanion — nút nổi nhỏ gọn ở góc màn hình khu vực học: vừa là linh vật Ding
  * (biểu cảm theo thời gian thực với tín hiệu từ bus — đúng/sai/hoàn thành…), vừa
  * là cửa mở trợ lý chat. Thiết kế tối giản: không vòng nhịp, không tự vẫy tay,
  * để không gây rối mắt và không che các nút bấm trên mobile.
  */
-export function BaoCompanion({ onOpen }: { onOpen: () => void }) {
-  const [pose, setPose] = useState<BaoPose>("idle");
+export function DingCompanion({ onOpen }: { onOpen: () => void }) {
+  const [pose, setPose] = useState<DingPose>("idle");
   const [fx, setFx] = useState<Fx>("");
   const [bubble, setBubble] = useState<string | null>(null);
-  // Đổi mỗi reaction → remount BaoArt để hiệu ứng CSS chạy lại từ đầu.
+  // Đổi mỗi reaction → remount DingArt để hiệu ứng CSS chạy lại từ đầu.
   const [tick, setTick] = useState(0);
 
   const revertRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -84,7 +84,7 @@ export function BaoCompanion({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      aria-label="Mở trợ lý học tập Bao"
+      aria-label="Mở trợ lý học tập Ding"
       className={styles.btn}
     >
       {bubble && (
@@ -98,7 +98,7 @@ export function BaoCompanion({ onOpen }: { onOpen: () => void }) {
           key={tick}
           className={`${styles.holder}${fx ? ` ${styles[fx]}` : ""}`}
         >
-          <BaoArt pose={pose} />
+          <DingArt pose={pose} />
         </span>
 
         <span className={styles.badge} aria-hidden>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Users, FileDown } from "lucide-react";
 import { cn, coverGradient, levelBadgeClass, levelLabel, socialProofCount } from "@/lib/utils";
-import { DingCover } from "@/components/learn/bao-cover";
+import { DingCover } from "@/components/learn/ding-cover";
 
 const TAG_DOTS = ["bg-emerald-500", "bg-amber-500", "bg-rose-500", "bg-sky-500", "bg-violet-500"];
 

@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { Send, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChatMessage, BaoAvatar } from "./chat-message";
-import type { UseBaoChat } from "./use-bao-chat";
+import { ChatMessage, DingAvatar } from "./chat-message";
+import type { UseDingChat } from "./use-ding-chat";
 
 const SUGGESTIONS = [
   "Cách đọc đuôi -s và -ed",
-  "Phân biệt 的, 得 và 地",
+  "Khi nào dùng a, an và the?",
   "Vài câu chào hỏi cơ bản",
   "Mẹo nhớ từ vựng dễ hơn",
 ];
@@ -18,7 +18,7 @@ export function ChatPanel({
   userName,
   onClose,
 }: {
-  chat: UseBaoChat;
+  chat: UseDingChat;
   userName?: string | null;
   onClose: () => void;
 }) {
@@ -50,10 +50,10 @@ export function ChatPanel({
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl">
       {/* Header */}
       <div className="flex items-center gap-3 border-b bg-card px-4 py-3">
-        <BaoAvatar className="h-9 w-9" />
+        <DingAvatar className="h-9 w-9" />
         <div className="min-w-0 flex-1 leading-tight">
           <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-            Bao
+            Ding
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Online
             </span>
@@ -87,10 +87,10 @@ export function ChatPanel({
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-3.5 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-2 text-center">
-            <BaoAvatar className="h-14 w-14 text-2xl" />
+            <DingAvatar className="h-14 w-14 text-2xl" />
             <div>
               <p className="text-sm font-semibold text-foreground">
-                Chào {firstName ? firstName : "bạn"}! Mình là Bao 🥟
+                Chào {firstName ? firstName : "bạn"}! Mình là Ding 🐻
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Hỏi mình bất cứ điều gì về tiếng Anh — từ vựng, ngữ pháp, ghép vần, phát âm hay
@@ -142,7 +142,7 @@ export function ChatPanel({
               }
             }}
             rows={1}
-            placeholder="Nhập câu hỏi cho Bao…"
+            placeholder="Nhập câu hỏi cho Ding…"
             className={cn(
               "max-h-28 min-h-[40px] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm",
               "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -160,7 +160,7 @@ export function ChatPanel({
           </Button>
         </div>
         <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
-          Bao là AI nên đôi khi có thể nhầm — hãy kiểm tra lại thông tin quan trọng.
+          Ding là AI nên đôi khi có thể nhầm — hãy kiểm tra lại thông tin quan trọng.
         </p>
       </div>
     </div>

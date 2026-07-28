@@ -23,7 +23,7 @@ function isMsg(v: unknown): v is ChatMessage {
   );
 }
 
-export interface UseBaoChat {
+export interface UseDingChat {
   messages: ChatMessage[];
   isStreaming: boolean;
   error: string | null;
@@ -32,10 +32,10 @@ export interface UseBaoChat {
 }
 
 /**
- * Quản lý hội thoại với trợ lý "Bao": gọi /api/chat ở chế độ stream và ghép câu
+ * Quản lý hội thoại với trợ lý "Ding": gọi /api/chat ở chế độ stream và ghép câu
  * trả lời dần. Lưu hội thoại vào localStorage để giữ lại sau khi tải lại trang.
  */
-export function useBaoChat(): UseBaoChat {
+export function useDingChat(): UseDingChat {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +90,7 @@ export function useBaoChat(): UseBaoChat {
         });
 
         if (!res.ok || !res.body) {
-          let msg = "Bao tạm thời không trả lời được. Bạn thử lại sau nhé!";
+          let msg = "Ding tạm thời không trả lời được. Bạn thử lại sau nhé!";
           try {
             const j = (await res.json()) as { error?: string };
             if (j?.error) msg = j.error;
@@ -114,7 +114,7 @@ export function useBaoChat(): UseBaoChat {
 
         if (!acc.trim()) {
           setMessages(history);
-          setError("Bao chưa kịp trả lời. Bạn thử lại nhé!");
+          setError("Ding chưa kịp trả lời. Bạn thử lại nhé!");
         }
       } catch {
         setMessages(history);

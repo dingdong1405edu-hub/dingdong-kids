@@ -10,19 +10,36 @@ import { AlertTriangle, CheckCircle2, Save, Info } from "lucide-react";
 const VOCAB_TEMPLATE = `[
   {
     "type": "translate",
-    "direction": "zh_to_vi",
-    "prompt": "你好",
-    "pinyin": "nǐ hǎo",
-    "answer": "Xin chào",
-    "options": ["Xin chào", "Tạm biệt", "Cảm ơn", "Xin lỗi"]
+    "direction": "en_to_vi",
+    "prompt": "hello",
+    "answer": "xin chào",
+    "options": ["xin chào", "tạm biệt", "cảm ơn", "xin lỗi"]
   },
   {
-    "type": "toneSelect",
-    "word": "妈",
-    "pinyin": "mā",
-    "question": "Chọn thanh điệu đúng của 妈",
-    "options": ["Thanh 1", "Thanh 2", "Thanh 3", "Thanh 4"],
+    "type": "picture_match",
+    "imageUrl": "",
+    "prompt": "Which word matches the picture?",
+    "options": ["cat", "dog", "pig", "cow"],
+    "correct": 0,
+    "explanation": "Trong ảnh là một chú mèo — cat."
+  },
+  {
+    "type": "listen_pick",
+    "audioUrl": "",
+    "text": "apple",
+    "options": [
+      { "imageUrl": "", "label": "apple" },
+      { "imageUrl": "", "label": "banana" },
+      { "imageUrl": "", "label": "orange" }
+    ],
     "correct": 0
+  },
+  {
+    "type": "spell_drag",
+    "word": "cat",
+    "imageUrl": "",
+    "audioUrl": "",
+    "distractors": ["s", "p"]
   }
 ]`;
 
@@ -31,53 +48,60 @@ const VOCAB_TEMPLATE = `[
 // "test" (bài kiểm tra tổng hợp — TÁCH RIÊNG, đạt ≥ 80% mới được XP).
 //
 // CHUẨN: mỗi điểm ngữ pháp (section) cần ĐỦ 8 MINIGAME — 2× chọn từ (fill_blank)
-// + 2× sắp xếp câu (sentence_order) + 2× dịch Việt→Trung (translate vi_to_zh)
-// + 2× dịch Trung→Việt (translate zh_to_vi).
+// + 2× sắp xếp câu (sentence_order) + 2× dịch Việt→Anh (translate vi_to_en)
+// + 2× dịch Anh→Việt (translate en_to_vi). Với cấp nhỏ (Pre-Starters/Starters)
+// nên thay bớt bằng picture_match / listen_pick vì trẻ chưa đọc thạo.
 const GRAMMAR_TEMPLATE = `{
   "version": 3,
   "sections": [
     {
-      "id": "shi-1",
-      "title": "Câu khẳng định với 是 (shì)",
-      "titleZh": "“是”字句",
-      "structure": "A + 是 + B",
+      "id": "tobe-1",
+      "title": "Câu với động từ to be",
+      "titleEn": "Verb to be (am / is / are)",
+      "structure": "I + am · He/She/It + is · We/You/They + are",
       "breakdown": [
-        { "part": "A", "role": "Chủ ngữ", "meaning": "Người hoặc vật được nói đến (我, 他, 这…)." },
-        { "part": "是", "pinyin": "shì", "role": "Động từ 'là'", "meaning": "Nối A với B, khẳng định A chính là B." },
-        { "part": "B", "role": "Danh từ", "meaning": "Cái mà A chính là (老师, 学生…)." }
+        { "part": "I", "role": "Chủ ngữ", "meaning": "Người hoặc vật được nói đến (I, he, she, it, we, they)." },
+        { "part": "am", "role": "Động từ to be", "meaning": "Nghĩa là 'thì, là, ở'. 'I' luôn đi với 'am'." },
+        { "part": "happy", "role": "Tính từ / Danh từ", "meaning": "Điều mình muốn nói về chủ ngữ." }
       ],
-      "explanation": "是 (shì) nghĩa là 'là', nối chủ ngữ với danh từ để khẳng định A là B.",
-      "usage": "Dùng khi giới thiệu hoặc khẳng định danh tính, nghề nghiệp, quan hệ ('A là B').",
+      "explanation": "Tiếng Việt nói 'Tớ vui' là đủ. Tiếng Anh BẮT BUỘC phải có am/is/are ở giữa. I → am; he, she, it → is; we, you, they → are.",
+      "usage": "Dùng khi giới thiệu bản thân, nói cảm xúc, nói tuổi, hoặc tả người và vật.",
       "mistakes": [
-        { "wrong": "我是高兴。", "right": "我很高兴。", "note": "是 không đi với tính từ — dùng 很 trước tính từ." }
+        { "wrong": "She happy.", "right": "She is happy.", "note": "Thiếu 'is'. Trẻ Việt hay quên vì tiếng Việt không có động từ này." },
+        { "wrong": "I is six.", "right": "I am six.", "note": "'I' luôn đi với 'am'." },
+        { "wrong": "They is my friends.", "right": "They are my friends.", "note": "'They' số nhiều nên dùng 'are'." }
       ],
       "examples": [
         {
-          "situation": "Khi giới thiệu nghề nghiệp",
-          "hanzi": "他是老师。",
-          "pinyin": "tā shì lǎoshī",
-          "meaning": "Anh ấy là giáo viên.",
-          "note": "Không thêm 很 trước 是."
+          "situation": "Khi giới thiệu bản thân",
+          "sentence": "I am Mai.",
+          "meaning": "Tớ là Mai.",
+          "note": "Nói tên mình thì dùng 'I am'."
+        },
+        {
+          "situation": "Khi nói về bạn",
+          "sentence": "He is my friend.",
+          "meaning": "Bạn ấy là bạn của tớ."
         }
       ],
       "exercises": [
-        { "type": "fill_blank", "sentence": "我___学生。", "blank": "是", "options": ["是", "有", "在", "叫"], "hint": "Động từ 'là'" },
-        { "type": "fill_blank", "sentence": "他___我的老师。", "blank": "是", "options": ["是", "很", "也", "不"] },
-        { "type": "sentence_order", "words": ["学生", "是", "我"], "answer": "我是学生", "meaning": "Tôi là học sinh." },
-        { "type": "sentence_order", "words": ["老师", "是", "他"], "answer": "他是老师", "meaning": "Anh ấy là giáo viên." },
-        { "type": "translate", "direction": "vi_to_zh", "prompt": "Tôi là học sinh.", "answer": "我是学生", "options": ["我是学生", "我有学生", "我在学生", "我叫学生"] },
-        { "type": "translate", "direction": "vi_to_zh", "prompt": "Cô ấy là bác sĩ.", "answer": "她是医生", "options": ["她是医生", "她很医生", "她也医生", "她不医生"] },
-        { "type": "translate", "direction": "zh_to_vi", "prompt": "他是老师。", "pinyin": "tā shì lǎoshī", "answer": "Anh ấy là giáo viên.", "options": ["Anh ấy là giáo viên.", "Anh ấy là học sinh.", "Anh ấy là bác sĩ.", "Anh ấy rất vui."] },
-        { "type": "translate", "direction": "zh_to_vi", "prompt": "我是学生。", "pinyin": "wǒ shì xuésheng", "answer": "Tôi là học sinh.", "options": ["Tôi là học sinh.", "Tôi là giáo viên.", "Tôi tên là.", "Tôi có học sinh."] }
+        { "type": "fill_blank", "sentence": "I ___ seven years old.", "blank": "am", "options": ["am", "is", "are", "be"], "hint": "Đi với 'I'" },
+        { "type": "fill_blank", "sentence": "She ___ my sister.", "blank": "is", "options": ["is", "am", "are", "be"] },
+        { "type": "sentence_order", "words": ["is", "She", "happy"], "answer": "She is happy", "meaning": "Bạn ấy vui." },
+        { "type": "sentence_order", "words": ["am", "I", "a", "student"], "answer": "I am a student", "meaning": "Tớ là học sinh." },
+        { "type": "translate", "direction": "vi_to_en", "prompt": "Tớ là học sinh.", "answer": "I am a student", "options": ["I am a student", "I is a student", "I are student", "I a student"] },
+        { "type": "translate", "direction": "vi_to_en", "prompt": "Bạn ấy vui.", "answer": "She is happy", "options": ["She is happy", "She happy", "She am happy", "She are happy"] },
+        { "type": "translate", "direction": "en_to_vi", "prompt": "He is my friend.", "answer": "Bạn ấy là bạn của tớ.", "options": ["Bạn ấy là bạn của tớ.", "Bạn ấy là anh của tớ.", "Bạn ấy vui.", "Tớ có một người bạn."] },
+        { "type": "translate", "direction": "en_to_vi", "prompt": "They are my parents.", "answer": "Họ là bố mẹ của tớ.", "options": ["Họ là bố mẹ của tớ.", "Họ là bạn của tớ.", "Đó là nhà của tớ.", "Tớ yêu bố mẹ."] }
       ]
     }
   ],
   "test": {
     "timeLimit": 180,
     "questions": [
-      { "type": "fill_blank", "sentence": "他___老师。", "blank": "是", "options": ["是", "很", "也", "不"] },
-      { "type": "sentence_order", "words": ["老师", "是", "他"], "answer": "他是老师" },
-      { "type": "translate", "direction": "zh_to_vi", "prompt": "我是学生。", "answer": "Tôi là học sinh.", "options": ["Tôi là học sinh.", "Tôi là giáo viên.", "Tôi là bác sĩ.", "Tôi rất vui."] }
+      { "type": "fill_blank", "sentence": "He ___ a teacher.", "blank": "is", "options": ["is", "am", "are", "be"] },
+      { "type": "sentence_order", "words": ["are", "We", "friends"], "answer": "We are friends" },
+      { "type": "translate", "direction": "en_to_vi", "prompt": "I am happy.", "answer": "Tớ vui.", "options": ["Tớ vui.", "Tớ buồn.", "Tớ mệt.", "Tớ đói."] }
     ]
   }
 }`;
@@ -133,15 +157,19 @@ export function LessonEditor({ skill, unitId, lesson }: Props) {
             tra — tách riêng khỏi luồng học, đạt ≥ 80% mới được điểm kinh nghiệm).{" "}
             <b>
               Mỗi điểm ngữ pháp nên có đủ 8 minigame: 2× chọn từ (fill_blank), 2× sắp xếp câu
-              (sentence_order), 2× dịch Việt→Trung (translate vi_to_zh), 2× dịch Trung→Việt
-              (translate zh_to_vi).
+              (sentence_order), 2× dịch Việt→Anh (translate vi_to_en), 2× dịch Anh→Việt
+              (translate en_to_vi).
             </b>{" "}
-            Để trống ô trên sẽ hiện mẫu ví dụ chuẩn.
+            Với Pre-Starters/Starters, nên thay bớt bằng <code>picture_match</code> và{" "}
+            <code>listen_pick</code> vì trẻ chưa đọc thạo. Để trống ô trên sẽ hiện mẫu ví dụ chuẩn.
           </p>
         ) : (
           <p className="text-[11px] text-muted-foreground">
-            Các loại được hỗ trợ: match, translate, toneSelect, hanziInput, sentenceOrder,
-            pinyinMatch, fill_blank. Để trống ô trên sẽ hiện mẫu ví dụ.
+            Các loại được hỗ trợ: <code>match</code>, <code>translate</code>, <code>fill_blank</code>,{" "}
+            <code>sentence_order</code>, <code>answer_question</code>, <code>type_sentence</code>, và
+            4 loại dành riêng cho trẻ nhỏ: <code>picture_match</code>, <code>listen_pick</code>,{" "}
+            <code>spell_drag</code>, <code>rhyme_match</code>. Để trống <code>audioUrl</code> rồi bấm
+            &ldquo;Tạo audio&rdquo; — hệ thống tự sinh giọng đọc. Để trống ô trên sẽ hiện mẫu ví dụ.
           </p>
         )}
       </div>

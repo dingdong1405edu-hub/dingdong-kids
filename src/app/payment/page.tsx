@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
+    images: [{ url: "/ding-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 

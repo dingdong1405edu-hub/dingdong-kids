@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, GraduationCap, Rocket, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/site";
-import { BaoMascot } from "@/components/marketing/bao-mascot";
+import { DingMascot } from "@/components/marketing/ding-mascot";
 import { Reveal } from "@/components/motion/reveal";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { MarketingNav } from "../_components/marketing-nav";
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
+    images: [{ url: "/ding-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 
@@ -63,12 +63,12 @@ const values = [
   },
   {
     icon: "🇻🇳",
-    cls: styles.iconHsk,
+    cls: styles.iconExam,
     title: "100% tiếng Việt, vì người Việt",
     desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc, như nhầm trọng âm từ với thanh 4.",
   },
   {
-    icon: "🥟",
+    icon: "🐻",
     cls: styles.iconCommunity,
     title: "Nhẹ nhàng và vui mỗi ngày",
     desc: "Giao diện ấm áp như tiệm gấu Ding, linh vật dễ thương, XP và chuỗi ngày học biến việc học thành thói quen chứ không phải áp lực.",
@@ -120,7 +120,7 @@ const milestones = [
 
 // Lời nhắn từ đội ngũ — nội dung thật, không dùng hồ sơ cá nhân dựng sẵn.
 const team = {
-  avatar: "🥟",
+  avatar: "🐻",
   name: "Đội ngũ DingDong Kids",
   role: "Những người Việt từng tự học tiếng Anh",
   tags: ["🎯 Bám sát chuẩn Cambridge YLE", "🇻🇳 Nội dung 100% tiếng Việt", "🤖 Ứng dụng AI vào việc học"],
@@ -130,7 +130,7 @@ const team = {
     "DingDong Kids bắt đầu từ trải nghiệm rất thật: đứng trước hàng nghìn từ mới và cách phát âm lạ tai, học chữ rồi quên, nói thì sợ sai, luyện thi Cambridge mà chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng người học cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải.",
     "Vì thế chúng mình gói tất cả vào DingDong Kids: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình, cùng một chú gấu Ding dễ thương để bạn mỉm cười mỗi khi mở app. Cảm ơn bạn đã ghé thăm. Hẹn gặp bạn ở bài học đầu tiên nhé!",
   ],
-  sign: "— Đội ngũ DingDong Kids 🥟",
+  sign: "— Đội ngũ DingDong Kids 🐻",
 };
 
 const anchor = { scrollMarginTop: "96px" } as const;
@@ -193,7 +193,7 @@ export default async function AboutPage() {
 
           <div className={styles.heroVisual}>
             <div className={styles.heroVisualInner}>
-              <BaoMascot transparent />
+              <DingMascot transparent />
             </div>
           </div>
         </div>

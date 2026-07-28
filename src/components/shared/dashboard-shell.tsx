@@ -41,7 +41,7 @@ export function DashboardShell({ user, children }: { user: ShellUser; children: 
         </main>
       </div>
 
-      {/* Trợ lý AI "Bao" — bong bóng nổi trên mọi trang khu vực học */}
+      {/* Trợ lý AI "Ding" — bong bóng nổi trên mọi trang khu vực học */}
       <ChatWidget userName={user.name} />
     </div>
   );

@@ -27,48 +27,69 @@ import { bulkImportRoadmapLessonsAction } from "@/server/actions/roadmap-admin";
 
 const SAMPLE = `[
   {
-    "topic": "Gia đình",
-    "topicZh": "家庭",
+    "topic": "My Family",
+    "topicVi": "Gia đình của bé",
     "icon": "👨‍👩‍👧",
     "xpReward": 20,
     "chapter": "",
-    "reading": {
-      "title": "Gia đình tôi",
-      "titleZh": "我的家",
-      "passages": [
+    "vocab": {
+      "words": [
         {
-          "passage": "我家有四口人：爸爸、妈妈、哥哥和我。",
-          "questions": [
-            { "type": "MCQ", "prompt": "他家有几口人?", "options": ["三口","四口","五口","六口"], "answer": 1, "explanation": "Đoạn văn nói có 4 người.", "supportingQuote": "我家有四口人" }
-          ]
+          "word": "mother",
+          "ipa": "/ˈmʌðər/",
+          "meaning": "mẹ",
+          "partOfSpeech": "danh từ",
+          "examples": [ { "sentence": "This is my mother.", "meaning": "Đây là mẹ của tớ." } ]
         },
         {
-          "passage": "爸爸是医生，妈妈是老师。",
+          "word": "father",
+          "ipa": "/ˈfɑːðər/",
+          "meaning": "bố",
+          "partOfSpeech": "danh từ",
+          "examples": [ { "sentence": "My father is tall.", "meaning": "Bố tớ cao." } ]
+        }
+      ]
+    },
+    "phonics": {
+      "sounds": [
+        {
+          "letters": "m",
+          "sound": "/m/",
+          "hint": "Ngậm môi lại và ngân qua mũi — giống chữ “m” tiếng Việt.",
+          "words": [
+            { "word": "mother", "meaning": "mẹ", "emoji": "👩" },
+            { "word": "moon", "meaning": "mặt trăng", "emoji": "🌙" }
+          ]
+        }
+      ]
+    },
+    "reading": {
+      "title": "My family",
+      "passages": [
+        {
+          "passage": "This is my family. I have a mother, a father and a baby sister. We are happy.",
           "questions": [
-            { "type": "TRUE_FALSE", "prompt": "妈妈是老师。", "answer": true }
+            { "type": "MCQ", "prompt": "How many people are in the family?", "options": ["Two","Three","Four","Five"], "answer": 2, "explanation": "Bài đọc kể có mẹ, bố, em gái và bạn nhỏ — tất cả là 4 người.", "supportingQuote": "I have a mother, a father and a baby sister" },
+            { "type": "TRUE_FALSE", "prompt": "The family is happy.", "answer": true }
           ]
         }
       ]
     },
     "listening": {
-      "title": "Giới thiệu gia đình",
+      "title": "Meet my family",
       "clips": [
         {
           "audioUrl": "",
-          "transcript": "你好，我叫小明，我家有三口人。",
-          "questions": [ { "type": "MCQ", "prompt": "小明家有几口人?", "options": ["二口","三口","四口","五口"], "answer": 1 } ]
+          "transcript": "Girl: Hello! I am Mai. This is my mother. This is my father. I love my family.",
+          "questions": [
+            { "type": "MCQ", "prompt": "What is the girl's name?", "options": ["Lan","Mai","Anna"], "answer": 1 }
+          ]
         }
       ]
     },
     "speaking": {
-      "part1Sentences": [ { "text": "我家有四口人。" } ],
-      "part3Questions": [ { "question": "你家有几口人?" } ]
-    },
-    "vocab": {
-      "words": [
-        { "hanzi": "家", "pinyin": "jiā", "meaning": "nhà / gia đình" },
-        { "hanzi": "爸爸", "pinyin": "bàba", "meaning": "bố" }
-      ]
+      "part1Sentences": [ { "text": "This is my mother." } ],
+      "part3Questions": [ { "question": "Who is in your family?" } ]
     }
   }
 ]`;
@@ -92,7 +113,7 @@ export function RoadmapLessonBulkImport({ courseId }: { courseId: string }) {
       return { error: "JSON chưa hợp lệ — kiểm tra dấu ngoặc/dấu phẩy." };
     }
     if (!Array.isArray(parsed)) return { error: "Cần một MẢNG JSON: [ { …bài… } ]." };
-    const SKILLS = ["vocab", "grammar", "hanzi", "reading", "listening", "writing", "speaking"];
+    const SKILLS = ["vocab", "grammar", "phonics", "reading", "listening", "writing", "speaking"];
     let lessons = 0;
     let sections = 0;
     for (const it of parsed) {
@@ -178,10 +199,12 @@ export function RoadmapLessonBulkImport({ courseId }: { courseId: string }) {
             <FileJson className="h-5 w-5 text-primary" /> Nhập bài hàng loạt
           </DialogTitle>
           <DialogDescription>
-            Dán một MẢNG bài. Mỗi bài cần <code>topic</code> và có thể kèm nội dung các kỹ năng:
-            <code> reading</code>, <code>listening</code>, <code>speaking</code>, <code>vocab</code>, <code>grammar</code>,
-            <code> hanzi</code>, <code>writing</code>. Đọc/Nghe hỗ trợ nhiều đoạn (<code>passages</code>/<code>clips</code>);
-            pinyin tự sinh khi thiếu. Khớp chương theo tên (để trống nếu chưa phân chương).
+            Dán một MẢNG bài. Mỗi bài cần <code>topic</code> (tiếng Anh) và có thể kèm nội dung các
+            kỹ năng: <code>vocab</code>, <code>phonics</code>, <code>grammar</code>, <code>reading</code>,
+            <code> listening</code>, <code>writing</code>, <code>speaking</code>. Đọc/Nghe hỗ trợ nhiều đoạn
+            (<code>passages</code>/<code>clips</code>). Để trống <code>audioUrl</code> rồi bấm
+            &ldquo;Tạo audio&rdquo; sau khi nhập — hệ thống tự sinh giọng đọc bằng TTS.
+            Khớp chương theo tên (để trống nếu chưa phân chương).
           </DialogDescription>
         </DialogHeader>
 

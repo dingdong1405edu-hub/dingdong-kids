@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { BookMarked } from "lucide-react";
 import { SavedWordList, type SavedWordItem } from "@/components/learn/vocab/saved-word-list";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +49,7 @@ export default async function SoTuPage() {
 
       {words.length === 0 ? (
         <div className="sticker rounded-3xl border-dashed py-16 text-center">
-          <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
+          <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
           <p className="text-[15px] text-muted-foreground">
             Sổ còn trống. Khi đọc truyện, bé bấm vào một từ rồi chọn “Lưu vào sổ từ” nhé 🌟
           </p>

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { emitDing } from "@/lib/ding-bus";
 import { levelLabel } from "@/lib/utils";
 import { gradeSpeakingTopicAction } from "@/server/actions/speaking";
@@ -418,7 +418,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
       {/* Topic banner */}
       <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white p-5 dark:from-indigo-500/10 dark:to-transparent">
         <div className="flex items-start gap-4">
-          <BaoBuddy size={70} pose={good ? "cheer" : "idle"} className="shrink-0" />
+          <DingBuddy size={70} pose={good ? "cheer" : "idle"} className="shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="text-xs font-bold uppercase tracking-wide text-indigo-500">
               Trả lời câu hỏi · Cambridge Speaking
@@ -554,7 +554,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
           />
           {phase === "grading" && (
             <div className="mt-4 flex flex-col items-center gap-2">
-              <BaoBuddy size={64} pose="idle" message="Để Ding nghe bé nói nhé…" />
+              <DingBuddy size={64} pose="idle" message="Để Ding nghe bé nói nhé…" />
             </div>
           )}
         </div>
@@ -577,7 +577,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
                 transition={{ type: "spring", stiffness: 200, damping: 14 }}
                 className="flex flex-col items-center"
               >
-                <BaoBuddy
+                <DingBuddy
                   size={84}
                   pose={good ? "cheer" : "idle"}
                   message={good ? "Bé nói hay quá!" : "Bé làm tốt lắm, thử lần nữa nhé!"}

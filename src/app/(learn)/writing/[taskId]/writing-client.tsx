@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { countWords, levelLabel, formatDuration } from "@/lib/utils";
 import { gradeWritingAction } from "@/server/actions/writing";
 import { emitDing } from "@/lib/ding-bus";
@@ -138,7 +138,7 @@ export function WritingClient({
   if (result) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <BaoBuddy
+        <DingBuddy
           size={88}
           pose={result.score >= 60 ? "cheer" : "idle"}
           message={result.score >= 60 ? "Bé viết hay lắm!" : "Cố lên nhé!"}

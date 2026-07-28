@@ -24,7 +24,7 @@ import { SettingsDialog } from "@/components/learn/reading/settings-dialog";
 import { ReviewDialog } from "@/components/learn/reading/review-dialog";
 import { ResultsSummary } from "@/components/learn/reading/results-summary";
 import { PassageAnalysis } from "@/components/learn/reading/passage-analysis";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { SelectionLookup, type SelectionAnchor } from "@/components/learn/reading/selection-lookup";
 import { useReadingSettings } from "@/components/learn/reading/use-reading-settings";
 import { splitPassageTokens, type ReadingTestData } from "@/components/learn/reading/types";
@@ -466,7 +466,7 @@ export function ReadingTestClient({
                 <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
                   {submitted && result && (
                     <>
-                      <BaoBuddy
+                      <DingBuddy
                         size={84}
                         pose={result.score >= 50 ? "cheer" : "idle"}
                         message={cheerLine(result.score)}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Library, Clock, ArrowRight } from "lucide-react";
 import { cn, levelLabel, levelBadgeClass } from "@/lib/utils";
 import { MATERIAL_CATEGORIES, categoryMeta } from "@/lib/materials";
-import { DingCover } from "@/components/learn/bao-cover";
+import { DingCover } from "@/components/learn/ding-cover";
 import { LEVELS } from "@/lib/roadmap";
 import { EnglishLevel, MaterialCategory, Prisma } from "@prisma/client";
 

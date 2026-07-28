@@ -6,7 +6,7 @@ import { LessonEngine } from "@/components/learn/lesson-engine";
 import { completeLessonAction } from "@/server/actions/lesson";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import type { Exercise } from "@/types";
 
 interface Props {
@@ -60,7 +60,7 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
       <div className="min-h-[60vh] flex items-center justify-center">
         <Card className="sticker max-w-md w-full text-center">
           <CardContent className="pt-8 pb-6 space-y-4">
-            <BaoBuddy
+            <DingBuddy
               size={104}
               pose={passed ? "cheer" : "idle"}
               message={passed ? "Giỏi quá!" : "Cố lên nhé!"}

@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import styles from "./bao-mascot.module.css";
+import styles from "./ding-mascot.module.css";
 
 /**
- * Linh vật bánh bao của DingDong HSK.
+ * Linh vật gấu con "Ding" của DingDong Kids.
  * Mắt dõi theo con trỏ, cười mở khi con trỏ lại gần, chớp mắt định kỳ.
  * Toàn bộ animation nền chạy bằng CSS; chỉ phần tương tác con trỏ dùng JS.
  */
-export function BaoMascot({ transparent = false }: { transparent?: boolean }) {
+export function DingMascot({ transparent = false }: { transparent?: boolean }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const squishRef = useRef<HTMLDivElement>(null);
   const eyeLRef = useRef<HTMLDivElement>(null);
@@ -91,7 +91,7 @@ export function BaoMascot({ transparent = false }: { transparent?: boolean }) {
     <div className={styles.wrap} aria-hidden="true">
       <div ref={panelRef} className={`${styles.panel}${transparent ? ` ${styles.bare}` : ""}`}>
         <div className={styles.bubble}>
-          NǏ HǍO <b>🥟</b>
+          HELLO <b>🐻</b>
         </div>
 
         <div className={styles.stage}>
@@ -116,34 +116,42 @@ export function BaoMascot({ transparent = false }: { transparent?: boolean }) {
           <div className={`${styles.spark} ${styles.s4}`} />
 
           <div className={styles.ground} />
-          <div className={styles.steamer} />
 
-          <div className={styles.baoPos}>
+          <div className={styles.dingPos}>
             <div className={styles.bounce}>
               <div className={styles.wobble}>
                 <div ref={squishRef} className={styles.squish}>
                   <div className={`${styles.arm} ${styles.armL}`} aria-hidden />
                   <div className={`${styles.arm} ${styles.armR}`} aria-hidden />
-                  <svg className={styles.bunSvg} viewBox="0 0 300 300" aria-label="Linh vật gấu Ding">
+                  <svg className={styles.bodySvg} viewBox="0 0 300 300" aria-label="Linh vật gấu Ding">
+                    {/* Tai — vẽ trước thân để viền nằm dưới, trông liền khối */}
+                    <circle className={styles.ear} cx="76" cy="84" r="36" />
+                    <circle className={styles.ear} cx="224" cy="84" r="36" />
+                    <circle className={styles.earInner} cx="76" cy="84" r="17" />
+                    <circle className={styles.earInner} cx="224" cy="84" r="17" />
+
+                    {/* Đầu tròn */}
                     <path
-                      className={styles.bunBody}
+                      className={styles.body}
                       d="M52,162 C52,92 95,62 150,62 C205,62 248,92 248,162 C248,228 205,252 150,252 C95,252 52,228 52,162 Z"
                     />
+
+                    {/* Mõm sáng — chỗ đặt mũi và miệng */}
+                    <ellipse className={styles.muzzle} cx="150" cy="196" rx="58" ry="42" />
+
+                    {/* Mũi */}
                     <path
-                      className={styles.bunShadow}
-                      d="M70,222 C100,248 200,248 230,222 C212,250 88,250 70,222 Z"
+                      className={styles.nose}
+                      d="M133,175 C133,166 167,166 167,175 C167,185 156,192 150,192 C144,192 133,185 133,175 Z"
                     />
+
                     <ellipse
-                      className={styles.bunHi}
-                      cx="105"
-                      cy="110"
-                      rx="26"
-                      ry="18"
-                      transform="rotate(-22 105 110)"
-                    />
-                    <path
-                      className={styles.bunKnob}
-                      d="M138,66 C134,52 152,48 156,60 C159,69 148,74 144,68"
+                      className={styles.hi}
+                      cx="103"
+                      cy="112"
+                      rx="24"
+                      ry="16"
+                      transform="rotate(-22 103 112)"
                     />
                   </svg>
 

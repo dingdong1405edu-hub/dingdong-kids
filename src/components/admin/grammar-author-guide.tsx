@@ -62,10 +62,10 @@ export function GrammarAuthorGuide() {
             <section className="space-y-2">
               <h3 className="font-semibold">2. Một phần (section) gồm gì?</h3>
               <ul className="space-y-1">
-                <Field name="id">mã ngắn, duy nhất trong bài (vd: "shi-1").</Field>
+                <Field name="id">mã ngắn, duy nhất trong bài (vd: "tobe-1").</Field>
                 <Field name="title">tiêu đề tiếng Việt của phần.</Field>
-                <Field name="titleZh">tiêu đề chữ Hán (tùy chọn).</Field>
-                <Field name="structure">công thức ngữ pháp — sẽ được tách thành các ô màu nổi bật, mỗi phần một màu (vd: "A + 是 + B").</Field>
+                <Field name="titleEn">tên tiếng Anh của điểm ngữ pháp (tùy chọn, vd "Present Simple").</Field>
+                <Field name="structure">công thức ngữ pháp — sẽ được tách thành các ô màu nổi bật, mỗi phần một màu (vd: "I + am + happy").</Field>
                 <Field name="breakdown">
                   <b>(rất nên có)</b> mảng giải nghĩa <i>từng phần</i> của công thức, theo đúng thứ tự — mỗi phần
                   thành một thẻ màu riêng (khớp màu với ô trong công thức). Đây là thứ giúp người mới hiểu
@@ -78,7 +78,8 @@ export function GrammarAuthorGuide() {
                 <Field name="examples">mảng ví dụ theo ngữ cảnh (có thể để [] nếu chưa có).</Field>
                 <Field name="exercises">
                   mảng bài tập của riêng phần này (học xong là làm luôn). <b>Nên đủ 8 minigame</b>:
-                  2× fill_blank, 2× sentence_order, 2× translate vi_to_zh, 2× translate zh_to_vi.
+                  2× fill_blank, 2× sentence_order, 2× translate vi_to_en, 2× translate en_to_vi.
+                  Với Pre-Starters/Starters thì thay bớt bằng picture_match / listen_pick.
                 </Field>
               </ul>
               <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-400/25 dark:bg-violet-500/10">
@@ -87,30 +88,30 @@ export function GrammarAuthorGuide() {
                 </p>
                 <p className="mt-1 text-[12px] text-muted-foreground">
                   Liệt kê theo <b>đúng thứ tự công thức</b>. Mỗi phần gồm <code>part</code> (ký hiệu/chữ
-                  trong công thức), <code>pinyin</code> (tùy chọn, cho chữ Hán), <code>role</code> (vai trò
-                  ngắn) và <code>meaning</code> (giải thích dễ hiểu).
+                  trong công thức), <code>role</code> (vai trò ngắn) và <code>meaning</code> (giải thích
+                  dễ hiểu với trẻ).
                 </p>
-                <Code>{`"structure": "A + 是 + B",
+                <Code>{`"structure": "I + am + happy",
 "breakdown": [
-  { "part": "A", "role": "Chủ ngữ", "meaning": "Người/vật được nói đến (我, 他…)." },
-  { "part": "是", "pinyin": "shì", "role": "Động từ 'là'", "meaning": "Nối A với B, khẳng định A chính là B." },
-  { "part": "B", "role": "Danh từ", "meaning": "Cái mà A chính là (老师, 学生…)." }
+  { "part": "I", "role": "Chủ ngữ", "meaning": "Người/vật được nói đến (I, he, she…)." },
+  { "part": "am", "role": "Động từ to be", "meaning": "Nghĩa là 'thì, là'. 'I' luôn đi với 'am'." },
+  { "part": "happy", "role": "Tính từ", "meaning": "Điều muốn nói về chủ ngữ." }
 ]`}</Code>
               </div>
 
               <p className="text-muted-foreground">usage (khi nào dùng) &amp; mistakes (lỗi thường gặp) — tùy chọn:</p>
-              <Code>{`"usage": "Dùng khi giới thiệu/khẳng định danh tính, nghề nghiệp ('A là B').",
+              <Code>{`"usage": "Dùng khi giới thiệu bản thân, nói cảm xúc, nói tuổi.",
 "mistakes": [
-  { "wrong": "我是高兴。", "right": "我很高兴。", "note": "是 không đi với tính từ — dùng 很." }
+  { "wrong": "She happy.", "right": "She is happy.", "note": "Thiếu 'is' — trẻ Việt hay quên." }
 ]`}</Code>
 
               <p className="text-muted-foreground">Mỗi ví dụ trong examples:</p>
               <Code>{`{
-  "situation": "Khi giới thiệu nghề nghiệp",
-  "hanzi": "他是老师。",
-  "pinyin": "tā shì lǎoshī",
-  "meaning": "Anh ấy là giáo viên.",
-  "note": "Không thêm 很 trước 是."
+  "situation": "Khi giới thiệu bản thân",
+  "sentence": "I am Mai.",
+  "meaning": "Tớ là Mai.",
+  "note": "Nói tên mình thì dùng 'I am'.",
+  "audioUrl": ""   // để trống rồi bấm "Tạo audio"
 }`}</Code>
             </section>
 
@@ -130,11 +131,11 @@ export function GrammarAuthorGuide() {
                 <p className="font-medium">a) Điền từ — trắc nghiệm (fill_blank)</p>
                 <Code>{`{
   "type": "fill_blank",
-  "sentence": "我___学生。",       // ___ là chỗ trống
-  "blank": "是",                  // đáp án đúng
-  "options": ["是", "有", "在", "叫"],
-  "hint": "Động từ 'là'",         // tùy chọn
-  "explanation": "Dùng 是 để nối chủ ngữ với danh từ (学生). 有 = 'có', 在 = 'ở', đều sai ngữ cảnh."  // tùy chọn, hiện khi trả lời sai
+  "sentence": "I ___ seven years old.",   // ___ là chỗ trống
+  "blank": "am",                          // đáp án đúng
+  "options": ["am", "is", "are", "be"],
+  "hint": "Đi với 'I'",                   // tùy chọn
+  "explanation": "Chủ ngữ 'I' luôn đi với 'am'. 'is' dùng cho he/she/it, 'are' cho we/you/they."  // hiện khi trả lời sai
 }`}</Code>
               </div>
 
@@ -142,9 +143,9 @@ export function GrammarAuthorGuide() {
                 <p className="font-medium">b) Sắp xếp thành câu (sentence_order)</p>
                 <Code>{`{
   "type": "sentence_order",
-  "words": ["老师", "是", "他"],
-  "answer": "他是老师",            // chuỗi đúng, nối liền KHÔNG dấu cách
-  "meaning": "Anh ấy là giáo viên." // tùy chọn
+  "words": ["is", "She", "happy"],
+  "answer": "She is happy",         // chuỗi đúng, các từ CÁCH NHAU bằng dấu cách
+  "meaning": "Bạn ấy vui."          // tùy chọn
 }`}</Code>
               </div>
 
@@ -152,15 +153,15 @@ export function GrammarAuthorGuide() {
                 <p className="font-medium">c) Trả lời câu hỏi — gõ tự do (answer_question)</p>
                 <Code>{`{
   "type": "answer_question",
-  "question": "你是学生吗？",
-  "questionPinyin": "nǐ shì xuésheng ma?",   // tùy chọn
-  "accept": ["我是学生", "是", "我是"],        // các đáp án được chấp nhận
-  "sampleAnswer": "我是学生。",                // hiện ra khi chấm
-  "hint": "Trả lời khẳng định"                // tùy chọn
+  "question": "Are you a student?",
+  "accept": ["Yes I am", "Yes, I am", "I am a student"],  // các đáp án được chấp nhận
+  "sampleAnswer": "Yes, I am.",                            // hiện ra khi chấm
+  "hint": "Trả lời khẳng định"                             // tùy chọn
 }`}</Code>
                 <p className="text-[12px] text-muted-foreground">
-                  Chấm bằng cách so khớp với danh sách <b>accept</b> (tự bỏ dấu câu, dấu cách, không
-                  phân biệt hoa/thường). Hãy liệt kê vài cách trả lời đúng phổ biến.
+                  Chấm bằng <b>accept</b> nhưng <b>nới cho trẻ</b>: tự bỏ dấu câu, không phân biệt
+                  hoa/thường, và cho phép sai chính tả nhẹ (từ dài được sai 1–2 chữ cái). Hãy liệt kê
+                  vài cách trả lời đúng phổ biến.
                 </p>
               </div>
 
@@ -168,9 +169,9 @@ export function GrammarAuthorGuide() {
                 <p className="font-medium">d) Tự gõ câu hoàn chỉnh (type_sentence)</p>
                 <Code>{`{
   "type": "type_sentence",
-  "prompt": "Dịch sang tiếng Trung: Cô ấy là bác sĩ.",
-  "accept": ["她是医生"],     // các câu đúng được chấp nhận
-  "meaning": "Cô ấy là bác sĩ." // tùy chọn
+  "prompt": "Dịch sang tiếng Anh: Bạn ấy là bác sĩ.",
+  "accept": ["She is a doctor", "He is a doctor"],  // các câu đúng được chấp nhận
+  "meaning": "Bạn ấy là bác sĩ."                    // tùy chọn
 }`}</Code>
               </div>
 
@@ -178,28 +179,37 @@ export function GrammarAuthorGuide() {
                 <p className="font-medium">e) Dịch — trắc nghiệm (translate)</p>
                 <Code>{`{
   "type": "translate",
-  "direction": "vi_to_zh",     // hoặc "zh_to_vi"
-  "prompt": "Cô ấy là bác sĩ.",
-  "answer": "她是医生。",        // đáp án đúng, PHẢI nằm trong options
-  "options": ["她是医生。", "他是老师。", "我是学生。", "你是医生。"]
+  "direction": "vi_to_en",     // hoặc "en_to_vi"
+  "prompt": "Bạn ấy là bác sĩ.",
+  "answer": "She is a doctor.",  // đáp án đúng, PHẢI nằm trong options
+  "options": ["She is a doctor.", "He is a teacher.", "I am a student.", "She a doctor."]
 }`}</Code>
               </div>
 
-              <div>
-                <p className="font-medium">f) Chọn thanh điệu (toneSelect)</p>
-                <Code>{`{
-  "type": "toneSelect",
-  "word": "妈", "pinyin": "mā",
-  "question": "Chọn thanh điệu đúng của 妈",
-  "options": ["Thanh 1", "Thanh 2", "Thanh 3", "Thanh 4"],
-  "correct": 0                 // vị trí đáp án đúng (bắt đầu từ 0)
-}`}</Code>
+              <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3 dark:border-sky-400/25 dark:bg-sky-500/10">
+                <p className="font-medium text-sky-900 dark:text-sky-200">
+                  🧒 4 loại dành riêng cho trẻ nhỏ (chưa đọc thạo) — ưu tiên dùng ở Pre-Starters &amp; Starters
+                </p>
+                <Code>{`{ "type": "picture_match", "imageUrl": "...", "prompt": "Which one is a cat?",
+  "options": ["cat", "dog", "pig"], "correct": 0 }
+
+{ "type": "listen_pick", "audioUrl": "", "text": "apple",
+  "options": [{ "imageUrl": "...", "label": "apple" }, { "imageUrl": "...", "label": "banana" }],
+  "correct": 0 }
+
+{ "type": "spell_drag", "word": "cat", "imageUrl": "...", "audioUrl": "",
+  "distractors": ["s", "p"] }
+
+{ "type": "rhyme_match", "pairs": [{ "a": "cat", "b": "hat" }, { "a": "dog", "b": "frog" }] }`}</Code>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  Để trống <code>audioUrl</code> rồi bấm &ldquo;Tạo audio&rdquo; — hệ thống tự sinh giọng
+                  đọc bằng TTS. Trẻ 4–7 tuổi chưa đọc được nên <b>mọi câu hỏi đều cần audio hoặc ảnh</b>.
+                </p>
               </div>
 
               <p className="text-[12px] text-muted-foreground">
-                Còn có <code>match</code> (ghép Hán–Việt) và <code>pinyinMatch</code> (ghép Hán–pinyin)
-                nhưng hai loại này luôn đúng khi hoàn thành, nên chỉ nên dùng để luyện tập, KHÔNG nên
-                đưa vào bài test.
+                Còn có <code>match</code> (ghép Anh–Việt) nhưng loại này luôn đúng khi hoàn thành, nên
+                chỉ dùng để luyện tập, KHÔNG nên đưa vào bài test.
               </p>
             </section>
 

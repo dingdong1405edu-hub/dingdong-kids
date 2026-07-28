@@ -1,18 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useBaoChat } from "./use-bao-chat";
+import { useDingChat } from "./use-ding-chat";
 import { ChatPanel } from "./chat-panel";
-import { BaoCompanion } from "@/components/marketing/bao-companion";
+import { DingCompanion } from "@/components/marketing/ding-companion";
 
 /**
- * Bong bóng trợ lý "Bao" nổi ở góc phải dưới mọi trang trong khu vực học. Sở hữu
- * trạng thái hội thoại (useBaoChat) ở đây nên cuộc trò chuyện được giữ nguyên khi
+ * Bong bóng trợ lý "Ding" nổi ở góc phải dưới mọi trang trong khu vực học. Sở hữu
+ * trạng thái hội thoại (useDingChat) ở đây nên cuộc trò chuyện được giữ nguyên khi
  * đóng/mở panel hoặc chuyển trang (DashboardShell không bị unmount).
  */
 export function ChatWidget({ userName }: { userName?: string | null }) {
   const [open, setOpen] = useState(false);
-  const chat = useBaoChat();
+  const chat = useDingChat();
 
   // Esc để đóng panel.
   useEffect(() => {
@@ -26,7 +26,7 @@ export function ChatWidget({ userName }: { userName?: string | null }) {
 
   return (
     <>
-      {/* Nút mở = chính linh vật Bao (động, phản ứng theo bài học) */}
+      {/* Nút mở = chính linh vật Ding (động, phản ứng theo bài học) */}
       <AnimatePresence>
         {!open && (
           <motion.div
@@ -36,7 +36,7 @@ export function ChatWidget({ userName }: { userName?: string | null }) {
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             className="fixed bottom-4 right-4 z-30 sm:bottom-5 sm:right-5"
           >
-            <BaoCompanion onOpen={() => setOpen(true)} />
+            <DingCompanion onOpen={() => setOpen(true)} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -46,7 +46,7 @@ export function ChatWidget({ userName }: { userName?: string | null }) {
         {open && (
           <motion.div
             role="dialog"
-            aria-label="Trợ lý học tập Bao"
+            aria-label="Trợ lý học tập Ding"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}

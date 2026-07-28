@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { levelLabel } from "@/lib/utils";
 import { gradeSpeakingAction } from "@/server/actions/speaking";
 import { emitDing } from "@/lib/ding-bus";
-import { BaoBuddy } from "@/components/marketing/bao-buddy";
+import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { PassStatus } from "@/components/learn/roadmap/pass-status";
 import { playEnglish } from "@/components/learn/reading/speak-en";
 import { Mic, Square, Loader2, CheckCircle2, Volume2 } from "lucide-react";
@@ -313,7 +313,7 @@ export function SpeakingClient({
       <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-500/10 dark:to-transparent p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <BaoBuddy size={60} pose={anyHigh ? "cheer" : "idle"} className="shrink-0" />
+            <DingBuddy size={60} pose={anyHigh ? "cheer" : "idle"} className="shrink-0" />
             <div>
               <h1 className="font-display text-xl font-extrabold">Luyện nói</h1>
               <p className="mt-0.5 text-sm text-muted-foreground">Ghi âm · máy nghe rồi khen và chỉ chỗ cần sửa</p>

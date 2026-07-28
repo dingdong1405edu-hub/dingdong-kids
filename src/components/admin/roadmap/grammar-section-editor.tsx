@@ -10,26 +10,30 @@ const TEMPLATE = `{
   "sections": [
     {
       "id": "s1",
-      "title": "Câu khẳng định với 是",
-      "titleZh": "是字句",
-      "structure": "A + 是 + B",
+      "title": "Câu với động từ to be",
+      "titleEn": "Verb to be (am / is / are)",
+      "structure": "I + am / He + is / They + are",
       "breakdown": [
-        { "part": "A", "role": "Chủ ngữ", "meaning": "Người hoặc vật được nói đến (我, 他, 这…)." },
-        { "part": "是", "pinyin": "shì", "role": "Động từ 'là'", "meaning": "Nối A với B, khẳng định A chính là B." },
-        { "part": "B", "role": "Danh từ", "meaning": "Cái mà A chính là (老师, 学生…)." }
+        { "part": "I", "role": "Chủ ngữ", "meaning": "Người hoặc vật được nói đến (I, he, she, it, we, they)." },
+        { "part": "am", "role": "Động từ to be", "meaning": "Nghĩa là 'thì, là, ở'. Đi với 'I' thì luôn dùng 'am'." },
+        { "part": "happy", "role": "Tính từ / Danh từ", "meaning": "Điều mình muốn nói về chủ ngữ." }
       ],
-      "explanation": "是 (shì) nghĩa là 'là', nối chủ ngữ với danh từ để khẳng định A là B.",
-      "usage": "Dùng khi giới thiệu hoặc khẳng định danh tính, nghề nghiệp, quan hệ ('A là B').",
+      "explanation": "Tiếng Việt nói 'Tớ vui' không cần chữ 'là'. Tiếng Anh thì BẮT BUỘC có am/is/are. I đi với am, he/she/it đi với is, we/you/they đi với are.",
+      "usage": "Dùng khi giới thiệu bản thân, nói cảm xúc, nói tuổi, hoặc tả người và vật.",
       "mistakes": [
-        { "wrong": "我是高兴。", "right": "我很高兴。", "note": "是 không đi với tính từ — dùng 很 trước tính từ." }
+        { "wrong": "She happy.", "right": "She is happy.", "note": "Thiếu 'is'. Trẻ Việt hay quên vì tiếng Việt không cần động từ này." },
+        { "wrong": "I is six.", "right": "I am six.", "note": "'I' luôn đi với 'am', không dùng 'is'." }
       ],
       "examples": [
-        { "situation": "Giới thiệu nghề", "hanzi": "他是老师。", "pinyin": "tā shì lǎoshī", "meaning": "Anh ấy là giáo viên." }
+        { "situation": "Giới thiệu bản thân", "sentence": "I am Mai.", "meaning": "Tớ là Mai." },
+        { "situation": "Nói cảm xúc", "sentence": "She is happy.", "meaning": "Bạn ấy vui." },
+        { "situation": "Tả đồ vật", "sentence": "The cats are small.", "meaning": "Những con mèo thì nhỏ." }
       ],
       "exercises": [
-        { "type": "fill_blank", "sentence": "我___学生。", "blank": "是", "options": ["是", "有", "在", "叫"] },
-        { "type": "sentence_order", "words": ["学生", "是", "我"], "answer": "我是学生", "meaning": "Tôi là học sinh." },
-        { "type": "translate", "direction": "vi_to_zh", "prompt": "Tôi là học sinh.", "answer": "我是学生", "options": ["我是学生", "我有学生", "我在学生", "我叫学生"] }
+        { "type": "fill_blank", "sentence": "I ___ seven years old.", "blank": "am", "options": ["am", "is", "are", "be"], "explanation": "Chủ ngữ 'I' luôn đi với 'am'." },
+        { "type": "sentence_order", "words": ["is", "She", "happy"], "answer": "She is happy", "meaning": "Bạn ấy vui." },
+        { "type": "translate", "direction": "vi_to_en", "prompt": "Tớ là học sinh.", "answer": "I am a student", "options": ["I am a student", "I is a student", "I are student", "I a student"] },
+        { "type": "picture_match", "imageUrl": "", "prompt": "Which one is a cat?", "options": ["cat", "dog", "pig"], "correct": 0 }
       ]
     }
   ],
@@ -116,17 +120,24 @@ export function GrammarSectionEditor({
           </p>
           <p className="rounded-lg border border-violet-200 bg-violet-50/60 p-2 dark:border-violet-400/25 dark:bg-violet-500/10">
             <b>breakdown</b> là mảng theo đúng thứ tự công thức, mỗi phần:{" "}
-            <code>{`{ "part": "是", "pinyin": "shì", "role": "Động từ 'là'", "meaning": "Nối A với B" }`}</code>.
+            <code>{`{ "part": "am", "role": "Động từ to be", "meaning": "Nghĩa là 'thì, là'" }`}</code>.
             Mỗi phần sẽ thành một thẻ màu riêng, khớp màu với ô trong công thức.{" "}
-            <b>mistakes</b>: <code>{`{ "wrong": "我是高兴", "right": "我很高兴", "note": "..." }`}</code>.
+            <b>mistakes</b>: <code>{`{ "wrong": "She happy", "right": "She is happy", "note": "..." }`}</code>.
           </p>
           <p>Các loại bài tập (mỗi câu tự chứa đáp án đúng):</p>
           <ul className="ml-4 list-disc space-y-0.5">
-            <li><code>fill_blank</code>: {`{ sentence: "我___学生", blank: "是", options: [...] }`}</li>
-            <li><code>sentence_order</code>: {`{ words: [...], answer: "我是学生" }`}</li>
-            <li><code>translate</code>: {`{ direction: "vi_to_zh"|"zh_to_vi", prompt, answer, options: [...] }`}</li>
-            <li><code>toneSelect</code>: {`{ word, pinyin, question, options: [...], correct: 0 }`}</li>
+            <li><code>fill_blank</code>: {`{ sentence: "I ___ six.", blank: "am", options: [...] }`}</li>
+            <li><code>sentence_order</code>: {`{ words: [...], answer: "She is happy" }`}</li>
+            <li><code>translate</code>: {`{ direction: "vi_to_en"|"en_to_vi", prompt, answer, options: [...] }`}</li>
+            <li><code>picture_match</code>: {`{ imageUrl, prompt, options: [...], correct: 0 }`} — nhìn ảnh chọn từ</li>
+            <li><code>listen_pick</code>: {`{ audioUrl, text, options: [{ imageUrl, label }], correct: 0 }`} — nghe chọn ảnh</li>
+            <li><code>spell_drag</code>: {`{ word: "cat", imageUrl, audioUrl }`} — kéo chữ cái ghép từ</li>
+            <li><code>rhyme_match</code>: {`{ pairs: [{ a: "cat", b: "hat" }] }`} — nối từ cùng vần</li>
           </ul>
+          <p className="rounded-lg border border-sky-200 bg-sky-50/60 p-2 dark:border-sky-400/25 dark:bg-sky-500/10">
+            Với trẻ nhỏ chưa đọc thạo, ưu tiên <code>picture_match</code> và <code>listen_pick</code>.
+            Để trống <code>audioUrl</code> rồi bấm &ldquo;Tạo audio&rdquo; — hệ thống tự sinh giọng đọc.
+          </p>
         </div>
       </details>
     </div>

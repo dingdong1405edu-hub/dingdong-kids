@@ -1,14 +1,15 @@
-/* Bánh bao mascot — ported from the standalone banh-bao.html, scoped as a module. */
+/* Ding — chú gấu con vàng mật, linh vật lớn của DingDong Kids (dùng ở hero
+   trang chủ và trang giới thiệu). Mắt dõi theo con trỏ, cười mở khi con trỏ
+   lại gần. Nền panel dùng màu thương hiệu xanh biển. */
 
 .wrap {
-  --green: #5d7740;
-  --bun: #fff7ec;
-  --bun-sh: #f1e3cc;
-  --ink: #2a2f45;
+  --brand: #1f8fd6;
+  --fur: #f6c76a;
+  --fur-d: #e0a63f;
+  --muzzle: #fff3dc;
+  --ink: #3a2a18;
   --rose: #ff9fb0;
   --rose-d: #ff7d95;
-  --bamboo: #d6a45f;
-  --bamboo-d: #bd8a45;
   --spark: #ffe27a;
   --orange: #f5a623;
 
@@ -30,12 +31,12 @@
   justify-content: center;
   overflow: hidden;
   border-radius: 1.75rem;
-  background-color: var(--green);
+  background-color: var(--brand);
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 50px 50px;
-  box-shadow: 0 24px 60px -20px rgba(45, 60, 25, 0.55);
+  box-shadow: 0 24px 60px -20px rgba(16, 70, 110, 0.55);
 }
 
 /* Bare mode — only the mascot, no boxed olive-grid backdrop */
@@ -90,14 +91,14 @@
   aspect-ratio: 1 / 1.2;
 }
 
-/* --- Steam --- */
+/* --- Ngôi sao lấp lánh quanh Ding (thay khói + xửng hấp tre của bản cũ) --- */
 .steam {
   position: absolute;
   top: -2%;
   left: 50%;
   transform: translateX(-50%);
-  width: 60%;
-  height: 30%;
+  width: 78%;
+  height: 34%;
   z-index: 1;
 }
 .wisp {
@@ -112,15 +113,14 @@
   opacity: 0;
   animation: rise 3.2s ease-in-out infinite;
 }
-.a { left: 24%; animation-delay: 0s; }
+.a { left: 18%; animation-delay: 0s; }
 .b { left: 48%; animation-delay: 1s; height: 115%; }
-.c { left: 70%; animation-delay: 2s; }
+.c { left: 76%; animation-delay: 2s; }
 
-/* Bare mode ngồi trên nền hero sáng: khói cao hơn + xanh ô-liu đậm để "bốc lên" rõ ràng */
-.bare .steam { top: -12%; height: 46%; width: 66%; }
-.bare .wisp { stroke: rgba(93, 119, 64, 0.75); stroke-width: 8; }
-/* Nền hero tối: khói sáng lên cho dễ thấy. */
-:global(.dark) .bare .wisp { stroke: rgba(176, 200, 150, 0.6); }
+/* Chế độ "bare" (ngồi trên nền hero sáng): nét đậm màu thương hiệu cho rõ. */
+.bare .steam { top: -12%; height: 46%; width: 84%; }
+.bare .wisp { stroke: rgba(31, 143, 214, 0.7); stroke-width: 8; }
+:global(.dark) .bare .wisp { stroke: rgba(125, 200, 245, 0.6); }
 @keyframes rise {
   0%   { opacity: 0;   transform: translateY(20%) scale(0.7); }
   25%  { opacity: 0.8; }
@@ -128,30 +128,6 @@
   100% { opacity: 0;   transform: translateY(-70%) scale(1.15); }
 }
 
-/* --- Bamboo steamer --- */
-.steamer {
-  position: absolute;
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 94%;
-  height: 16%;
-  background: repeating-linear-gradient(var(--bamboo) 0 9px, var(--bamboo-d) 9px 12px);
-  border: 4px solid var(--ink);
-  border-radius: 14px;
-  z-index: 1;
-}
-.steamer::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: -2%;
-  width: 104%;
-  height: 16px;
-  background: var(--bamboo);
-  border: 4px solid var(--ink);
-  border-radius: 10px;
-}
 .ground {
   position: absolute;
   bottom: 2%;
@@ -165,8 +141,8 @@
   z-index: 0;
 }
 
-/* --- Bun --- */
-.baoPos {
+/* --- Thân gấu --- */
+.dingPos {
   position: absolute;
   left: 50%;
   bottom: 14%;
@@ -193,7 +169,7 @@
   width: 17%;
   aspect-ratio: 1;
   box-sizing: border-box;
-  background: var(--bun);
+  background: var(--fur-d);
   border: 4px solid var(--ink);
   border-radius: 48% 48% 50% 50%;
 }
@@ -210,27 +186,30 @@
   50%      { transform: rotate(18deg); }
 }
 
-.bunSvg { width: 100%; display: block; overflow: visible; position: relative; z-index: 2; }
-.bunBody { fill: var(--bun); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
-.bunShadow { fill: var(--bun-sh); opacity: 0.55; }
-.bunHi { fill: #fff; opacity: 0.55; }
-.bunKnob { fill: var(--bun); stroke: var(--ink); stroke-width: 4; stroke-linejoin: round; }
+.bodySvg { width: 100%; display: block; overflow: visible; position: relative; z-index: 2; }
+.body { fill: var(--fur); stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; }
+.muzzle { fill: var(--muzzle); }
+.nose { fill: var(--ink); }
+.ear { fill: var(--fur); stroke: var(--ink); stroke-width: 5; }
+.earInner { fill: var(--rose); opacity: 0.75; }
+.hi { fill: #fff; opacity: 0.45; }
+
 
 /* face */
 .face { position: absolute; inset: 0; z-index: 3; }
 
 .eye {
   position: absolute;
-  top: 47%;
-  width: 13%;
-  height: 15%;
+  top: 46%;
+  width: 12%;
+  height: 14%;
   background: var(--ink);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   will-change: transform;
 }
-.l { left: 39%; }
-.r { left: 61%; }
+.l { left: 37%; }
+.r { left: 63%; }
 .eye::after {
   content: "";
   position: absolute;
@@ -252,11 +231,11 @@
   border-radius: 50%;
 }
 .blinking .eye { animation: blink 0.22s ease; }
-@keyframes blink { 0%, 100% { height: 15%; } 50% { height: 2%; } }
+@keyframes blink { 0%, 100% { height: 14%; } 50% { height: 2%; } }
 
 .cheek {
   position: absolute;
-  top: 57%;
+  top: 58%;
   width: 14%;
   aspect-ratio: 1;
   background: radial-gradient(circle at 38% 35%, var(--rose), var(--rose-d));
@@ -275,14 +254,15 @@
   background: rgba(255, 255, 255, 0.55);
   border-radius: 50%;
 }
-.cheek.l { left: 21%; }
-.cheek.r { right: 21%; left: auto; }
+.cheek.l { left: 14%; }
+.cheek.r { right: 14%; left: auto; }
 @keyframes cheekPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
 /* smile (default) */
+/* Miệng nằm TRÊN MÕM, ngay dưới mũi (mũi ở ~59%, mõm tâm ~65%). */
 .smile {
   position: absolute;
-  top: 59%;
+  top: 68%;
   left: 50%;
   width: 15%;
   height: 7%;
@@ -294,7 +274,7 @@
 /* open smile (on hover near) */
 .mouthOpen {
   position: absolute;
-  top: 56%;
+  top: 66%;
   left: 50%;
   width: 13%;
   height: 9%;

@@ -16,22 +16,22 @@ import { normalizeListeningContent, type RoadmapQuestion } from "@/lib/roadmap-c
 import { buildListeningContent } from "@/lib/roadmap-authoring";
 
 const FULL_JSON_PLACEHOLDER = `{
-  "title": "Ở chợ",
+  "title": "At the fruit shop",
   "timeLimit": 180,
   "clips": [
     {
       "audioUrl": "",
-      "transcript": "A: 你好！你想买什么？\\nB: 我想买一斤苹果。",
+      "transcript": "Girl: Hello! I want some fruit.\\nMan: We have apples and bananas.\\nGirl: I want three apples, please.",
       "transcriptExplanation": "Tóm tắt + bản dịch + từ vựng…",
       "questions": [
-        { "type": "MCQ", "prompt": "B 想买什么?", "options": ["苹果","香蕉","橙子","西瓜"], "answer": 0, "explanation": "..." },
-        { "type": "TRUE_FALSE", "prompt": "B 买了一斤水果。", "answer": true }
+        { "type": "MCQ", "prompt": "What does the girl want?", "options": ["Apples","Bananas","Oranges"], "answer": 0, "explanation": "Bạn nhỏ nói: I want three apples, please.", "promptTranslation": "Bạn nhỏ muốn mua gì?", "optionsTranslation": ["Táo","Chuối","Cam"], "supportingQuote": "I want three apples, please.", "quoteTranslation": "Cho cháu ba quả táo ạ." },
+        { "type": "TRUE_FALSE", "prompt": "The shop has bananas.", "answer": true, "promptTranslation": "Cửa hàng có chuối." }
       ]
     },
     {
       "audioUrl": "",
-      "transcript": "第二段对话……",
-      "questions": [ { "type": "MCQ", "prompt": "...", "options": ["A","B","C","D"], "answer": 1 } ]
+      "transcript": "Đoạn hội thoại thứ hai…",
+      "questions": [ { "type": "MCQ", "prompt": "...", "options": ["A","B","C"], "answer": 1 } ]
     }
   ]
 }`;
@@ -202,7 +202,7 @@ export function ListeningSectionEditor({
               <Textarea
                 value={c.transcript ?? ""}
                 onChange={(e) => setClip(i, { transcript: e.target.value || null })}
-                placeholder={"A: 你好！你想买什么？\nB: 我想买一斤苹果。"}
+                placeholder={"Girl: Hello! I want some fruit.\nMan: We have apples and bananas."}
                 className="min-h-20 font-primer text-sm"
               />
             </div>
