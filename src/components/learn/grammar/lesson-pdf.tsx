@@ -9,20 +9,19 @@ export type GrammarPdfScope = "both" | "theory" | "exercises";
 interface Props {
   lessonTitle: string;
   unitTitle: string;
-  unitTitleZh?: string | null;
-  hskLevel: string;
+  level: string;
   content: GrammarLessonContent;
-  /** Phạm vi in: lý thuyết, bài tập, hoặc cả hai (mặc định). */
+  /** Phạm vi in: mẫu câu, bài tập, hoặc cả hai (mặc định). */
   scope?: GrammarPdfScope;
 }
 
 const OPT_LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 /**
- * PDF bài ngữ pháp: lý thuyết đầy đủ (theo thứ tự bài) + đáp án bài tập (quiz +
- * flashcard kèm đáp án & giải thích). Phạm vi in chọn qua `scope`.
+ * PDF bài mẫu câu (ngữ pháp): phần giảng đầy đủ theo thứ tự bài + đáp án bài tập
+ * kèm giải thích, để ba mẹ in ra học cùng bé. Phạm vi in chọn qua `scope`.
  */
-export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, content, scope = "both" }: Props) {
+export function LessonPdf({ lessonTitle, unitTitle, level, content, scope = "both" }: Props) {
   const sections = content.sections;
   const exercises: Exercise[] = [...sections.flatMap((s) => s.exercises), ...content.test.questions];
 
@@ -31,9 +30,9 @@ export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, conte
   const theoryCount = sections.filter((s) => s.structure || s.explanation || s.examples.length).length;
 
   return (
-    <PdfDocument kicker="Ngữ pháp · 语法" title={lessonTitle} subtitle={unitTitle} titleZh={unitTitleZh} hskLevel={hskLevel}>
+    <PdfDocument kicker="Mẫu câu" title={lessonTitle} subtitle={unitTitle} level={level}>
       {showTheory && theoryCount > 0 && (
-        <PdfSection title={`${showExercises ? "Phần 1 · " : ""}Lý thuyết`} titleZh="语法讲解">
+        <PdfSection title={`${showExercises ? "Phần 1 · " : ""}Mẫu câu & cách dùng`}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {sections.map((s, i) => (
               <TheoryBlock key={s.id || i} section={s} index={i} />
@@ -43,7 +42,7 @@ export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, conte
       )}
 
       {showExercises && exercises.length > 0 && (
-        <PdfSection title={`${showTheory && theoryCount > 0 ? "Phần 2 · " : ""}Bài tập & đáp án`} titleZh="练习与答案">
+        <PdfSection title={`${showTheory && theoryCount > 0 ? "Phần 2 · " : ""}Bài tập & đáp án`}>
           <ol style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {exercises.map((ex, i) => {
               const d = describeExercise(ex);
@@ -62,12 +61,11 @@ export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, conte
                     <PdfNumChip n={i + 1} size={20} />
                     <PdfTag>{d.typeLabel}</PdfTag>
                   </div>
-                  <div style={{ fontFamily: PDF_FONT.chinese, fontSize: 15, color: PDF.ink }}>{d.question}</div>
-                  {d.questionPinyin && <div style={{ fontFamily: PDF_FONT.pinyin, fontSize: 12, color: PDF.brand, marginTop: 2 }}>{d.questionPinyin}</div>}
+                  <div style={{ fontFamily: PDF_FONT.word, fontSize: 15, color: PDF.ink }}>{d.question}</div>
                   {d.options && d.options.length > 0 && (
                     <div style={{ marginTop: 7, display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 16, rowGap: 3 }}>
                       {d.options.map((o, oi) => (
-                        <div key={oi} style={{ fontFamily: PDF_FONT.chinese, fontSize: 13, color: PDF.ink2 }}>
+                        <div key={oi} style={{ fontFamily: PDF_FONT.word, fontSize: 13, color: PDF.ink2 }}>
                           <span style={{ color: PDF.faint, fontWeight: 700 }}>{OPT_LETTERS[oi] ?? oi + 1}.</span> {o}
                         </div>
                       ))}
@@ -77,7 +75,7 @@ export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, conte
                     <PdfAnswerLine>{d.answer}</PdfAnswerLine>
                     {d.explanation && (
                       <div style={{ marginTop: 3, fontSize: 12.5, color: PDF.ink2 }}>
-                        <span style={{ fontWeight: 700, color: PDF.ink }}>Giải thích: </span>
+                        <span style={{ fontWeight: 700, color: PDF.ink }}>Vì sao: </span>
                         {d.explanation}
                       </div>
                     )}
@@ -90,7 +88,7 @@ export function LessonPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, conte
       )}
 
       {showTheory && theoryCount === 0 && !showExercises && (
-        <p style={{ fontSize: 13, color: PDF.muted }}>Bài học này chưa có lý thuyết.</p>
+        <p style={{ fontSize: 13, color: PDF.muted }}>Bài học này chưa có phần mẫu câu.</p>
       )}
       {showExercises && exercises.length === 0 && (
         <p style={{ fontSize: 13, color: PDF.muted }}>Bài học này chưa có bài tập.</p>
@@ -107,9 +105,13 @@ function TheoryBlock({ section, index }: { section: TheorySection; index: number
   if (!hasBody) return null;
   return (
     <div style={{ breakInside: "avoid", display: "flex", flexDirection: "column", gap: 7 }}>
-      <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: PDF.ink }}>
+      <h3 style={{ margin: 0, fontFamily: PDF_FONT.display, fontSize: 14, fontWeight: 800, color: PDF.ink }}>
         {index + 1}. {section.title}
-        {section.titleZh && <span style={{ marginLeft: 8, fontFamily: PDF_FONT.chinese, fontWeight: 700, color: PDF.brand }}>{section.titleZh}</span>}
+        {section.titleEn && (
+          <span style={{ marginLeft: 8, fontFamily: PDF_FONT.word, fontWeight: 700, color: PDF.brand }}>
+            {section.titleEn}
+          </span>
+        )}
       </h3>
       {section.structure && (
         <div
@@ -119,7 +121,7 @@ function TheoryBlock({ section, index }: { section: TheorySection; index: number
             background: PDF.brandSoft,
             padding: "8px 12px",
             textAlign: "center",
-            fontFamily: PDF_FONT.chinese,
+            fontFamily: PDF_FONT.word,
             fontSize: 16,
             fontWeight: 700,
             color: PDF.brandDeep,
@@ -133,8 +135,7 @@ function TheoryBlock({ section, index }: { section: TheorySection; index: number
           <tbody>
             {breakdown.map((p, i) => (
               <tr key={i} style={{ borderBottom: `1px solid ${PDF.lineSoft}`, verticalAlign: "top" }}>
-                <td style={{ whiteSpace: "nowrap", padding: "4px 8px 4px 0", fontFamily: PDF_FONT.chinese, fontWeight: 700, color: PDF.ink }}>{p.part}</td>
-                <td style={{ whiteSpace: "nowrap", padding: "4px 8px 4px 0", fontFamily: PDF_FONT.pinyin, color: PDF.brand }}>{p.pinyin}</td>
+                <td style={{ whiteSpace: "nowrap", padding: "4px 8px 4px 0", fontFamily: PDF_FONT.word, fontWeight: 700, color: PDF.ink }}>{p.part}</td>
                 <td style={{ whiteSpace: "nowrap", padding: "4px 8px 4px 0", color: PDF.faint }}>{p.role}</td>
                 <td style={{ padding: "4px 0", color: PDF.ink2 }}>{p.meaning}</td>
               </tr>
@@ -153,9 +154,9 @@ function TheoryBlock({ section, index }: { section: TheorySection; index: number
         <ul style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {mistakes.map((m, i) => (
             <li key={i} style={{ fontSize: 13, color: PDF.ink2 }}>
-              <span style={{ fontFamily: PDF_FONT.chinese, color: PDF.wrong, textDecoration: "line-through" }}>{m.wrong}</span>
+              <span style={{ fontFamily: PDF_FONT.word, color: PDF.wrong, textDecoration: "line-through" }}>{m.wrong}</span>
               <span style={{ margin: "0 5px" }}>→</span>
-              <span style={{ fontFamily: PDF_FONT.chinese, fontWeight: 700, color: PDF.correct }}>{m.right}</span>
+              <span style={{ fontFamily: PDF_FONT.word, fontWeight: 700, color: PDF.correct }}>{m.right}</span>
               {m.note && <span style={{ color: PDF.muted }}> — {m.note}</span>}
             </li>
           ))}
@@ -164,10 +165,9 @@ function TheoryBlock({ section, index }: { section: TheorySection; index: number
       {section.examples.length > 0 && (
         <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {section.examples.map((ex, i) => (
-            <li key={i} style={{ borderRadius: 8, background: "#f4f2e8", padding: "8px 12px" }}>
+            <li key={i} style={{ borderRadius: 8, background: PDF.goldSoft, padding: "8px 12px" }}>
               {ex.situation && <div style={{ fontSize: 11, fontWeight: 700, color: PDF.gold }}>{ex.situation}</div>}
-              <div style={{ fontFamily: PDF_FONT.chinese, fontSize: 15, color: PDF.ink }}>{ex.hanzi}</div>
-              <div style={{ fontFamily: PDF_FONT.pinyin, fontSize: 12, color: PDF.brand }}>{ex.pinyin}</div>
+              <div style={{ fontFamily: PDF_FONT.word, fontSize: 15, color: PDF.ink }}>{ex.sentence}</div>
               <div style={{ color: PDF.ink2 }}>{ex.meaning}</div>
               {ex.note && <div style={{ marginTop: 2, fontSize: 12, fontStyle: "italic", color: PDF.muted }}>{ex.note}</div>}
             </li>

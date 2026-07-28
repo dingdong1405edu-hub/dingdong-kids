@@ -4,11 +4,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ClipboardCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { completeLessonAction } from "@/server/actions/lesson";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 import { SectionTheory } from "./section-theory";
 import { FlashcardPhase, type FlashResult } from "./flashcard-phase";
 import { TheoryReviewDialog } from "./theory-review-dialog";
@@ -84,12 +85,12 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <BaoBuddy size={88} pose="idle" className="mx-auto" />
-        <h2 className="text-xl font-bold">Bài học chưa có nội dung</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Phần ngữ pháp này đang được biên soạn. Hãy quay lại sau nhé!
+        <h2 className="font-display text-xl font-extrabold">Bài này chưa có nội dung</h2>
+        <p className="max-w-sm text-[15px] text-muted-foreground">
+          Ding đang chuẩn bị bài mẫu câu này. Bé quay lại sau nhé! 🐻
         </p>
         <Link href={closeHref}>
-          <Button variant="outline">Quay lại</Button>
+          <Button variant="outline" className="font-bold">Quay lại</Button>
         </Link>
       </div>
     );
@@ -105,7 +106,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
     // Chỉ có % "qua môn" khi thực sự có câu luyện tập (bài chỉ-lý-thuyết thì không chấm).
     const pct = graded > 0 ? Math.round((correct / total) * 100) : null;
     setResultPct(pct);
-    emitBao(pct != null && pct >= 80 ? "celebrate" : "complete");
+    emitDing(pct != null && pct >= 80 ? "celebrate" : "complete");
     // Hoàn thành luyện tập → mở khoá bài kế; KHÔNG cộng XP (XP chỉ từ bài kiểm tra).
     const res = onComplete
       ? await onComplete({ correct, total, durationSec })
@@ -119,7 +120,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
           completed: true,
           awardXp: false,
         });
-    if (!res.ok) toast.error("Lỗi lưu kết quả");
+    if (!res.ok) toast.error("Chưa lưu được kết quả, bé thử lại nhé");
     setStage("done");
   }
 
@@ -157,43 +158,47 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
       <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md text-center">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
-            <BaoBuddy size={104} pose="cheer" message="做得好!" className="mx-auto" />
-            <h2 className="text-2xl font-bold">Đã học xong bài!</h2>
-            <p className="text-sm text-muted-foreground">
-              Bạn đã hoàn thành bài “{lesson.title || "Ngữ pháp"}”. Bài tiếp theo đã được mở khoá.
+            <BaoBuddy size={104} pose="cheer" message="Giỏi quá!" className="mx-auto" />
+            <h2 className="font-display text-2xl font-extrabold">Bé học xong rồi! 🎉</h2>
+            <p className="text-[15px] text-muted-foreground">
+              Bé vừa hoàn thành bài “{lesson.title || "Mẫu câu"}”. Bài tiếp theo đã mở khoá cho bé.
             </p>
 
             {passThreshold != null && resultPct != null && (
               <div className="flex flex-col items-center gap-1.5">
-                <div className="text-3xl font-extrabold text-primary">Kết quả: {resultPct}%</div>
+                <div className="font-display text-3xl font-extrabold text-primary">Kết quả: {resultPct}%</div>
                 <PassStatus score={resultPct} threshold={passThreshold} />
               </div>
             )}
 
             {(flash.correct > 0 || flash.wrong > 0 || flash.skipped > 0) && (
-              <div className="text-xs text-muted-foreground">
-                Luyện tập: {flash.correct} đúng · {flash.wrong} sai · {flash.skipped} bỏ qua
+              <div className="text-[13px] text-muted-foreground">
+                {flash.correct} câu đúng · {flash.wrong} câu cần xem lại · {flash.skipped} câu để lát nữa
               </div>
             )}
 
             {hasTest && (
-              <div className="rounded-xl bg-violet-50 dark:bg-violet-500/15 p-3 text-sm text-violet-800 dark:text-violet-200">
-                Làm <b>bài kiểm tra</b> để kiểm tra lại và nhận điểm kinh nghiệm (cần đạt ≥ 80%).
+              <div className="rounded-2xl bg-primary/10 p-3 text-[15px] text-primary">
+                Làm <b>bài thử tài</b> để nhận ⭐ nhé (đúng ≥ 80% là được thưởng).
               </div>
             )}
 
             <div className="flex flex-col gap-2 pt-2">
               {hasTest && (
-                <Button className="w-full gap-1.5" onClick={() => router.push(testHref)}>
-                  <ClipboardCheck className="h-4 w-4" /> Làm bài kiểm tra
+                <Button className="btn-chunky w-full gap-1.5 font-extrabold" onClick={() => router.push(testHref)}>
+                  <ClipboardCheck className="h-4 w-4" /> Làm bài thử tài
                 </Button>
               )}
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => window.location.reload()}>
+                <Button variant="outline" className="flex-1 font-bold" onClick={() => window.location.reload()}>
                   Học lại
                 </Button>
-                <Button variant={hasTest ? "outline" : "default"} className="flex-1" onClick={() => router.push(closeHref)}>
-                  Quay lại danh sách
+                <Button
+                  variant={hasTest ? "outline" : "default"}
+                  className={cn("flex-1 font-bold", !hasTest && "btn-chunky font-extrabold")}
+                  onClick={() => router.push(closeHref)}
+                >
+                  Về danh sách
                 </Button>
               </div>
             </div>
@@ -214,7 +219,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
           sectionCount={sections.length}
           progress={Math.round((sectionIndex / totalSegments) * 100)}
           closeHref={closeHref}
-          ctaLabel={sectionHasPractice(sections[sectionIndex]) ? "Luyện tập phần này" : "Tiếp tục"}
+          ctaLabel={sectionHasPractice(sections[sectionIndex]) ? "Cùng chơi thử!" : "Tiếp tục"}
           onReviewTheory={reviewBtn}
           onContinue={handleTheoryContinue}
         />
@@ -224,7 +229,7 @@ export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: cl
         <FlashcardPhase
           flashcards={sections[sectionIndex].exercises}
           closeHref={closeHref}
-          label={`Phần ${sectionIndex + 1}/${sections.length}`}
+          label={`Chặng ${sectionIndex + 1}/${sections.length}`}
           onReviewTheory={reviewBtn}
           onDone={handlePracticeDone}
         />

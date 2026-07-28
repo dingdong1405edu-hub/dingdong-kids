@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { hskLevelLabel } from "@/lib/utils";
-import { HSKLevel } from "@prisma/client";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
+import { EnglishLevel } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { Plus, Trash2, ChevronRight } from "lucide-react";
 import { db as prisma } from "@/lib/db";
@@ -20,13 +21,13 @@ import { updateUnitAction } from "@/server/actions/admin";
 async function createUnitAction(fd: FormData) {
   "use server";
   const { actor } = await requireAdminActor();
-  const level = fd.get("hskLevel") as HSKLevel;
-  const count = await prisma.vocabUnit.count({ where: { hskLevel: level } });
+  const level = fd.get("level") as EnglishLevel;
+  const count = await prisma.vocabUnit.count({ where: { level } });
   const created = await prisma.vocabUnit.create({
     data: {
       title: fd.get("title") as string,
-      titleZh: fd.get("titleZh") as string,
-      hskLevel: level,
+      theme: (fd.get("theme") as string) || "",
+      level,
       imageUrl: (fd.get("imageUrl") as string) || undefined,
       order: count + 1,
       published: false,
@@ -60,15 +61,15 @@ async function deleteUnitAction(id: string) {
 
 export default async function AdminVocabPage() {
   const units = await db.vocabUnit.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }],
     include: { _count: { select: { lessons: true } } },
   });
 
-  // Reorder is scoped per HSK level → group units by level, one ReorderList each.
-  const byLevel = new Map<HSKLevel, typeof units>();
+  // Reorder is scoped per level → group units by level, one ReorderList each.
+  const byLevel = new Map<EnglishLevel, typeof units>();
   for (const u of units) {
-    if (!byLevel.has(u.hskLevel)) byLevel.set(u.hskLevel, []);
-    byLevel.get(u.hskLevel)!.push(u);
+    if (!byLevel.has(u.level)) byLevel.set(u.level, []);
+    byLevel.get(u.level)!.push(u);
   }
   const levels = [...byLevel.keys()];
 
@@ -81,16 +82,16 @@ export default async function AdminVocabPage() {
           <form action={createUnitAction} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
             <div className="space-y-1">
               <Label>Tên (VI)</Label>
-              <Input name="title" required />
+              <Input name="title" placeholder="VD: Các con vật" required />
             </div>
             <div className="space-y-1">
-              <Label>Tên (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" required />
+              <Label>Chủ đề (EN)</Label>
+              <Input name="theme" placeholder="Animals" required />
             </div>
             <div className="space-y-1">
-              <Label>HSK Level</Label>
-              <select name="hskLevel" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+              <Label>Cấp độ</Label>
+              <select name="level" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
               </select>
             </div>
             <div className="space-y-1 sm:col-span-4">
@@ -109,9 +110,9 @@ export default async function AdminVocabPage() {
           const group = byLevel.get(level)!;
           return (
             <div key={level} className="space-y-2">
-              <h2 className="text-lg font-bold">{hskLevelLabel(level)}</h2>
+              <h2 className="text-lg font-bold">{levelLabel(level)}</h2>
               <ReorderList
-                spec={{ kind: "units", skill: "vocab", hskLevel: level }}
+                spec={{ kind: "units", skill: "vocab", level }}
                 items={group.map<ReorderItem>((u) => ({
                   id: u.id,
                   content: (
@@ -127,9 +128,9 @@ export default async function AdminVocabPage() {
                             )}
                             <div>
                               <span className="font-semibold">{u.title}</span>
-                              <span className="font-chinese text-muted-foreground ml-2 text-sm">{u.titleZh}</span>
+                              <span className="ml-2 text-sm text-muted-foreground">{u.theme}</span>
                               <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="outline">{hskLevelLabel(u.hskLevel)}</Badge>
+                                <Badge variant="outline">{levelLabel(u.level)}</Badge>
                                 <span className="text-xs text-muted-foreground">{u._count.lessons} bài học</span>
                               </div>
                             </div>
@@ -156,13 +157,13 @@ export default async function AdminVocabPage() {
                               <Input name="title" defaultValue={u.title} required />
                             </div>
                             <div className="space-y-1">
-                              <Label>Tên (ZH)</Label>
-                              <Input name="titleZh" className="font-chinese" defaultValue={u.titleZh} required />
+                              <Label>Chủ đề (EN)</Label>
+                              <Input name="theme" defaultValue={u.theme} required />
                             </div>
                             <div className="space-y-1">
-                              <Label>HSK Level</Label>
-                              <select name="hskLevel" defaultValue={u.hskLevel} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                                {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+                              <Label>Cấp độ</Label>
+                              <select name="level" defaultValue={u.level} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                                {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
                               </select>
                             </div>
                             <div className="space-y-1 sm:col-span-4">

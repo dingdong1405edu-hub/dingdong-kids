@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -6,11 +7,16 @@ import { PracticeHub } from "@/components/learn/practice-hub";
 import { TestCard } from "@/components/learn/test-card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 
+export const metadata: Metadata = {
+  title: "Nghe hiểu",
+  description: "Bài nghe tiếng Anh cho bé — nghe giọng bản ngữ rồi chọn tranh, chọn đáp án đúng.",
+};
+
 const QTYPE_LABEL: Record<string, string> = {
-  MCQ: "Trắc nghiệm",
-  FILL_BLANK: "Điền chỗ trống",
+  MCQ: "Chọn đáp án",
+  FILL_BLANK: "Điền từ",
   TRUE_FALSE: "Đúng / Sai",
-  MATCHING: "Nối",
+  MATCHING: "Nối tranh",
   SHORT_ANSWER: "Trả lời ngắn",
 };
 
@@ -19,8 +25,8 @@ export default async function ListeningPage() {
   if (!session?.user) redirect("/login");
 
   const tests = await db.listeningTest.findMany({
-    where: { published: true }, // ẩn đề nháp khỏi học viên
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    where: { published: true }, // ẩn bài nháp khỏi học viên
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     include: { questions: { select: { type: true } } },
   });
 
@@ -45,18 +51,19 @@ export default async function ListeningPage() {
     <PracticeHub
       accent="teal"
       icon={<Headphones className="h-7 w-7" />}
-      decoChar="听"
+      decoChar="🎧"
       title="Nghe hiểu"
-      subtitle="Nghe audio tiếng Trung và trả lời câu hỏi theo format HSK"
+      subtitle="Nghe giọng bản ngữ rồi chọn đáp án — tai bé quen tiếng Anh rất nhanh"
       randomHref={randomHref}
+      randomLabel="Chọn giúp bé một bài"
       tips={[
-        "Mỗi bài có audio + câu hỏi. Số lần nghe giới hạn theo cấp độ (HSK1-2: 3 lần, còn lại 2 lần).",
-        "Có thể đổi tốc độ phát 0.75x – 1.5x để luyện dần.",
-        "Transcript chỉ mở sau khi bạn nộp bài.",
-        "AI ưu tiên bài bạn chưa làm gần đây.",
+        "Bé được nghe 2–3 lần tuỳ cấp độ, cứ bình tĩnh nghe nhé.",
+        "Có thể chỉnh tốc độ chậm lại nếu bé thấy nhanh quá.",
+        "Lời thoại sẽ hiện ra sau khi bé nộp bài.",
+        "Nộp xong có luôn chỗ “đáp án nằm ở đoạn này” để bé nghe lại.",
       ]}
-      gridTitle="Hoặc tự chọn đề"
-      gridSubtitle="Nhấn vào đề bạn muốn làm."
+      gridTitle="Chọn bài nghe"
+      gridSubtitle="Bấm vào bài bé thích."
     >
       {tests.length === 0 ? (
         <EmptyState />
@@ -69,7 +76,7 @@ export default async function ListeningPage() {
                 key={test.id}
                 href={`/listening/${test.id}`}
                 title={test.title}
-                level={test.hskLevel}
+                level={test.level}
                 tags={types.length ? types : ["Nghe hiểu"]}
                 meta={`${test.questions.length} câu hỏi`}
                 attempts={countMap.get(test.id) ?? 0}
@@ -88,9 +95,9 @@ export default async function ListeningPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+    <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
       <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-      <p>Chưa có bài nghe nào.</p>
+      <p>Chưa có bài nghe nào. Bé quay lại sau nhé! 🌟</p>
     </div>
   );
 }

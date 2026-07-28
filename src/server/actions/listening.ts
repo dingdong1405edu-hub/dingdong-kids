@@ -3,20 +3,13 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { Skill, Prisma } from "@prisma/client";
+import { isAnswerAcceptable } from "@/lib/english";
 
 const schema = z.object({
   testId: z.string(),
   answers: z.record(z.unknown()),
   durationSec: z.number().int().nonnegative().optional(),
 });
-
-/** Normalize a free-text answer: NFKC (fold full/half-width from Chinese IMEs), drop whitespace, lowercase. */
-function normalize(v: unknown): string {
-  return String(v ?? "")
-    .normalize("NFKC")
-    .replace(/\s+/g, "")
-    .toLowerCase();
-}
 
 export async function submitListeningAction(input: z.infer<typeof schema>) {
   const session = await auth();
@@ -48,12 +41,12 @@ export async function submitListeningAction(input: z.infer<typeof schema>) {
     } else if (q.type === "TRUE_FALSE") {
       isCorrect = typeof correctAnswer.value === "boolean" && userAnswer === correctAnswer.value;
     } else if (q.type === "FILL_BLANK" || q.type === "SHORT_ANSWER") {
+      // Chấm nới cho trẻ (bỏ qua hoa/thường, dấu câu, lỗi chính tả nhỏ).
       const accepted = [
         ...(correctAnswer.text ? [correctAnswer.text] : []),
         ...(Array.isArray(correctAnswer.accepted) ? correctAnswer.accepted : []),
-      ].map(normalize);
-      const ua = normalize(userAnswer);
-      isCorrect = ua.length > 0 && accepted.includes(ua);
+      ];
+      isCorrect = isAnswerAcceptable(String(userAnswer ?? ""), accepted);
     }
 
     details[q.id] = isCorrect;

@@ -15,7 +15,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ test
   const r = await loadReadingPayload(testId);
   if (r.status !== "ok") return pdfNotFound();
   try {
-    return await renderPdfResponse(payloadToElement(r.payload, req.nextUrl.searchParams.get("scope")), r.fileName);
+    return await renderPdfResponse(
+      payloadToElement(r.payload, req.nextUrl.searchParams.get("scope")),
+      r.fileName,
+    );
   } catch (err) {
     return pdfError(err);
   }

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ArrowLeft, Trophy, Lock, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowLeft, Flag, Lock, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChapterPath } from "./chapter-path";
 import { LessonDetailDialog } from "./lesson-detail-dialog";
@@ -17,7 +17,8 @@ import {
 interface RoadmapMapProps {
   level: string;
   courseTitle: string;
-  courseTitleZh: string;
+  /** Dòng phụ tiếng Việt của khoá (Course.subtitle). */
+  courseSubtitle?: string | null;
   lessons: RoadmapLessonDTO[];
   /** Người dùng đã mở khoá toàn bộ lộ trình cấp này (đã mua / admin). */
   hasFullAccess: boolean;
@@ -40,11 +41,11 @@ interface Chapter {
   phaseOffset: number; // lệch pha sóng (gồm cả node phần thưởng các chương trước)
 }
 
-/** Trang bản đồ học của một khóa HSK (Duolingo-style). */
+/** Trang bản đồ học của một khoá tiếng Anh (Duolingo-style). */
 export function RoadmapMap({
   level,
   courseTitle,
-  courseTitleZh,
+  courseSubtitle,
   lessons,
   hasFullAccess,
   upgradePlanId,
@@ -84,7 +85,7 @@ export function RoadmapMap({
         out.push({
           order: l.chapterOrder,
           // chapter=null ⟺ bài chưa phân chương (chương thật luôn có tên trong cache).
-          title: l.chapter ?? "Chưa phân chương",
+          title: l.chapter ?? "Chưa phân chặng",
           unchaptered: l.chapter == null,
           lessons: [l],
           startIndex: i,
@@ -111,7 +112,7 @@ export function RoadmapMap({
     }
     const idx = lessons.findIndex((l) => l.id === lesson.id);
     if (statusFor(idx) === "locked") {
-      toast.info("Hãy hoàn thành bài trước để mở khoá bài này 🔒");
+      toast.info("Bé học xong bài trước để mở bài này nhé 🔒");
       return;
     }
     setSelected(lesson);
@@ -120,64 +121,69 @@ export function RoadmapMap({
   function handleTrophy(unlocked: boolean) {
     toast[unlocked ? "success" : "info"](
       unlocked
-        ? "🎉 Tuyệt vời! Bạn đã hoàn thành cả chương."
-        : "Hoàn thành tất cả bài trong chương để mở phần thưởng 🏆",
+        ? "🎉 Giỏi quá! Bé đã đi hết cả chặng này."
+        : "Học hết các bài trong chặng để mở hộp quà nhé 🎁",
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header khóa học */}
+      {/* Header khoá học */}
       <div className={cn("relative overflow-hidden rounded-3xl bg-gradient-to-br p-5 text-white shadow-soft-lg sm:p-6", theme.hero)}>
         <div className="relative z-10">
           <Link
             href="/roadmap"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-white/85 transition-colors hover:text-white"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-white/85 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" /> Tất cả lộ trình
           </Link>
           <div className="mt-3 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <div className="inline-flex items-center rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-extrabold backdrop-blur">
-                {theme.label}
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-extrabold backdrop-blur">
+                <span aria-hidden>{theme.emoji}</span> {theme.label} · {theme.age}
               </div>
-              <h1 className="mt-1.5 text-2xl font-extrabold leading-tight sm:text-3xl">{courseTitle}</h1>
-              <p className="font-chinese text-sm text-white/85">{courseTitleZh}</p>
+              <h1 className="mt-1.5 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
+                {courseTitle}
+              </h1>
+              {courseSubtitle && <p className="text-sm font-semibold text-white/85">{courseSubtitle}</p>}
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-3xl font-extrabold tabular-nums">{pct}%</div>
-              <div className="text-[11px] text-white/80">
+              <div className="font-display text-3xl font-extrabold tabular-nums">{pct}%</div>
+              <div className="text-[11px] font-semibold text-white/80">
                 {doneCount}/{total} bài
               </div>
             </div>
           </div>
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-black/15">
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-black/15">
             <div className="h-full rounded-full bg-white/90 transition-all" style={{ width: `${pct}%` }} />
           </div>
         </div>
-        <div className="pointer-events-none absolute -right-5 -top-10 select-none font-chinese text-[150px] leading-none text-white/10">
-          {theme.char}
-        </div>
+        <span
+          className="pointer-events-none absolute -right-4 -top-8 select-none text-[150px] leading-none opacity-15"
+          aria-hidden
+        >
+          {theme.emoji}
+        </span>
       </div>
 
       {/* Banner xem trước / nâng cấp (ẩn khi đã mở khoá đầy đủ) */}
       {!hasFullAccess && (
-        <div className={cn("flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between dark:border-foreground/15 dark:bg-foreground/[0.04]", theme.accentBorder, theme.accentSoft)}>
+        <div className={cn("flex flex-col gap-3 rounded-3xl border-2 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-foreground/15 dark:bg-foreground/[0.04]", theme.accentBorder, theme.accentSoft)}>
           <div className="flex items-start gap-3">
-            <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white", theme.accentBg)}>
-              <Sparkles className="h-4.5 w-4.5" />
+            <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white", theme.accentBg)}>
+              <Sparkles className="h-5 w-5" />
             </div>
             <div className="text-sm">
-              <p className="font-bold">Bạn đang dùng bản xem trước</p>
+              <p className="font-display text-base font-extrabold">Bé đang học bản dùng thử</p>
               <p className="text-muted-foreground">
-                {freePreviewCount} bài đầu miễn phí. Mở khoá toàn bộ {theme.label} để học không giới hạn.
+                {freePreviewCount} bài đầu miễn phí. Mở khoá {theme.label} để học trọn lộ trình.
               </p>
             </div>
           </div>
           <Link
             href={upgradeHref}
             className={cn(
-              "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold text-white shadow-soft transition-transform hover:-translate-y-0.5",
+              "btn-chunky inline-flex shrink-0 items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-extrabold text-white transition-transform",
               theme.accentBg
             )}
           >
@@ -190,16 +196,16 @@ export function RoadmapMap({
       {reviewDueCount > 0 && (
         <Link
           href={`/roadmap/review?level=${slug}`}
-          className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 transition-colors hover:border-amber-300 dark:border-amber-400/25 dark:from-amber-500/10 dark:to-transparent dark:hover:border-amber-400/40"
+          className="flex items-center justify-between gap-3 rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 transition-colors hover:border-amber-300 dark:border-amber-400/25 dark:from-amber-500/10 dark:to-transparent dark:hover:border-amber-400/40"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl dark:bg-amber-500/15">
+              <span aria-hidden>🔁</span>
             </div>
             <div>
-              <div className="font-semibold">Ôn tập tổng hợp</div>
+              <div className="font-display text-base font-extrabold">Ôn lại từ đã học</div>
               <p className="text-sm text-muted-foreground">
-                {reviewDueCount} từ lộ trình đến hạn ôn — lặp lại ngắt quãng để nhớ lâu.
+                {reviewDueCount} từ đang chờ bé ôn — ôn đúng lúc thì nhớ rất lâu.
               </p>
             </div>
           </div>
@@ -207,7 +213,7 @@ export function RoadmapMap({
         </Link>
       )}
 
-      {/* Bản đồ các chương */}
+      {/* Bản đồ các chặng */}
       <div className="space-y-2 pb-6">
         {chapters.map((ch, ci) => {
           const statuses = ch.lessons.map((_, i) => statusFor(ch.startIndex + i));
@@ -237,11 +243,11 @@ export function RoadmapMap({
 
         {/* Cờ đích cuối lộ trình */}
         <div className="flex flex-col items-center gap-2 pt-4 text-center">
-          <div className={cn("flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-soft", theme.accentBg)}>
-            <Trophy className="h-7 w-7 fill-white/30" />
+          <div className={cn("flex h-16 w-16 items-center justify-center rounded-3xl text-white shadow-chunky-sm", theme.accentBg)}>
+            <Flag className="h-8 w-8 fill-white/30" />
           </div>
-          <p className="text-sm font-semibold">
-            {pct === 100 ? "Hoàn thành lộ trình! 🎊" : `Còn ${total - doneCount} bài nữa là về đích`}
+          <p className="font-display text-base font-extrabold">
+            {pct === 100 ? "Về đích rồi! 🎊" : `Còn ${total - doneCount} bài nữa là tới đích`}
           </p>
         </div>
       </div>
@@ -249,7 +255,7 @@ export function RoadmapMap({
       <LessonDetailDialog
         lesson={selected}
         levelLabel={theme.label}
-        levelSlug={levelToSlug(level)}
+        levelSlug={slug}
         theme={theme}
         locked={selected?.accessLocked ?? false}
         upgradeHref={upgradeHref}

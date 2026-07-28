@@ -33,8 +33,8 @@ export function SectionTheory({
     <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
       <FlowHeader progress={progress} closeHref={closeHref} onReviewTheory={onReviewTheory} />
 
-      <div className="pb-2 text-center text-sm text-muted-foreground">
-        Phần {sectionIndex + 1}/{sectionCount} · Lý thuyết
+      <div className="pb-2 text-center text-sm font-semibold text-muted-foreground">
+        Chặng {sectionIndex + 1}/{sectionCount} · Cùng xem nào 👀
       </div>
 
       <div className="flex-1 py-4">
@@ -49,9 +49,9 @@ export function SectionTheory({
       </div>
 
       <div className="flex justify-end border-t py-4">
-        <Button size="lg" onClick={onContinue}>
+        <Button size="lg" onClick={onContinue} className="btn-chunky px-8 font-extrabold">
           {ctaLabel}
-          <ArrowRight className="ml-1.5 h-4 w-4" />
+          <ArrowRight className="ml-1.5 h-5 w-5" />
         </Button>
       </div>
     </div>

@@ -1,3 +1,8 @@
+// ===========================================================================
+//  DingDong Kids — Tiếng Anh cho trẻ nhỏ
+//  Schema Prisma. Cấp độ theo chuẩn Cambridge Young Learners (YLE).
+// ===========================================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,13 +17,15 @@ enum Role {
   ADMIN
 }
 
-enum HSKLevel {
-  HSK1
-  HSK2
-  HSK3
-  HSK4
-  HSK5
-  HSK6
+/// Cấp độ theo chuẩn Cambridge English Qualifications cho trẻ em.
+/// Thứ tự tăng dần — dùng `LEVEL_ORDER` trong src/lib/levels.ts để so sánh.
+enum EnglishLevel {
+  PRE_STARTERS // 4–5 tuổi · làm quen: nghe–nói, nhận mặt chữ, phonics cơ bản
+  STARTERS // 6–7 tuổi · Cambridge YLE Starters (Pre-A1)
+  MOVERS // 7–9 tuổi · Cambridge YLE Movers (A1)
+  FLYERS // 9–11 tuổi · Cambridge YLE Flyers (A2)
+  KET // 11–13 tuổi · A2 Key for Schools
+  PET // 13–15 tuổi · B1 Preliminary for Schools
 }
 
 enum Skill {
@@ -28,9 +35,8 @@ enum Skill {
   SPEAKING
   VOCAB
   GRAMMAR
-  HANZI
-  PINYIN // học phiên âm (声母/韵母/声调) cho người mới bắt đầu — dùng cho Attempt.skill
-  MOCK // bài thi thử trọn bộ (MockExam) — dùng cho Attempt.skill
+  PHONICS // ghép vần / âm chữ cái — nền tảng đọc cho trẻ nhỏ
+  MOCK // bài thi thử trọn bộ (MockExam)
 }
 
 enum QuestionType {
@@ -50,47 +56,56 @@ enum WritingTaskType {
 enum MaterialCategory {
   GRAMMAR
   VOCABULARY
-  HANZI
-  PRONUNCIATION
+  PHONICS
+  SPELLING
   EXAM_TIPS
   CULTURE
   CONVERSATION
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
+  id              String       @id @default(cuid())
+  email           String       @unique
   name            String?
   image           String?
   emailVerified   DateTime?
   passwordHash    String?
-  role            Role      @default(LEARNER)
-  xp              Int       @default(0)
-  hearts          Int       @default(5)
+  role            Role         @default(LEARNER)
+  xp              Int          @default(0)
+  hearts          Int          @default(5)
   heartsUpdatedAt DateTime? // mốc tính hồi tim (regen) — null = đang đầy
-  streakDays      Int       @default(0)
-  hskLevel        HSKLevel  @default(HSK1)
+  streakDays      Int          @default(0)
+  level           EnglishLevel @default(PRE_STARTERS)
+  /// Năm sinh của trẻ — dùng để gợi ý cấp độ phù hợp và áp dụng quy định bảo vệ
+  /// dữ liệu trẻ em. Null = chưa khai báo.
+  birthYear       Int?
+  /// Tài khoản phụ huynh quản lý hồ sơ này (nếu có). Cho phép một phụ huynh
+  /// theo dõi nhiều hồ sơ con mà không cần đổi schema về sau.
+  parentId        String?
+  parent          User?        @relation("ParentChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children        User[]       @relation("ParentChildren")
   lastActiveAt    DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now()) @updatedAt
-  banned          Boolean   @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  banned          Boolean      @default(false)
 
-  accounts        Account[]
-  sessions        Session[]
-  vocabProgress   VocabProgress[]
-  vocabReviews    VocabReview[]
+  accounts          Account[]
+  sessions          Session[]
+  vocabProgress     VocabProgress[]
+  vocabReviews      VocabReview[]
   roadmapWordReviews RoadmapWordReview[]
-  grammarProgress GrammarProgress[]
-  hanziProgress   HanziProgress[]
-  pinyinProgress  PinyinProgress[]
-  roadmapProgress RoadmapProgress[]
-  attempts        Attempt[]
-  payments        Payment[]
-  subscriptions   Subscription[]
-  wordReports     WordReport[]
-  savedWords      SavedWord[]
-  feedbacks       Feedback[]
-  auditLogs       AuditLog[]
+  grammarProgress   GrammarProgress[]
+  phonicsProgress   PhonicsProgress[]
+  roadmapProgress   RoadmapProgress[]
+  attempts          Attempt[]
+  payments          Payment[]
+  subscriptions     Subscription[]
+  wordReports       WordReport[]
+  savedWords        SavedWord[]
+  feedbacks         Feedback[]
+  auditLogs         AuditLog[]
+
+  @@index([parentId])
 }
 
 model Account {
@@ -128,17 +143,22 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// ===================================================================
+//  TỪ VỰNG
+// ===================================================================
+
 model VocabUnit {
   id        String        @id @default(cuid())
   title     String
-  titleZh   String
-  hskLevel  HSKLevel
+  /// Chủ đề ngắn hiển thị trên thẻ, vd "Animals", "My Family".
+  theme     String        @default("")
+  level     EnglishLevel
   order     Int
   imageUrl  String?
-  published Boolean       @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  published Boolean       @default(true)
   lessons   VocabLesson[]
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
 model VocabLesson {
@@ -148,7 +168,7 @@ model VocabLesson {
   order     Int
   title     String    @default("")
   exercises Json
-  published Boolean   @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  published Boolean   @default(true)
 
   progress VocabProgress[]
   words    VocabWord[]
@@ -156,19 +176,26 @@ model VocabLesson {
   @@index([unitId, order])
 }
 
-/// A single vocabulary word taught in the per-word learner flow
-/// (show + auto-read → trace strokes → write → flashcards). Authored from the
-/// admin word editor. Stroke data is NOT stored here — Hanzi Writer loads it from
-/// CDN by character. `examples` is a JSON array of { hanzi, pinyin, meaning }.
+/// Một từ vựng trong luồng học từng-từ (xem thẻ + nghe → luyện phát âm →
+/// flashcard). `examples` là mảng JSON [{ sentence, meaning, audioUrl? }].
+/// ẢNH LÀ BẮT BUỘC với trẻ nhỏ — `imageUrl` phải có trước khi publish.
 model VocabWord {
   id        String      @id @default(cuid())
   lessonId  String
   lesson    VocabLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   order     Int
-  hanzi     String
-  pinyin    String
+  /// Từ tiếng Anh, vd "elephant".
+  word      String
+  /// Phiên âm quốc tế (IPA), vd "/ˈelɪfənt/". Tuỳ chọn — trẻ nhỏ chưa cần.
+  ipa       String      @default("")
+  /// Nghĩa tiếng Việt.
   meaning   String
+  /// Loại từ: noun | verb | adjective | ... (để trống nếu không cần).
+  partOfSpeech String   @default("")
   examples  Json        @default("[]")
+  /// Ảnh minh hoạ — kênh truyền đạt CHÍNH cho trẻ chưa đọc thạo.
+  imageUrl  String?
+  /// Audio phát âm (sinh tự động bằng TTS hoặc admin tải lên).
   audioUrl  String?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @default(now()) @updatedAt
@@ -185,9 +212,8 @@ model VocabProgress {
   lessonId      String
   completed     Boolean  @default(false)
   xpEarned      Int      @default(0)
-  // Vị trí đang học dở (cho nút "Học tiếp" — resume). lastWordIndex = chỉ số từ
-  // hiện tại trong bài, lastStep = bước trong từ đó (0 xem thẻ · 1 tô nét · 2 tự
-  // viết). Reset về 0 khi hoàn thành để lần vào sau là "Học lại" từ đầu.
+  /// Vị trí đang học dở (cho nút "Học tiếp"). lastWordIndex = chỉ số từ hiện tại,
+  /// lastStep = bước trong từ đó. Reset về 0 khi hoàn thành.
   lastWordIndex Int      @default(0)
   lastStep      Int      @default(0)
   createdAt     DateTime @default(now())
@@ -199,18 +225,15 @@ model VocabProgress {
   @@unique([userId, lessonId])
 }
 
-/// Trạng thái lặp lại ngắt quãng (spaced repetition · SM-2) cho từng từ vựng của
-/// mỗi người học — dùng cho chế độ "Ôn từ". `dueAt` = thời điểm đến hạn ôn kế
-/// tiếp; `ease` (easiness factor) ≥ 1.3; `intervalDays` = khoảng cách hiện tại.
-/// Thuật toán cập nhật ở src/lib/srs.ts.
+/// Lặp lại ngắt quãng (SM-2) cho từng từ vựng. Thuật toán ở src/lib/srs.ts.
 model VocabReview {
   id             String    @id @default(cuid())
   userId         String
   wordId         String
-  repetitions    Int       @default(0) // số lần trả lời đúng liên tiếp
-  intervalDays   Int       @default(0) // khoảng cách hiện tại (ngày)
-  ease           Float     @default(2.5) // hệ số dễ (easiness factor)
-  lapses         Int       @default(0) // số lần quên (trả lời sai)
+  repetitions    Int       @default(0)
+  intervalDays   Int       @default(0)
+  ease           Float     @default(2.5)
+  lapses         Int       @default(0)
   dueAt          DateTime  @default(now())
   lastReviewedAt DateTime?
   createdAt      DateTime  @default(now())
@@ -223,24 +246,22 @@ model VocabReview {
   @@index([userId, dueAt])
 }
 
-/// Lặp lại ngắt quãng (SM-2) cho từ vựng phần LỘ TRÌNH. Khác VocabReview ở chỗ
-/// khoá theo `(userId, hanzi)` thay vì wordId — vì từ vựng lộ trình nằm trong
-/// RoadmapSection.content (JSON), KHÔNG có bản ghi VocabWord để tham chiếu khoá
-/// ngoại. Lưu kèm ảnh chụp (pinyin/nghĩa/ví dụ/audio) tại thời điểm ôn để màn
-/// "Ôn tập tổng hợp lộ trình" dựng được thẻ mà không phải quét lại mọi section.
-/// Thuật toán cập nhật dùng chung src/lib/srs.ts.
+/// Lặp lại ngắt quãng cho từ vựng phần LỘ TRÌNH. Khoá theo `(userId, word)` vì
+/// từ vựng lộ trình nằm trong RoadmapSection.content (JSON), không có bản ghi
+/// VocabWord để tham chiếu khoá ngoại. Lưu kèm ảnh chụp nội dung tại thời điểm ôn.
 model RoadmapWordReview {
   id             String    @id @default(cuid())
   userId         String
-  hanzi          String
-  pinyin         String    @default("")
+  word           String
+  ipa            String    @default("")
   meaning        String    @default("")
   examples       Json      @default("[]")
+  imageUrl       String?
   audioUrl       String?
-  repetitions    Int       @default(0) // số lần trả lời đúng liên tiếp
-  intervalDays   Int       @default(0) // khoảng cách hiện tại (ngày)
-  ease           Float     @default(2.5) // hệ số dễ (easiness factor)
-  lapses         Int       @default(0) // số lần quên (trả lời sai)
+  repetitions    Int       @default(0)
+  intervalDays   Int       @default(0)
+  ease           Float     @default(2.5)
+  lapses         Int       @default(0)
   dueAt          DateTime  @default(now())
   lastReviewedAt DateTime?
   createdAt      DateTime  @default(now())
@@ -248,21 +269,25 @@ model RoadmapWordReview {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, hanzi])
+  @@unique([userId, word])
   @@index([userId, dueAt])
 }
+
+// ===================================================================
+//  NGỮ PHÁP
+// ===================================================================
 
 model GrammarUnit {
   id        String          @id @default(cuid())
   title     String
-  titleZh   String
-  hskLevel  HSKLevel
+  theme     String          @default("")
+  level     EnglishLevel
   order     Int
   imageUrl  String?
-  published Boolean         @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  published Boolean         @default(true)
   lessons   GrammarLesson[]
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
 model GrammarLesson {
@@ -272,7 +297,7 @@ model GrammarLesson {
   order     Int
   title     String      @default("")
   exercises Json
-  published Boolean     @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  published Boolean     @default(true)
 
   progress GrammarProgress[]
 
@@ -294,49 +319,18 @@ model GrammarProgress {
   @@unique([userId, lessonId])
 }
 
-model HanziCharacter {
-  id          String   @id @default(cuid())
-  character   String   @unique
-  pinyin      String
-  tone        Int
-  meaning     String
-  hskLevel    HSKLevel
-  strokeCount Int
-  strokeOrder Json
-  examples    Json
-  imageUrl    String?
-  order       Int      @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)
-  published   Boolean  @default(true) // false = bản nháp (ẩn khỏi web học viên)
+// ===================================================================
+//  PHONICS (ghép vần) — nền tảng đọc cho trẻ nhỏ
+// ===================================================================
 
-  progress HanziProgress[]
-
-  @@index([hskLevel, order])
-}
-
-model HanziProgress {
-  id          String   @id @default(cuid())
-  userId      String
-  characterId String
-  mastered    Boolean  @default(false)
-  attempts    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  character HanziCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, characterId])
-}
-
-// Tiến độ học PHIÊN ÂM (cho người mới bắt đầu). `lessonId` là id tĩnh của bài học
-// định nghĩa trong src/lib/pinyin-lessons.ts (không phải bản ghi DB) — nội dung
-// phiên âm cố định trong code, chỉ tiến độ/điểm của học viên mới lưu ở đây.
-model PinyinProgress {
+/// Tiến độ học PHONICS. `lessonId` là id tĩnh của bài học định nghĩa trong
+/// src/lib/phonics-lessons.ts (nội dung cố định trong code, chỉ tiến độ lưu DB).
+model PhonicsProgress {
   id        String   @id @default(cuid())
   userId    String
-  lessonId  String // id bài học tĩnh (vd "pinyin-tones")
+  lessonId  String // id bài học tĩnh (vd "phonics-short-a")
   completed Boolean  @default(false)
-  bestScore Int      @default(0) // % đúng cao nhất đạt được
+  bestScore Int      @default(0) // % đúng cao nhất
   xpEarned  Int      @default(0)
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
@@ -348,69 +342,70 @@ model PinyinProgress {
   @@index([userId])
 }
 
+// ===================================================================
+//  ĐỌC · NGHE
+// ===================================================================
+
 model ReadingTest {
-  id            String   @id @default(cuid())
-  title         String
-  titleZh       String
-  hskLevel      HSKLevel
-  passage       String   @db.Text
-  passagePinyin String?  @db.Text
-  // Bản dịch tiếng Việt TOÀN BỘ đoạn văn (Groq sinh hoặc admin nhập) — hiện ở
-  // phần "chữa bài" để học viên hiểu kỹ nội dung đọc.
+  id       String       @id @default(cuid())
+  title    String
+  level    EnglishLevel
+  passage  String       @db.Text
+  /// Bản dịch tiếng Việt TOÀN BỘ đoạn văn — hiện ở phần "chữa bài".
   passageTranslation String? @db.Text
-  // Phân tích TỪNG CÂU của đoạn văn: Json mảng [{ zh, vi, note }] — câu Hán +
-  // dịch + giải thích ngữ pháp/từ vựng (tiếng Việt). Hiện khi chữa bài.
-  passageAnalysis Json?
-  imageUrl      String?
-  timeLimit     Int
-  order         Int      @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)
-  published     Boolean  @default(true) // false = bản nháp (ẩn khỏi web học viên)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  /// Phân tích TỪNG CÂU: Json mảng [{ en, vi, note }].
+  passageAnalysis    Json?
+  imageUrl  String?
+  /// Audio đọc mẫu cả đoạn (TTS) — trẻ vừa nghe vừa nhìn chữ.
+  audioUrl  String?
+  timeLimit Int
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   questions Question[]
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
 model ListeningTest {
-  id         String   @id @default(cuid())
+  id         String       @id @default(cuid())
   title      String
-  hskLevel   HSKLevel
+  level      EnglishLevel
   audioUrl   String
-  transcript String?  @db.Text
-  // Bản dịch + giải thích toàn bộ lời thoại (tiếng Việt) do Groq sinh — hiện ở
-  // phần "chữa bài" để học viên hiểu kỹ nội dung nghe.
+  transcript String?      @db.Text
+  /// Bản dịch + giải thích toàn bộ lời thoại (tiếng Việt) — hiện khi chữa bài.
   transcriptExplanation String? @db.Text
   imageUrl   String?
   timeLimit  Int      @default(300)
-  order      Int      @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)
-  published  Boolean  @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  order      Int      @default(0)
+  published  Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
   questions Question[]
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
 model Question {
-  id              String       @id @default(cuid())
-  type            QuestionType
-  prompt          String       @db.Text
-  promptPinyin    String?      @db.Text
-  // Bản dịch tiếng Việt của câu hỏi (Groq sinh) — hiện khi chữa bài. Bản dịch
-  // từng lựa chọn nằm trong options Json ({ text, translation }).
-  promptTranslation String?    @db.Text
+  id     String       @id @default(cuid())
+  type   QuestionType
+  prompt String       @db.Text
+  /// Bản dịch tiếng Việt của câu hỏi — hiện khi chữa bài.
+  promptTranslation String? @db.Text
+  /// Ảnh minh hoạ cho riêng câu hỏi này (trẻ nhỏ chọn đáp án bằng hình).
+  imageUrl        String?
+  /// Audio đọc câu hỏi (TTS) — trẻ chưa đọc thạo vẫn làm được bài.
+  audioUrl        String?
   options         Json?
   correctAnswer   Json
-  explanation     String?      @db.Text
-  // Câu/đoạn trích trong bài đọc chứng minh đáp án (Groq sinh sẵn khi admin thêm
-  // câu hỏi) — dùng để "chỉ cho học viên đáp án lấy ở đâu" khi chữa bài.
-  supportingQuote String?      @db.Text
-  // Bản dịch tiếng Việt của câu trích dẫn (supportingQuote).
-  quoteTranslation String?     @db.Text
-  order           Int          @default(0)
+  explanation     String? @db.Text
+  /// Câu trích trong bài chứng minh đáp án — "chỉ cho trẻ đáp án lấy ở đâu".
+  supportingQuote String? @db.Text
+  quoteTranslation String? @db.Text
+  order           Int     @default(0)
 
   readingId   String?
   listeningId String?
@@ -424,38 +419,34 @@ model Question {
 }
 
 // ===================================================================
-//  THI THỬ (Mock exam) — đề HSK trọn bộ, đúng format máy thật.
-//  MockExam (1 đề/cấp) → MockExamSection (Nghe/Đọc/Viết) →
-//  MockExamPart (第一部分...) → Question (dùng lại model Question).
-//  Một tiểu phần là DANH SÁCH câu hỏi auto-chấm (Nghe/Đọc, và 连词成句/
-//  看拼音写汉字 của Viết dùng FILL_BLANK), HOẶC một ô viết tự luận
-//  (writingPrompt ≠ null) chấm bằng AI. Bài thi lưu 1 Attempt (skill = MOCK).
+//  THI THỬ — đề Cambridge YLE trọn bộ.
+//  MockExam (1 đề/cấp) → MockExamSection (Listening / Reading & Writing /
+//  Speaking) → MockExamPart (Part 1...) → Question.
 // ===================================================================
 
 model MockExam {
-  id          String   @id @default(cuid())
-  title       String // "Đề thi thử HSK4 — Đề 1"
-  titleZh     String?
-  hskLevel    HSKLevel
-  description String?  @db.Text
+  id          String       @id @default(cuid())
+  title       String // "Đề thi thử Starters — Đề 1"
+  level       EnglishLevel
+  description String?      @db.Text
   totalTime   Int? // tổng thời gian (giây); null = cộng dồn từ các phần
-  order       Int      @default(0) // thứ tự hiển thị trong cấp HSK
-  published   Boolean  @default(false) // false = bản nháp (ẩn khỏi web học viên)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  order       Int          @default(0)
+  published   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 
   sections MockExamSection[]
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
 model MockExamSection {
   id           String   @id @default(cuid())
   examId       String
   exam         MockExam @relation(fields: [examId], references: [id], onDelete: Cascade)
-  skill        Skill // LISTENING | READING | WRITING
+  skill        Skill // LISTENING | READING | WRITING | SPEAKING
   order        Int      @default(0)
-  title        String   @default("") // "一、听力" (suy từ skill nếu trống)
+  title        String   @default("") // "Listening" (suy từ skill nếu trống)
   instructions String?  @db.Text
 
   parts MockExamPart[]
@@ -468,102 +459,98 @@ model MockExamPart {
   sectionId       String
   section         MockExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   order           Int             @default(0)
-  title           String          @default("") // "第一部分"
-  instructions    String?         @db.Text // hướng dẫn / ví dụ 例如
+  title           String          @default("") // "Part 1"
+  instructions    String?         @db.Text // hướng dẫn / ví dụ mẫu
   imageUrl        String? // ảnh dùng chung cho tiểu phần (câu hỏi nhìn hình)
   // Đọc hiểu:
   passage         String?         @db.Text
-  passagePinyin   String?         @db.Text
   // Nghe hiểu:
   audioUrl        String?
   transcript      String?         @db.Text
-  // Viết tự luận (HSK5/6): nếu set => tiểu phần là 1 ô viết, chấm bằng AI
+  // Viết tự luận: nếu set => tiểu phần là 1 ô viết, chấm bằng AI
   writingPrompt   String?         @db.Text
-  writingMinChars Int?
+  writingMinWords Int?
 
   questions Question[]
 
   @@index([sectionId, order])
 }
 
-model WritingTask {
-  id        String          @id @default(cuid())
-  taskType  WritingTaskType
-  prompt    String          @db.Text
-  promptZh  String?         @db.Text
-  // Dàn ý gợi ý (admin nhập, mỗi ý một dòng) — ẩn mặc định, học viên bấm "Gợi ý
-  // dàn ý" mới hiện. Cũng được đưa vào prompt chấm AI để kiểm tra bám sát dàn ý.
-  outline   String?         @db.Text
-  imageUrl  String?
-  minChars  Int
-  timeLimit Int
-  hskLevel  HSKLevel
-  order     Int             @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)
-  published Boolean         @default(true) // false = bản nháp (ẩn khỏi web học viên)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @default(now()) @updatedAt
+// ===================================================================
+//  VIẾT · NÓI
+// ===================================================================
 
-  @@index([hskLevel, order])
+model WritingTask {
+  id       String          @id @default(cuid())
+  taskType WritingTaskType
+  prompt   String          @db.Text
+  /// Dàn ý gợi ý (mỗi ý một dòng) — ẩn mặc định, trẻ bấm "Gợi ý" mới hiện.
+  outline  String?         @db.Text
+  imageUrl String?
+  /// Số TỪ tối thiểu (tiếng Anh đếm từ, không đếm ký tự).
+  minWords  Int
+  timeLimit Int
+  level     EnglishLevel
+  order     Int          @default(0)
+  published Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now()) @updatedAt
+
+  @@index([level, order])
 }
 
+/// Bộ bài luyện nói theo format Cambridge YLE Speaking:
+/// part1 = nhắc lại câu · part2 = đọc to đoạn văn · part3 = trả lời câu hỏi.
 model SpeakingSet {
-  id             String   @id @default(cuid())
-  title          String   @default("")
-  hskLevel       HSKLevel
+  id             String       @id @default(cuid())
+  title          String       @default("")
+  level          EnglishLevel
   imageUrl       String?
   part1Sentences Json
   part2Passage   Json
   part3Questions Json
-  order          Int      @default(0) // thứ tự hiển thị trong cấp HSK (đổi chỗ ở admin)
-  published      Boolean  @default(true) // false = bản nháp (ẩn khỏi web học viên)
+  order          Int      @default(0)
+  published      Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
-/// Bài "Nói theo chủ đề" (HSKK 命题说话 / phỏng vấn). Giám khảo (admin) đặt MỘT câu
-/// hỏi mở theo chủ đề kèm MP3 thật + transcript + gợi ý; học viên ghi âm trả lời
-/// thành MỘT ĐOẠN DÀI → Deepgram chuyển thành lời thoại → Groq chấm CHI TIẾT (nội
-/// dung, ngữ pháp, từ vựng, mạch lạc, lưu loát) + sửa lỗi o→f như chấm viết. Lưu 1
-/// Attempt (skill = SPEAKING, rawAnswer.kind = "topic"). `hints` = JSON mảng
-/// [{ text, pinyin?, vi? }] gợi ý từ/cụm nên dùng.
+/// Bài "Nói theo chủ đề": giám khảo đặt MỘT câu hỏi mở, trẻ ghi âm trả lời
+/// thành một đoạn → Deepgram chuyển thành lời thoại → AI chấm chi tiết.
+/// `hints` = JSON mảng [{ text, vi? }] gợi ý từ/cụm nên dùng.
 model SpeakingTopic {
-  id                 String   @id @default(cuid())
-  title              String   @default("")
-  hskLevel           HSKLevel
-  topic              String   @default("") // nhãn chủ đề ngắn (vd "爱好 — Sở thích")
-  questionZh         String   @db.Text // câu giám khảo hỏi (tiếng Trung)
-  questionPinyin     String?  @db.Text
-  questionVi         String?  @db.Text // dịch tiếng Việt câu hỏi
-  // Gợi ý dàn ý bài nói (mỗi ý một dòng) — học viên bấm "Gợi ý dàn ý" mới hiện;
-  // cũng được đưa vào prompt chấm AI để thưởng điểm khi bài bao quát đủ ý.
-  outline            String?  @db.Text
-  audioUrl           String? // MP3 giám khảo hỏi (admin tự tải lên)
-  transcript         String?  @db.Text // transcript của MP3 (admin nhập / Deepgram)
-  hints              Json     @default("[]") // [{ text, pinyin?, vi? }]
-  sampleAnswer       String?  @db.Text // bài trả lời mẫu (tham khảo)
-  sampleAnswerPinyin String?  @db.Text
-  minChars           Int      @default(0) // độ dài tối thiểu gợi ý (số chữ Hán)
-  prepSeconds        Int      @default(0) // thời gian chuẩn bị (giây) trước khi ghi âm
-  imageUrl           String?
-  order              Int      @default(0)
-  published          Boolean  @default(false) // false = bản nháp (ẩn khỏi web học viên)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @default(now()) @updatedAt
+  id             String       @id @default(cuid())
+  title          String       @default("")
+  level          EnglishLevel
+  topic          String       @default("") // nhãn chủ đề ngắn, vd "My Pets"
+  question       String       @db.Text // câu giám khảo hỏi (tiếng Anh)
+  questionVi     String?      @db.Text // dịch tiếng Việt
+  /// Gợi ý dàn ý (mỗi ý một dòng).
+  outline        String?      @db.Text
+  audioUrl       String? // MP3 câu hỏi (TTS hoặc admin tải lên)
+  transcript     String?      @db.Text
+  hints          Json         @default("[]") // [{ text, vi? }]
+  sampleAnswer   String?      @db.Text
+  minWords       Int          @default(0)
+  prepSeconds    Int          @default(0)
+  imageUrl       String?
+  order          Int      @default(0)
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
 
-  @@index([hskLevel, order])
+  @@index([level, order])
 }
 
-/// Tài liệu học tập (study materials / documents). Content is stored as an
-/// array of structured blocks (see prisma/seed.ts and the learner renderer):
+/// Tài liệu học tập. `content` là mảng block có cấu trúc:
 ///   heading | paragraph | list | example | vocab | note
 model Material {
   id          String           @id @default(cuid())
   title       String
-  titleZh     String?
   category    MaterialCategory
-  hskLevel    HSKLevel
+  level       EnglishLevel
   summary     String           @db.Text
   imageUrl    String?
   content     Json
@@ -574,7 +561,7 @@ model Material {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @default(now()) @updatedAt
 
-  @@index([hskLevel, category, order])
+  @@index([level, category, order])
 }
 
 model Attempt {
@@ -595,25 +582,22 @@ model Attempt {
 }
 
 // ===================================================================
-//  HỌC THEO LỘ TRÌNH (Learning roadmap — Duolingo-style)
-//  Course (1 per HSK level) → RoadmapLesson (10–20 / course) →
-//  RoadmapSection (6 kỹ năng: từ vựng, ngữ pháp, nghe, nói, đọc, viết).
-//  Nội dung từng kỹ năng được điền sau (RoadmapSection.content / refId);
-//  tiến độ học theo dõi trong RoadmapProgress.
+//  HỌC THEO LỘ TRÌNH (Duolingo-style)
+//  Course (1 per level) → RoadmapLesson → RoadmapSection (7 kỹ năng)
 // ===================================================================
 
-/// Một khóa học = một cấp HSK. Mỗi cấp có một khóa duy nhất.
+/// Một khóa học = một cấp độ. Mỗi cấp có một khóa duy nhất.
 model Course {
-  id          String   @id @default(cuid())
-  hskLevel    HSKLevel @unique
+  id          String       @id @default(cuid())
+  level       EnglishLevel @unique
   title       String
-  titleZh     String
-  description String?  @db.Text
+  subtitle    String       @default("")
+  description String?      @db.Text
   order       Int
   imageUrl    String?
-  published   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  published   Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 
   lessons  RoadmapLesson[]
   chapters RoadmapChapter[]
@@ -621,17 +605,16 @@ model Course {
   @@index([order])
 }
 
-/// Chương của một khóa HSK — gom các bài thành nhóm (banner trên map học viên).
-/// Đây là "nguồn sự thật" do admin quản lý; mỗi bài trỏ về chương qua `chapterId`.
-/// Hai trường `RoadmapLesson.chapter` / `chapterOrder` là BẢN SAO (cache) đồng bộ
-/// từ chương để phía học viên gom bài thành chương mà không phải đổi code.
+/// Chương của một khóa — gom các bài thành nhóm (banner trên map).
+/// Đây là "nguồn sự thật"; mỗi bài trỏ về chương qua `chapterId`.
+/// `RoadmapLesson.chapter` / `chapterOrder` là BẢN SAO (cache) đồng bộ từ chương.
 model RoadmapChapter {
   id        String   @id @default(cuid())
   courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   order     Int
   title     String
-  titleZh   String   @default("")
+  subtitle  String   @default("")
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -641,16 +624,15 @@ model RoadmapChapter {
   @@index([courseId, order])
 }
 
-/// Một bài trong lộ trình: một chủ đề, gom đủ 7 kỹ năng.
-/// `chapterId` trỏ tới chương (nguồn sự thật). `chapter` / `chapterOrder` là cache
-/// đồng bộ từ chương để học viên gom bài thành chương mà không cần đổi code.
+/// Một bài trong lộ trình: một chủ đề, gom đủ các kỹ năng.
 model RoadmapLesson {
   id           String          @id @default(cuid())
   courseId     String
   course       Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
   order        Int
   topic        String
-  topicZh      String
+  /// Nhãn phụ tiếng Việt của chủ đề, vd "Động vật".
+  topicVi      String          @default("")
   description  String?         @db.Text
   icon         String?
   chapterId    String?
@@ -669,9 +651,7 @@ model RoadmapLesson {
   @@index([chapterId])
 }
 
-/// Một kỹ năng trong bài (VOCAB | GRAMMAR | LISTENING | SPEAKING | READING | WRITING).
-/// `published = false` => "Sắp có". `content` (JSON) hoặc `refId` (trỏ tới nội dung
-/// có sẵn: VocabLesson / ReadingTest / ...) được điền sau.
+/// Một kỹ năng trong bài. `published = false` => "Sắp có".
 model RoadmapSection {
   id        String        @id @default(cuid())
   lessonId  String
@@ -689,8 +669,7 @@ model RoadmapSection {
   @@index([lessonId, order])
 }
 
-/// Tiến độ của người học theo từng bài lộ trình.
-/// `skillsDone` = mảng tên Skill đã hoàn thành (để mở khoá dần / tính %).
+/// Tiến độ theo từng bài lộ trình. `skillsDone` = mảng tên Skill đã hoàn thành.
 model RoadmapProgress {
   id          String        @id @default(cuid())
   userId      String
@@ -709,6 +688,10 @@ model RoadmapProgress {
   @@index([userId])
 }
 
+// ===================================================================
+//  THANH TOÁN & QUYỀN LỢI
+// ===================================================================
+
 enum PaymentStatus {
   PENDING
   PAID
@@ -717,10 +700,8 @@ enum PaymentStatus {
   FAILED
 }
 
-/// Đơn thanh toán qua PayOS. Ghi nhận giao dịch (không khoá tính năng).
-/// `orderCode` là mã đơn gửi cho PayOS (số nguyên duy nhất) — dùng BigInt vì
-/// được sinh từ timestamp (vượt phạm vi Int 32-bit). `rawWebhook` lưu nguyên
-/// payload webhook để đối soát. Giá/tên gói cấu hình ở src/lib/payment-plans.ts.
+/// Đơn thanh toán qua PayOS. `orderCode` sinh từ timestamp nên dùng BigInt.
+/// Giá/tên gói cấu hình ở src/lib/payment-plans.ts.
 model Payment {
   id            String        @id @default(cuid())
   orderCode     BigInt        @unique
@@ -748,19 +729,17 @@ model Payment {
 
 enum SubscriptionType {
   FREESTYLE // Gói tự do: mọi tính năng ngoài lộ trình + tim không giới hạn
-  ROADMAP // Gói lộ trình theo cấp HSK (hskLevel)
+  ROADMAP // Gói lộ trình theo cấp độ
 }
 
-/// Quyền lợi đã mua của người học. Một lần mua có thể tạo nhiều Subscription
-/// (vd gói Lộ trình HSK3–6 tặng kèm 1 Subscription FREESTYLE). Quyền được tính
-/// là CÒN HẠN khi expiresAt > now. Cấu hình gói (giá/thời hạn/quyền) ở
-/// src/lib/payment-plans.ts; cách suy ra quyền ở src/lib/entitlements.ts.
+/// Quyền lợi đã mua. Một lần mua có thể tạo nhiều Subscription.
+/// Quyền CÒN HẠN khi expiresAt > now. Cách suy ra quyền: src/lib/entitlements.ts.
 model Subscription {
   id        String           @id @default(cuid())
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      SubscriptionType
-  hskLevel  HSKLevel? // chỉ dùng cho ROADMAP
+  level     EnglishLevel? // chỉ dùng cho ROADMAP
   startedAt DateTime         @default(now())
   expiresAt DateTime
   paymentId String? // Payment.id đã kích hoạt quyền này (idempotent)
@@ -770,21 +749,23 @@ model Subscription {
   @@index([paymentId])
 }
 
+// ===================================================================
+//  PHẢN HỒI · SỔ TỪ · TỆP · NHẬT KÝ
+// ===================================================================
+
 enum WordReportKind {
-  ERROR // Báo lỗi: từ/nghĩa/pinyin bị sai
+  ERROR // Báo lỗi: từ/nghĩa/phát âm bị sai
   COMMENT // Bình luận / góp ý
 }
 
 enum WordReportStatus {
-  PENDING // Chờ admin duyệt — chỉ chủ bài thấy
-  APPROVED // Đã duyệt — hiển thị công khai cho mọi học viên
-  REJECTED // Bị từ chối — ẩn
+  PENDING
+  APPROVED
+  REJECTED
 }
 
-/// Phản ánh / bình luận của học viên trên một từ vựng. Admin nhận ở
-/// /admin/word-reports; chỉ khi `status = APPROVED` thì bình luận mới hiển thị
-/// công khai cho các học viên khác (kiểm duyệt). Báo lỗi (ERROR) chủ yếu để admin
-/// sửa nội dung từ; bình luận (COMMENT) sau khi duyệt sẽ hiện dưới thẻ từ.
+/// Phản ánh / bình luận của học viên trên một từ vựng. Chỉ khi `APPROVED` thì
+/// bình luận mới hiển thị công khai (kiểm duyệt — bắt buộc với nội dung trẻ em).
 model WordReport {
   id        String           @id @default(cuid())
   userId    String
@@ -803,43 +784,38 @@ model WordReport {
   @@index([status, createdAt])
 }
 
-/// "Sổ từ" — từ học viên lưu lại khi tra cứu (đọc hiểu, v.v.). Chỉ lưu các từ có
-/// trong từ điển (HanziCharacter). Snapshot pinyin/nghĩa tại thời điểm lưu để giữ
-/// nguyên kể cả khi từ điển thay đổi. Một học viên mỗi từ (hanzi) chỉ lưu 1 lần.
+/// "Sổ từ" — từ học viên lưu lại khi tra cứu. Snapshot nghĩa tại thời điểm lưu.
 model SavedWord {
   id        String   @id @default(cuid())
   userId    String
-  hanzi     String // chữ Hán đã lưu (1 ký tự hoặc cụm)
-  pinyin    String
+  word      String
+  ipa       String   @default("")
   meaning   String   @db.Text
-  hskLevel  String?
+  level     String?
   source    String? // ngữ cảnh: "reading:<id>" / "listening:<id>" ...
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, hanzi])
+  @@unique([userId, word])
   @@index([userId, createdAt])
 }
 
 enum FeedbackCategory {
-  SUGGESTION // Góp ý / đề xuất tính năng
-  BUG // Báo lỗi
-  QUESTION // Câu hỏi / cần hỗ trợ
-  CONTENT // Góp ý về nội dung bài học
-  OTHER // Khác
+  SUGGESTION
+  BUG
+  QUESTION
+  CONTENT
+  OTHER
 }
 
 enum FeedbackStatus {
-  NEW // Mới gửi — chưa xem
-  IN_REVIEW // Đang xem xét / xử lý
-  RESOLVED // Đã xử lý / phản hồi
+  NEW
+  IN_REVIEW
+  RESOLVED
 }
 
-/// Liên hệ & góp ý của người học (gửi từ trang /lien-he trong khu vực học, nên
-/// luôn gắn với một tài khoản đã đăng nhập). Admin nhận và xử lý ở /admin/feedback.
-/// `contactName`/`contactEmail` là SNAPSHOT thông tin liên hệ tại thời điểm gửi
-/// (người dùng có thể sửa hồ sơ sau) để admin biết liên hệ lại theo địa chỉ nào.
+/// Liên hệ & góp ý (gửi từ khu vực học nên luôn gắn với tài khoản đã đăng nhập).
 model Feedback {
   id           String           @id @default(cuid())
   userId       String
@@ -859,48 +835,42 @@ model Feedback {
 }
 
 /// Tệp do admin tải lên / sinh ra (ảnh minh hoạ, audio bài nghe, MP3 từ TTS).
-/// Lưu THẲNG trong Postgres (cột `data` Bytes) thay vì ghi vào public/ — vì
-/// filesystem trên Railway là EPHEMERAL nên file trong public/ bị xoá sau mỗi
-/// lần deploy/restart (đó là lý do "tải lên nhưng không lưu được"). Phục vụ qua
-/// `/api/files/[id]` với Content-Type = `mime`. URL lưu ở imageUrl/audioUrl là
-/// `/api/files/<id>`.
+/// Lưu THẲNG trong Postgres vì filesystem Railway là ephemeral.
+/// Phục vụ qua `/api/files/[id]`; URL lưu ở imageUrl/audioUrl là `/api/files/<id>`.
 model Upload {
   id        String   @id @default(cuid())
   mime      String // VD: "image/webp", "audio/mpeg"
-  ext       String // đuôi chuẩn hoá: png/jpg/webp/mp3/wav/...
-  size      Int // số byte (dùng cho Content-Length)
-  kind      String   @default("image") // "image" | "audio" (chỉ để phân loại)
-  data      Bytes // nội dung tệp (Postgres bytea)
+  ext       String // png/jpg/webp/mp3/wav/...
+  size      Int
+  kind      String   @default("image") // "image" | "audio"
+  data      Bytes
+  /// Khoá cache cho audio sinh bằng TTS: hash của (văn bản + giọng đọc).
+  /// Trùng khoá => dùng lại tệp cũ, KHÔNG gọi TTS lần nữa (tiết kiệm chi phí).
+  ttsKey    String?  @unique
   createdAt DateTime @default(now())
 
   @@index([createdAt])
 }
 
 enum AuditAction {
-  CREATE // tạo bản ghi mới
-  UPDATE // sửa bản ghi
-  DELETE // xóa bản ghi
+  CREATE
+  UPDATE
+  DELETE
 }
 
-/// Nhật ký thao tác của quản trị viên (audit log) — ghi lại AI làm gì / sửa-xóa
-/// cái gì / lúc nào, phục vụ quản lý nhân sự và phòng "admin xấu xóa hết".
-/// `actorEmail`/`actorName` là SNAPSHOT người thực hiện (vẫn còn dù tài khoản bị
-/// xóa — khi đó `actorId` được set null). `before`/`after` lưu nội dung bản ghi
-/// TRƯỚC và SAU mỗi thay đổi (JSON) để xem lại / khôi phục thứ đã xóa.
-/// `entityId` KHÔNG có khóa ngoại nên bản ghi vẫn sống sót khi đối tượng bị xóa.
-/// Bản ghi cũ hơn AUDIT_RETENTION_DAYS (src/lib/audit.ts, mặc định 30 ngày) sẽ
-/// được dọn tự động mỗi khi mở trang /admin/history.
+/// Nhật ký thao tác của quản trị viên. `actorEmail`/`actorName` là SNAPSHOT.
+/// `before`/`after` lưu nội dung TRƯỚC/SAU mỗi thay đổi để xem lại / khôi phục.
 model AuditLog {
   id         String      @id @default(cuid())
-  actorId    String? // User.id người thực hiện (null nếu tài khoản đã bị xóa)
-  actorEmail String // snapshot email — luôn còn để truy người làm
-  actorName  String? // snapshot tên hiển thị tại thời điểm thao tác
+  actorId    String?
+  actorEmail String
+  actorName  String?
   action     AuditAction
-  entity     String // tên model bị tác động, VD "ReadingTest", "User"
-  entityId   String? // id bản ghi bị tác động (không FK — sống sót khi bị xóa)
-  summary    String      @db.Text // mô tả tiếng Việt, VD: Xóa bài đọc «...»
-  before     Json? // snapshot nội dung TRƯỚC khi sửa/xóa
-  after      Json? // snapshot nội dung SAU khi tạo/sửa
+  entity     String
+  entityId   String?
+  summary    String      @db.Text
+  before     Json?
+  after      Json?
   createdAt  DateTime    @default(now())
 
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)

@@ -4,9 +4,12 @@
 // ===========================================================================
 
 /** Domain production (canonical) — KHÔNG lấy từ env để canonical không bao giờ trỏ nhầm về URL nội bộ Railway. */
-export const SITE_URL = "https://dingdonghsk.com";
+export const SITE_URL = "https://dingdongkids.com";
 
-export const SITE_NAME = "DingDong HSK";
+export const SITE_NAME = "DingDong Kids";
+
+/** Khẩu hiệu ngắn — dùng ở thẻ title, footer, OG. */
+export const SITE_TAGLINE = "Tiếng Anh vui cho bé";
 
 export const SUPPORT_EMAIL = "dingdong1405edu@gmail.com";
 

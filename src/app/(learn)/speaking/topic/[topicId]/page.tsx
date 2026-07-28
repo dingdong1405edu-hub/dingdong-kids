@@ -1,23 +1,22 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
-import { TopicSpeakingClient, type TopicData } from "./topic-speaking-client";
-import type { TopicHint } from "@/components/admin/speaking-topic-fields";
+import { TopicSpeakingClient, type TopicData, type TopicHint } from "./topic-speaking-client";
 
 interface Props {
   params: Promise<{ topicId: string }>;
 }
 
+/** `hints` lưu dạng Json tự do → lọc về [{ text, vi }] an toàn cho client. */
 function asHints(v: unknown): TopicHint[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter((h): h is Record<string, unknown> => !!h && typeof h === "object")
     .map((h) => ({
       text: typeof h.text === "string" ? h.text : "",
-      pinyin: typeof h.pinyin === "string" ? h.pinyin : "",
       vi: typeof h.vi === "string" ? h.vi : "",
     }))
-    .filter((h) => h.text || h.pinyin || h.vi);
+    .filter((h) => h.text || h.vi);
 }
 
 export default async function SpeakingTopicPage({ params }: Props) {
@@ -30,19 +29,17 @@ export default async function SpeakingTopicPage({ params }: Props) {
 
   const data: TopicData = {
     id: t.id,
-    hskLevel: t.hskLevel,
+    level: t.level,
     title: t.title,
     topic: t.topic,
-    questionZh: t.questionZh,
-    questionPinyin: t.questionPinyin,
+    question: t.question,
     questionVi: t.questionVi,
     outline: t.outline,
     audioUrl: t.audioUrl,
     transcript: t.transcript,
     hints: asHints(t.hints),
     sampleAnswer: t.sampleAnswer,
-    sampleAnswerPinyin: t.sampleAnswerPinyin,
-    minChars: t.minChars,
+    minWords: t.minWords,
     prepSeconds: t.prepSeconds,
   };
 

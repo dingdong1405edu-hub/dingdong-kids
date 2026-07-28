@@ -27,9 +27,9 @@ export async function gradeWritingAction(input: z.infer<typeof schema>) {
   try {
     const result = await gradeWriting({
       submission,
-      hskLevel: task.hskLevel,
+      level: task.level,
       taskPrompt: task.prompt,
-      minChars: task.minChars,
+      minWords: task.minWords,
       outline: task.outline,
     });
 

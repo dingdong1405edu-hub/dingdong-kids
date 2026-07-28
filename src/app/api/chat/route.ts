@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { isChatConfigured, streamBaoReply, type ChatMessage } from "@/lib/chat";
+import { isChatConfigured, streamDingReply, type ChatMessage } from "@/lib/chat";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,19 +20,19 @@ const schema = z.object({
 });
 
 /**
- * Trợ lý chat "Bao". Yêu cầu đăng nhập (mọi học viên đều dùng được, miễn phí —
- * không trừ tim, không cần gói trả phí). Trả về stream text/plain để câu trả lời
- * hiện dần trên giao diện.
+ * Trợ lý chat "Ding" (chú gấu con). Yêu cầu đăng nhập (mọi bé đều dùng được,
+ * miễn phí — không trừ tim, không cần gói trả phí). Trả về stream text/plain để
+ * câu trả lời hiện dần trên giao diện, bé không phải ngồi chờ.
  */
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Cần đăng nhập để dùng trợ lý." }, { status: 401 });
+    return NextResponse.json({ error: "Bé hãy đăng nhập để trò chuyện với Ding nhé!" }, { status: 401 });
   }
 
   if (!isChatConfigured()) {
     return NextResponse.json(
-      { error: "Trợ lý AI chưa được cấu hình (thiếu GROQ_API_KEY)." },
+      { error: "Ding chưa sẵn sàng (máy chủ thiếu GROQ_API_KEY)." },
       { status: 503 }
     );
   }
@@ -49,16 +49,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   }
 
-  // Lấy tên + trình độ HSK từ DB (không tin client) để cá nhân hoá câu trả lời.
+  // Lấy tên + trình độ từ DB (không tin client) để cá nhân hoá câu trả lời:
+  // Ding gọi đúng tên bé và nói ở độ khó hợp cấp độ bé đang học.
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, hskLevel: true },
+    select: { name: true, level: true },
   });
 
   try {
-    const stream = await streamBaoReply({
+    const stream = await streamDingReply({
       messages,
-      hskLevel: user?.hskLevel ?? "HSK1",
+      level: user?.level ?? "PRE_STARTERS",
       name: user?.name,
     });
     return new Response(stream, {
@@ -70,6 +71,6 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "Trợ lý AI tạm thời không phản hồi." }, { status: 500 });
+    return NextResponse.json({ error: "Ding đang bận một chút. Bé thử lại nhé!" }, { status: 500 });
   }
 }

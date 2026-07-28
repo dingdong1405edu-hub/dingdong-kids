@@ -1,6 +1,6 @@
 "use client";
 import { Clock } from "lucide-react";
-import { cn, hskBadgeClass, hskLevelLabel } from "@/lib/utils";
+import { cn, levelBadgeClass, levelLabel } from "@/lib/utils";
 import { PassStatus } from "@/components/learn/roadmap/pass-status";
 
 interface ResultsSummaryProps {
@@ -13,25 +13,33 @@ interface ResultsSummaryProps {
   passThreshold?: number;
 }
 
+/** Lời khen theo mức điểm — luôn tích cực, không bao giờ dán nhãn "kém". */
+function praise(pct: number): string {
+  if (pct >= 90) return "Siêu quá! 🌟";
+  if (pct >= 70) return "Bé làm tốt lắm! 👏";
+  if (pct >= 50) return "Khá rồi đó, cố thêm chút nữa nhé! 💪";
+  return "Bé đã cố gắng rồi! Cùng xem lại nhé 🐻";
+}
+
 export function ResultsSummary({ score, correct, total, level, elapsedLabel, passThreshold }: ResultsSummaryProps) {
   const pct = Math.round(score);
   const r = 26;
   const circumference = 2 * Math.PI * r;
   const dash = (pct / 100) * circumference;
-  const color = pct >= 80 ? "text-emerald-500" : pct >= 50 ? "text-amber-500" : "text-rose-500";
+  const color = pct >= 80 ? "text-emerald-500" : pct >= 50 ? "text-sunny" : "text-primary";
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl border bg-gradient-to-br from-primary/5 to-transparent p-4">
+    <div className="flex items-center gap-4 rounded-3xl border-2 bg-gradient-to-br from-primary/5 to-transparent p-4">
       <div className="relative h-16 w-16 shrink-0">
         <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
-          <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="6" className="text-muted" />
+          <circle cx="32" cy="32" r={r} fill="none" stroke="currentColor" strokeWidth="7" className="text-muted" />
           <circle
             cx="32"
             cy="32"
             r={r}
             fill="none"
             stroke="currentColor"
-            strokeWidth="6"
+            strokeWidth="7"
             strokeLinecap="round"
             strokeDasharray={`${dash} ${circumference}`}
             className={color}
@@ -42,14 +50,18 @@ export function ResultsSummary({ score, correct, total, level, elapsedLabel, pas
         </span>
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-base font-bold">Kết quả</span>
-          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-bold", hskBadgeClass(level))}>
-            {hskLevelLabel(level)}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-display text-base font-bold">{praise(pct)}</span>
+          <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] font-bold", levelBadgeClass(level))}>
+            {levelLabel(level)}
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Đúng <b className="text-foreground">{correct}/{total}</b> câu
+          Đúng{" "}
+          <b className="text-foreground">
+            {correct}/{total}
+          </b>{" "}
+          câu
         </p>
         {elapsedLabel && (
           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">

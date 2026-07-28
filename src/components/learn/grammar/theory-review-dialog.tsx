@@ -23,8 +23,8 @@ export function TheoryReviewDialog({ open, onOpenChange, sections }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Lý thuyết</DialogTitle>
-          <DialogDescription>Xem lại các cấu trúc ngữ pháp của bài học.</DialogDescription>
+          <DialogTitle className="font-display font-extrabold">Xem lại mẫu câu</DialogTitle>
+          <DialogDescription>Bé xem lại các mẫu câu của bài này nhé 🐻</DialogDescription>
         </DialogHeader>
         <div className="space-y-8 pt-2">
           {sections.map((section, i) => (

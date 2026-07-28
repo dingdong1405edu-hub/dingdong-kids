@@ -26,15 +26,16 @@ function sniffAudio(buf: Buffer): string | null {
 }
 
 /**
- * Admin-only listening audio upload. One multipart POST with `file` → lưu một
- * tệp audio có sẵn (mp3/wav/ogg/m4a). Trả `{ ok, url }` với url là
- * `/api/files/<id>` (phục vụ từ Postgres).
+ * Admin-only audio upload. One multipart POST with `file` → lưu một tệp audio có
+ * sẵn (mp3/wav/ogg/m4a). Trả `{ ok, url }` với url là `/api/files/<id>` (phục vụ
+ * từ Postgres).
  *
  * Lý do lưu DB thay vì public/: filesystem trên Railway là ephemeral nên file
  * ghi vào public/ biến mất sau mỗi lần deploy/restart. Lưu DB thì bền vĩnh viễn.
  * Form admin vẫn nhận được URL dán tay (https/CDN) làm phương án thay thế.
  *
- * (Không còn tạo MP3 bằng AI — admin tự tải audio thật lên; xem CLAUDE.md §2.)
+ * Đây là đường TẢI LÊN tệp có sẵn (giọng thật, bài hát, hội thoại đã thu). Muốn
+ * MÁY đọc một câu tiếng Anh thì dùng POST /api/admin/tts (Deepgram Aura).
  */
 export async function POST(req: NextRequest) {
   try {

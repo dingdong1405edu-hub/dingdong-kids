@@ -3,21 +3,24 @@ import { PdfDocument, PdfSection } from "@/components/learn/pdf/pdf-document";
 import { PdfQuestionList, type PdfQuestion } from "@/components/learn/pdf/pdf-question-list";
 import { PDF, PDF_FONT } from "@/lib/pdf/theme";
 
-/** Phạm vi in cho Đọc/Nghe: cả 2 · chỉ đoạn văn(lời thoại) · chỉ câu hỏi & đáp án. */
+/** Phạm vi in cho Đọc/Nghe: cả 2 · chỉ bài đọc (lời thoại) · chỉ câu hỏi & đáp án. */
 export type PassageScope = "both" | "passage" | "questions";
 
 interface Props {
   title: string;
-  titleZh?: string | null;
-  hskLevel: string;
+  level: string;
   passage: string;
-  passagePinyin?: string | null;
   questions: PdfQuestion[];
   scope?: PassageScope;
 }
 
-/** Khối đoạn văn (nền nhạt, gạch nhấn bên trái). */
-export function PdfPassage({ passage, pinyin }: { passage: string; pinyin?: string | null }) {
+/**
+ * Khối bài đọc (nền nhạt, gạch nhấn bên trái).
+ *
+ * Văn bản thuần, cỡ chữ lớn và giãn dòng rộng để trẻ không lạc dòng khi đọc
+ * trên giấy — không chèn lớp phiên âm nào lên trên mặt chữ.
+ */
+export function PdfPassage({ passage }: { passage: string }) {
   return (
     <div
       style={{
@@ -28,29 +31,33 @@ export function PdfPassage({ passage, pinyin }: { passage: string; pinyin?: stri
         padding: "12px 14px",
       }}
     >
-      <p style={{ whiteSpace: "pre-line", fontFamily: PDF_FONT.chinese, fontSize: 15, lineHeight: 1.9, color: PDF.ink }}>
+      <p
+        style={{
+          whiteSpace: "pre-line",
+          fontFamily: PDF_FONT.sans,
+          fontSize: 16,
+          lineHeight: 2,
+          color: PDF.ink,
+          margin: 0,
+        }}
+      >
         {passage}
       </p>
-      {pinyin && (
-        <p style={{ whiteSpace: "pre-line", fontFamily: PDF_FONT.pinyin, fontSize: 12, lineHeight: 1.7, color: PDF.brand, marginTop: 6 }}>
-          {pinyin}
-        </p>
-      )}
     </div>
   );
 }
 
-/** PDF đọc hiểu: đoạn văn (kèm pinyin nếu có) + câu hỏi & đáp án. */
-export function ReadingPdf({ title, titleZh, hskLevel, passage, passagePinyin, questions, scope = "both" }: Props) {
+/** PDF đọc hiểu: bài đọc + câu hỏi & đáp án. */
+export function ReadingPdf({ title, level, passage, questions, scope = "both" }: Props) {
   return (
-    <PdfDocument kicker="Đọc hiểu · 阅读" title={title} titleZh={titleZh} hskLevel={hskLevel}>
+    <PdfDocument kicker="Đọc hiểu" title={title} level={level}>
       {scope !== "questions" && (
-        <PdfSection title="Đoạn văn" titleZh="短文">
-          <PdfPassage passage={passage} pinyin={passagePinyin} />
+        <PdfSection title="Bài đọc">
+          <PdfPassage passage={passage} />
         </PdfSection>
       )}
       {scope !== "passage" && (
-        <PdfSection title="Câu hỏi & đáp án" titleZh="问题与答案">
+        <PdfSection title="Câu hỏi & đáp án">
           <PdfQuestionList questions={questions} />
         </PdfSection>
       )}

@@ -5,17 +5,17 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const saveSchema = z.object({
-  hanzi: z.string().trim().min(1).max(16),
-  pinyin: z.string().trim().max(64),
+  word: z.string().trim().min(1).max(64),
+  ipa: z.string().trim().max(64),
   meaning: z.string().trim().min(1).max(500),
-  hskLevel: z.string().max(8).optional(),
+  level: z.string().max(16).optional(),
   source: z.string().max(64).optional(),
 });
 
 /**
- * Lưu một từ vào "Sổ từ" của học viên. Idempotent theo (userId, hanzi): lưu lại
- * cùng một từ chỉ cập nhật nghĩa/pinyin mới nhất. Chỉ nên gọi cho từ đã có trong
- * từ điển (client kiểm tra trước khi cho lưu).
+ * Lưu một từ vào "Sổ từ" của bé. Idempotent theo (userId, word): lưu lại cùng
+ * một từ chỉ cập nhật nghĩa/phiên âm mới nhất. Chỉ nên gọi cho từ đã tra được
+ * (client kiểm tra trước khi cho lưu).
  */
 export async function saveWordAction(params: z.infer<typeof saveSchema>) {
   const session = await auth();
@@ -24,12 +24,12 @@ export async function saveWordAction(params: z.infer<typeof saveSchema>) {
   const parsed = saveSchema.safeParse(params);
   if (!parsed.success) return { ok: false, error: "Dữ liệu không hợp lệ" };
 
-  const { hanzi, pinyin, meaning, hskLevel, source } = parsed.data;
+  const { word, ipa, meaning, level, source } = parsed.data;
   try {
     await db.savedWord.upsert({
-      where: { userId_hanzi: { userId: session.user.id, hanzi } },
-      update: { pinyin, meaning, hskLevel: hskLevel ?? null, source: source ?? null },
-      create: { userId: session.user.id, hanzi, pinyin, meaning, hskLevel: hskLevel ?? null, source: source ?? null },
+      where: { userId_word: { userId: session.user.id, word } },
+      update: { ipa, meaning, level: level ?? null, source: source ?? null },
+      create: { userId: session.user.id, word, ipa, meaning, level: level ?? null, source: source ?? null },
     });
     revalidatePath("/so-tu");
     return { ok: true };

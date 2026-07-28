@@ -34,7 +34,7 @@ export default async function RoadmapSectionPlayPage({ params }: Props) {
   });
   if (!section || !section.published) notFound();
   const { lesson } = section;
-  if (lesson.course.hskLevel !== level || !lesson.course.published) notFound();
+  if (lesson.course.level !== level || !lesson.course.published) notFound();
 
   // Khoá theo gói: người miễn phí chỉ mở FREE_ROADMAP_LESSONS bài đầu mỗi cấp.
   const lessonIndex = await db.roadmapLesson.count({
@@ -44,21 +44,21 @@ export default async function RoadmapSectionPlayPage({ params }: Props) {
 
   const meta = SKILL_META.find((m) => m.key === skillKey)!;
   const backHref = `/roadmap/${slug}`;
-  // Vocab/Grammar/Hanzi/Reading/Listening đã có nút thoát riêng; Viết/Nói thì cần thanh quay lại.
+  // Từ vựng/Ghép vần/Ngữ pháp/Đọc/Nghe đã có nút thoát riêng; Viết/Nói thì cần thanh quay lại.
   const showHeader = skillKey === "WRITING" || skillKey === "SPEAKING";
 
-  // Từ vựng: nạp lịch lặp lại ngắt quãng (RoadmapWordReview, khoá theo hanzi) cho
+  // Từ vựng: nạp lịch lặp lại ngắt quãng (RoadmapWordReview, khoá theo từ) cho
   // các từ của phần + trạng thái đã-hoàn-thành để mở thẳng tab "Ôn từ".
   let vocabReviews: WordReviewState[] = [];
   let vocabCompleted = false;
   if (skillKey === "VOCAB") {
     const cards = buildRoadmapVocabCards(section.id, section.content);
-    const hanziList = cards.map((c) => c.hanzi);
+    const wordList = cards.map((c) => c.word);
     const [rows, progress] = await Promise.all([
-      hanziList.length
+      wordList.length
         ? db.roadmapWordReview.findMany({
-            where: { userId, hanzi: { in: hanziList } },
-            select: { hanzi: true, dueAt: true, repetitions: true },
+            where: { userId, word: { in: wordList } },
+            select: { word: true, dueAt: true, repetitions: true },
           })
         : Promise.resolve([]),
       db.roadmapProgress.findUnique({
@@ -66,9 +66,9 @@ export default async function RoadmapSectionPlayPage({ params }: Props) {
         select: { skillsDone: true },
       }),
     ]);
-    const byHanzi = new Map(rows.map((r) => [r.hanzi, r]));
+    const byWord = new Map(rows.map((r) => [r.word, r]));
     vocabReviews = cards.flatMap((c) => {
-      const r = byHanzi.get(c.hanzi);
+      const r = byWord.get(c.word);
       return r ? [{ wordId: c.id, dueAt: r.dueAt.toISOString(), repetitions: r.repetitions }] : [];
     });
     const rawSkillsDone = progress?.skillsDone;
@@ -103,7 +103,7 @@ export default async function RoadmapSectionPlayPage({ params }: Props) {
         skill={skillKey}
         lessonId={lesson.id}
         sectionId={section.id}
-        hskLevel={lesson.course.hskLevel}
+        level={lesson.course.level}
         title={lesson.topic}
         content={section.content}
         backHref={backHref}

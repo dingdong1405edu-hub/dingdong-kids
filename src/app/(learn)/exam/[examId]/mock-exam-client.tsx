@@ -2,12 +2,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Clock, Eye, EyeOff, Headphones, BookText, PenLine, RefreshCw } from "lucide-react";
+import { Clock, Headphones, BookText, PenLine, Mic, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestShell, QuestionNavBar } from "@/components/learn/test-shell";
 import { ReviewDialog } from "@/components/learn/reading/review-dialog";
-import { CharLookup, type LookupAnchor } from "@/components/learn/reading/char-lookup";
-import { cn, formatDuration, hskLevelLabel } from "@/lib/utils";
+import { WordLookup, type LookupAnchor } from "@/components/learn/reading/word-lookup";
+import { cn, formatDuration, levelLabel } from "@/lib/utils";
 import { sectionLabel } from "@/lib/mock-exam";
 import { submitMockExamAction, type ExamGradeResult } from "@/server/actions/exam-submit";
 import type { ExamData } from "./types";
@@ -20,6 +20,7 @@ const isAnswered = (v: unknown) => v !== undefined && v !== null && v !== "";
 function SectionIcon({ skill, className }: { skill: Skill; className?: string }) {
   if (skill === "LISTENING") return <Headphones className={className} />;
   if (skill === "READING") return <BookText className={className} />;
+  if (skill === "SPEAKING") return <Mic className={className} />;
   return <PenLine className={className} />;
 }
 
@@ -33,7 +34,6 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
   const [elapsed, setElapsed] = useState(0);
   const [activeSection, setActiveSection] = useState(0);
   const [current, setCurrent] = useState(0);
-  const [showPinyin, setShowPinyin] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [lookup, setLookup] = useState<LookupAnchor | null>(null);
   const [restored, setRestored] = useState(false);
@@ -161,22 +161,24 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
         /* ignore */
       }
       toast.success(
-        `${auto ? "Hết giờ! " : ""}${res.result.passed ? "Đạt" : "Chưa đạt"} · ${res.result.overall}/100`,
+        `${auto ? "Hết giờ rồi! " : ""}${
+          res.result.passed ? "Bé làm được rồi 🎉" : "Bé đã cố gắng lắm 🌟"
+        } · ${res.result.overall}/100`,
       );
     } else {
-      toast.error(res.error || "Lỗi nộp bài, thử lại sau");
+      toast.error(res.error || "Chưa nộp được bài, bé thử lại nhé");
     }
   }
 
-  const onCharClick = (char: string, pinyin: string, e: React.MouseEvent) =>
-    setLookup({ char, pinyin, x: e.clientX, y: e.clientY });
+  const onWordClick = (word: string, e: React.MouseEvent) =>
+    setLookup({ word, x: e.clientX, y: e.clientY });
 
   const timerCritical = hasLimit && !submitted && remaining !== null && remaining <= 30;
 
   return (
     <>
       <TestShell
-        subtitle={`Thi thử · ${hskLevelLabel(exam.hskLevel)}`}
+        subtitle={`Thi thử · ${levelLabel(exam.level)}`}
         backHref="/exam"
         submitting={submitting}
         submitted={submitted}
@@ -200,17 +202,6 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
               </span>
             </span>
           )
-        }
-        tools={
-          <Button
-            size="sm"
-            variant={showPinyin ? "default" : "outline"}
-            className="gap-1.5 rounded-lg"
-            onClick={() => setShowPinyin((v) => !v)}
-          >
-            {showPinyin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="hidden lg:inline">Pinyin</span>
-          </Button>
         }
         nav={
           total > 0 ? (
@@ -261,8 +252,10 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
               {/* Title + results */}
               {!submitted ? (
                 <div>
-                  <h1 className="text-lg font-bold sm:text-xl">{exam.title}</h1>
-                  {exam.titleZh && <p className="font-chinese text-sm text-muted-foreground">{exam.titleZh}</p>}
+                  <h1 className="font-display text-lg font-bold sm:text-xl">{exam.title}</h1>
+                  {exam.description && (
+                    <p className="text-sm text-muted-foreground">{exam.description}</p>
+                  )}
                 </div>
               ) : (
                 result && (
@@ -274,15 +267,15 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
               {exam.sections.map((section, si) => (
                 <div key={section.id} className={cn("space-y-4", activeSection === si ? "block" : "hidden")}>
                   {section.instructions && (
-                    <p className="rounded-xl border bg-muted/40 p-3 text-sm font-chinese">{section.instructions}</p>
+                    <p className="rounded-2xl border-2 bg-muted/40 p-3 text-[15px]">{section.instructions}</p>
                   )}
                   {section.parts.map((part, pi) => (
                     <ExamPart
                       key={part.id}
                       part={part}
                       skill={section.skill}
-                      hskLevel={exam.hskLevel}
-                      partLabel={part.title || `Tiểu phần ${pi + 1}`}
+                      level={exam.level}
+                      partLabel={part.title || `Part ${pi + 1}`}
                       globalIndexOf={(qid) => indexByQid[qid] ?? 0}
                       answers={answers}
                       onAnswer={answer}
@@ -295,8 +288,7 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
                       essays={essays}
                       onEssayChange={(pid, v) => setEssays((e) => ({ ...e, [pid]: v }))}
                       essayResults={result?.essays ?? {}}
-                      showPinyin={showPinyin}
-                      onCharClick={onCharClick}
+                      onWordClick={onWordClick}
                       registerRef={(qid, el) => {
                         questionRefs.current[qid] = el;
                       }}
@@ -311,7 +303,7 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
                     <RefreshCw className="h-4 w-4" /> Làm lại từ đầu
                   </Button>
                   <Button asChild variant="ghost">
-                    <Link href="/exam">Quay lại danh sách đề</Link>
+                    <Link href="/exam">Về danh sách đề</Link>
                   </Button>
                 </div>
               )}
@@ -331,7 +323,7 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
         onConfirm={() => doSubmit(false)}
         submitting={submitting}
       />
-      {lookup && <CharLookup anchor={lookup} onClose={() => setLookup(null)} source={`exam:${exam.id}`} />}
+      {lookup && <WordLookup anchor={lookup} onClose={() => setLookup(null)} source={`exam:${exam.id}`} />}
     </>
   );
 }

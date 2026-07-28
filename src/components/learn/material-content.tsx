@@ -2,8 +2,9 @@ import { Lightbulb } from "lucide-react";
 import type { MaterialBlock } from "@/lib/materials";
 
 /**
- * Renders a study material's structured content blocks. Pure server component —
- * no interactivity, just typographic rendering with Chinese/pinyin styling.
+ * Render các khối nội dung của một tài liệu học. Server component thuần — không
+ * tương tác, chỉ trình bày chữ. Từ/câu tiếng Anh dùng phông dạy đọc
+ * (`font-primer`) để bé nhận mặt chữ giống trong sách tập đọc.
  */
 export function MaterialContent({ blocks }: { blocks: MaterialBlock[] }) {
   return (
@@ -19,24 +20,24 @@ function Block({ block }: { block: MaterialBlock }) {
   switch (block.type) {
     case "heading":
       return (
-        <h2 className="flex flex-wrap items-baseline gap-2 border-b pb-1.5 pt-2 text-lg font-bold text-foreground">
+        <h2 className="flex flex-wrap items-baseline gap-2 border-b pb-1.5 pt-2 font-display text-xl font-extrabold text-foreground">
           <span>{block.text}</span>
-          {block.zh && <span className="font-chinese text-base font-semibold text-primary">{block.zh}</span>}
+          {block.en && <span className="font-primer text-base font-bold text-primary">{block.en}</span>}
         </h2>
       );
 
     case "paragraph":
-      return <p className="text-[15px] leading-relaxed text-foreground/90">{block.text}</p>;
+      return <p className="text-[17px] leading-relaxed text-foreground/90">{block.text}</p>;
 
     case "list":
       return block.ordered ? (
-        <ol className="list-decimal space-y-1.5 pl-5 text-[15px] leading-relaxed text-foreground/90 marker:text-primary marker:font-semibold">
+        <ol className="list-decimal space-y-1.5 pl-5 text-[17px] leading-relaxed text-foreground/90 marker:font-extrabold marker:text-primary">
           {block.items.map((it, i) => (
             <li key={i}>{it}</li>
           ))}
         </ol>
       ) : (
-        <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-foreground/90 marker:text-primary">
+        <ul className="list-disc space-y-1.5 pl-5 text-[17px] leading-relaxed text-foreground/90 marker:text-primary">
           {block.items.map((it, i) => (
             <li key={i}>{it}</li>
           ))}
@@ -45,30 +46,29 @@ function Block({ block }: { block: MaterialBlock }) {
 
     case "example":
       return (
-        <div className="rounded-xl border bg-muted/30 p-4">
-          <p className="font-chinese text-xl leading-snug text-foreground">{block.zh}</p>
-          {block.pinyin && <p className="font-pinyin mt-1 text-sm text-primary/80">{block.pinyin}</p>}
-          {block.vi && <p className="mt-1 text-sm text-muted-foreground">{block.vi}</p>}
+        <div className="sticker bg-muted/30 p-4">
+          <p className="font-primer text-2xl leading-snug text-foreground">{block.en}</p>
+          {block.vi && <p className="mt-1.5 text-[15px] text-muted-foreground">{block.vi}</p>}
         </div>
       );
 
     case "vocab":
       return (
-        <div className="overflow-x-auto rounded-xl border">
+        <div className="overflow-x-auto rounded-2xl border-2">
           <table className="w-full min-w-full text-left text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+            <thead className="bg-muted/50 text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
               <tr>
-                <th className="px-4 py-2 font-semibold">Hán tự</th>
-                <th className="px-4 py-2 font-semibold">Pinyin</th>
-                <th className="px-4 py-2 font-semibold">Nghĩa</th>
+                <th className="px-4 py-2.5">Từ tiếng Anh</th>
+                <th className="px-4 py-2.5">Phát âm</th>
+                <th className="px-4 py-2.5">Nghĩa</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {block.items.map((it, i) => (
                 <tr key={i} className="hover:bg-muted/20">
-                  <td className="font-chinese px-4 py-2 text-base text-foreground">{it.zh}</td>
-                  <td className="font-pinyin px-4 py-2 text-primary/80">{it.pinyin}</td>
-                  <td className="px-4 py-2 text-muted-foreground">{it.vi}</td>
+                  <td className="font-primer px-4 py-2.5 text-lg font-bold text-foreground">{it.word}</td>
+                  <td className="px-4 py-2.5 font-serif text-muted-foreground">{it.ipa}</td>
+                  <td className="px-4 py-2.5 text-[15px] text-muted-foreground">{it.vi}</td>
                 </tr>
               ))}
             </tbody>
@@ -78,9 +78,9 @@ function Block({ block }: { block: MaterialBlock }) {
 
     case "note":
       return (
-        <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-400/25 dark:bg-amber-500/15">
+        <div className="flex gap-3 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-400/30 dark:bg-amber-500/15">
           <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-500 dark:text-amber-300" />
-          <p className="text-[15px] leading-relaxed text-amber-900 dark:text-amber-200">{block.text}</p>
+          <p className="text-[17px] leading-relaxed text-amber-900 dark:text-amber-100">{block.text}</p>
         </div>
       );
 

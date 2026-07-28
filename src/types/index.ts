@@ -1,44 +1,37 @@
-export type { HSKLevel, Role, Skill, QuestionType, WritingTaskType } from "@prisma/client";
+export type { EnglishLevel, Role, Skill, QuestionType, WritingTaskType } from "@prisma/client";
 
 export interface Exercise {
   type:
     | "match"
     | "translate"
-    | "toneSelect"
-    | "hanziInput"
-    | "sentenceOrder"
-    | "pinyinMatch"
     | "fill_blank"
     | "sentence_order"
+    | "sentenceOrder"
     | "answer_question"
-    | "type_sentence";
-  /** Optional author-written rationale shown when the learner answers wrong —
-   *  explains WHY the answer is what it is, not just the correct answer. */
+    | "type_sentence"
+    // --- dành riêng cho trẻ nhỏ (chưa đọc thạo) ---
+    | "picture_match"
+    | "listen_pick"
+    | "spell_drag"
+    | "rhyme_match";
+  /** Giải thích tác giả viết sẵn, hiện khi trẻ trả lời sai — nói VÌ SAO đáp án
+   *  đúng là như vậy, không chỉ đưa ra đáp án. */
   explanation?: string;
   [key: string]: unknown;
 }
 
 export interface MatchExercise extends Exercise {
   type: "match";
-  pairs: Array<{ zh: string; vi: string; pinyin: string }>;
+  pairs: Array<{ en: string; vi: string; imageUrl?: string; audioUrl?: string }>;
 }
 
 export interface TranslateExercise extends Exercise {
   type: "translate";
-  direction: "zh_to_vi" | "vi_to_zh";
+  direction: "en_to_vi" | "vi_to_en";
   prompt: string;
   answer: string;
-  pinyin?: string;
+  audioUrl?: string;
   options: string[];
-}
-
-export interface ToneSelectExercise extends Exercise {
-  type: "toneSelect";
-  word: string;
-  pinyin: string;
-  question: string;
-  options: string[];
-  correct: number;
 }
 
 export interface SentenceOrderExercise extends Exercise {
@@ -47,11 +40,7 @@ export interface SentenceOrderExercise extends Exercise {
   answer: string;
   hint?: string;
   meaning?: string;
-}
-
-export interface PinyinMatchExercise extends Exercise {
-  type: "pinyinMatch";
-  pairs: Array<{ zh: string; pinyin: string }>;
+  audioUrl?: string;
 }
 
 export interface FillBlankExercise extends Exercise {
@@ -62,133 +51,161 @@ export interface FillBlankExercise extends Exercise {
   hint?: string;
 }
 
-/** Free-typed short answer to a question. Graded by matching the normalised
- *  input against any entry in `accept` (deterministic, offline). */
+/** Trả lời ngắn tự gõ. Chấm bằng cách so khớp chuẩn hoá với `accept`. */
 export interface AnswerQuestionExercise extends Exercise {
   type: "answer_question";
   question: string;
-  questionPinyin?: string;
   accept: string[];
   sampleAnswer: string;
   hint?: string;
+  audioUrl?: string;
 }
 
-/** Free-typed full sentence (e.g. translate a Vietnamese prompt into Chinese).
- *  Graded by matching the normalised input against any entry in `accept`. */
+/** Gõ cả câu (vd dịch câu tiếng Việt sang tiếng Anh). */
 export interface TypeSentenceExercise extends Exercise {
   type: "type_sentence";
   prompt: string;
   accept: string[];
-  pinyin?: string;
   meaning?: string;
   hint?: string;
 }
 
-// ===== Grammar lesson content (per-section: theory + practice → final test) =====
+// ===== Bài tập dành riêng cho trẻ nhỏ =====
 
-/** A concrete situational example illustrating one grammar point. */
+/** Nhìn ẢNH → chọn từ đúng. Loại bài CỐT LÕI cho trẻ chưa đọc thạo:
+ *  không cần đọc đề, chỉ cần nhìn và nghe. */
+export interface PictureMatchExercise extends Exercise {
+  type: "picture_match";
+  imageUrl: string;
+  /** Audio đọc từ đúng — phát khi trẻ trả lời đúng. */
+  audioUrl?: string;
+  options: string[];
+  correct: number;
+}
+
+/** Nghe AUDIO → chọn ảnh đúng. Ngược chiều với picture_match. */
+export interface ListenPickExercise extends Exercise {
+  type: "listen_pick";
+  audioUrl: string;
+  /** Văn bản của audio (dùng để sinh TTS và hiện khi chữa bài). */
+  text: string;
+  options: Array<{ imageUrl: string; label: string }>;
+  correct: number;
+}
+
+/** Kéo thả chữ cái để ghép thành từ. Luyện chính tả bằng thao tác, không gõ. */
+export interface SpellDragExercise extends Exercise {
+  type: "spell_drag";
+  word: string;
+  imageUrl?: string;
+  audioUrl?: string;
+  /** Chữ cái gây nhiễu trộn thêm vào (ngoài các chữ của `word`). */
+  distractors?: string[];
+}
+
+/** Nối các từ cùng vần (cat–hat). Nền tảng phonics. */
+export interface RhymeMatchExercise extends Exercise {
+  type: "rhyme_match";
+  pairs: Array<{ a: string; b: string; imageUrlA?: string; imageUrlB?: string }>;
+}
+
+// ===== Nội dung bài ngữ pháp (mỗi phần: lý thuyết + luyện tập → bài kiểm tra) =====
+
+/** Một ví dụ tình huống minh hoạ cho một điểm ngữ pháp. */
 export interface SituationalExample {
   situation: string;
-  hanzi: string;
-  pinyin: string;
+  sentence: string;
   meaning: string;
   note?: string;
-  /** Optional illustration for this context (URL or hosted path). */
+  audioUrl?: string;
+  /** Ảnh minh hoạ cho ngữ cảnh này. */
   imageUrl?: string;
 }
 
-/** One labelled component of a grammar formula. Glosses a single slot/word of
- *  the `structure` so a beginner sees what EVERY part means — not just the bare
- *  formula. Listed in formula order; the viewer colours each part + its card. */
+/** Một thành phần trong công thức ngữ pháp. Chú giải từng ô/từ của `structure`
+ *  để trẻ thấy MỌI phần nghĩa là gì — không chỉ công thức trần. Liệt kê theo
+ *  đúng thứ tự công thức; trình xem tô màu từng phần + thẻ tương ứng. */
 export interface FormulaPart {
-  /** The slot or word exactly as it appears in the formula (e.g. "A", "是", "B"). */
+  /** Ô hoặc từ đúng như xuất hiện trong công thức (vd "I", "am", "happy"). */
   part: string;
-  /** Pinyin for a literal Chinese token (optional — omit for placeholders A/B). */
-  pinyin?: string;
-  /** Short grammatical role, e.g. "Chủ ngữ", "Động từ 'là'", "Danh từ". */
+  /** Vai trò ngữ pháp ngắn, vd "Chủ ngữ", "Động từ to be", "Tính từ". */
   role?: string;
-  /** Plain-Vietnamese meaning — what this part does in the sentence. */
+  /** Nghĩa dễ hiểu — phần này làm gì trong câu. */
   meaning: string;
 }
 
-/** A common learner mistake for a grammar point: the wrong form, the corrected
- *  form, and an optional one-line reason. Rendered as a ❌ sai / ✔ đúng row. */
+/** Lỗi trẻ hay mắc: dạng sai, dạng đúng, và lý do ngắn.
+ *  Hiển thị thành hàng ❌ sai / ✔ đúng. */
 export interface GrammarMistake {
   wrong: string;
   right: string;
   note?: string;
 }
 
-/** The theory (display) fields of one grammar section: a framed formula with an
- *  optional per-part breakdown, a "when to use" note, the explanation, common
- *  mistakes, an optional image and the situational examples. */
+/** Phần lý thuyết (hiển thị) của một mục ngữ pháp. */
 export interface TheorySection {
   id: string;
   title: string;
-  titleZh?: string;
+  /** Tên tiếng Anh của điểm ngữ pháp, vd "Present Simple". */
+  titleEn?: string;
   structure?: string;
-  /** Per-part gloss of the formula, in formula order. When present the viewer
-   *  shows an annotated card for each part; when absent it just colours the
-   *  formula tokens. Optional + backward compatible. */
+  /** Chú giải từng phần của công thức, theo thứ tự. */
   breakdown?: FormulaPart[];
   explanation: string;
-  /** When/why to use this structure — its own "Khi nào dùng" callout. */
+  /** Khi nào / vì sao dùng cấu trúc này. */
   usage?: string;
-  /** Common mistakes, shown as ❌ sai / ✔ đúng rows. */
   mistakes?: GrammarMistake[];
-  /** Optional illustration for the whole section (URL or hosted path). */
   imageUrl?: string;
   examples: SituationalExample[];
 }
 
-/** One "small part" of a grammar lesson: the theory above PLUS the practice
- *  exercises for that exact part — the learner studies it then drills it
- *  immediately, before moving to the next section. */
+/** Một "phần nhỏ" của bài ngữ pháp: lý thuyết ở trên CỘNG bài luyện tập cho
+ *  đúng phần đó — trẻ học rồi luyện ngay, trước khi sang phần kế. */
 export interface GrammarSection extends TheorySection {
   exercises: Exercise[];
 }
 
-/** The comprehensive end-of-lesson test (standard grammar-exam format): graded
- *  as a block, optional countdown, pass at `passThreshold`% (default 60). */
+/** Bài kiểm tra cuối bài: chấm theo khối, có thể đếm ngược,
+ *  đạt khi ≥ `passThreshold`% (mặc định 60). */
 export interface GrammarTest {
   timeLimit?: number;
   passThreshold?: number;
   questions: Exercise[];
 }
 
-/** Structured `GrammarLesson.exercises` JSON (version 3): an ordered list of
- *  sections (each = theory + its practice) followed by one comprehensive test.
- *  The deserialiser also accepts a legacy bare `Exercise[]` array and the
- *  earlier `{ theory, flashcards, test }` (v2) shape. */
+/** Cấu trúc JSON của `GrammarLesson.exercises` (phiên bản 3): danh sách phần
+ *  có thứ tự (mỗi phần = lý thuyết + luyện tập) rồi tới một bài kiểm tra tổng.
+ *  Bộ giải mã cũng chấp nhận mảng `Exercise[]` trần (bản cũ). */
 export interface GrammarLessonContent {
   version: 3;
   sections: GrammarSection[];
   test: GrammarTest;
 }
 
-/** One example sentence attached to a vocabulary word. */
+/** Một câu ví dụ gắn với từ vựng. */
 export interface WordExample {
-  hanzi: string;
-  pinyin: string;
+  sentence: string;
   meaning: string;
+  audioUrl?: string;
 }
 
-/** A vocabulary word as consumed by the learner per-word flow (serialised from
- *  the VocabWord model — `examples` parsed, `audioUrl` nullable). */
+/** Một từ vựng như luồng học từng-từ tiêu thụ (serialise từ model VocabWord). */
 export interface VocabWordCard {
   id: string;
   lessonId: string;
   order: number;
-  hanzi: string;
-  pinyin: string;
+  word: string;
+  ipa: string;
   meaning: string;
+  partOfSpeech: string;
   examples: WordExample[];
+  imageUrl: string | null;
   audioUrl: string | null;
 }
 
-/** Trạng thái lặp lại ngắt quãng của một từ, đã serialise cho client (chế độ
- *  "Ôn từ"). `dueAt` = ISO string thời điểm đến hạn, null = từ mới (chưa từng ôn).
- *  `repetitions` dùng để phân biệt từ mới (0 → ưu tiên flashcard) với từ đã thuộc
+/** Trạng thái lặp lại ngắt quãng của một từ, đã serialise cho client.
+ *  `dueAt` = ISO string thời điểm đến hạn, null = từ mới (chưa từng ôn).
+ *  `repetitions` phân biệt từ mới (0 → ưu tiên flashcard) với từ đã thuộc
  *  (>0 → kiểm tra bằng mini-game). */
 export interface WordReviewState {
   wordId: string;
@@ -198,7 +215,8 @@ export interface WordReviewState {
 
 export interface QuestionOption {
   text: string;
-  pinyin?: string;
+  /** Ảnh cho lựa chọn — trẻ nhỏ chọn bằng hình thay vì đọc chữ. */
+  imageUrl?: string;
 }
 
 export interface MCQAnswer {

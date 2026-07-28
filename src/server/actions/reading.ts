@@ -3,20 +3,13 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { Skill, Prisma } from "@prisma/client";
+import { isAnswerAcceptable } from "@/lib/english";
 
 const submitSchema = z.object({
   testId: z.string(),
   answers: z.record(z.unknown()),
   durationSec: z.number().int().nonnegative().optional(),
 });
-
-/** Normalize a free-text answer: NFKC (fold full/half-width from Chinese IMEs), drop whitespace, lowercase. */
-function normalize(v: unknown): string {
-  return String(v ?? "")
-    .normalize("NFKC")
-    .replace(/\s+/g, "")
-    .toLowerCase();
-}
 
 export async function submitReadingAction(input: z.infer<typeof submitSchema>) {
   const session = await auth();
@@ -49,13 +42,14 @@ export async function submitReadingAction(input: z.infer<typeof submitSchema>) {
       // Guard against a malformed row (value undefined) matching an unanswered question.
       isCorrect = typeof correctAnswer.value === "boolean" && userAnswer === correctAnswer.value;
     } else if (q.type === "FILL_BLANK" || q.type === "SHORT_ANSWER") {
-      // Accept any of the listed answers (or the single `text`), whitespace/case-insensitive.
+      // Chấm NỚI cho trẻ: chấp nhận bất kỳ đáp án nào trong danh sách, bỏ qua
+      // hoa/thường + dấu câu, và tha một vài lỗi chính tả nhỏ theo độ dài từ
+      // (isAnswerAcceptable). Trẻ gõ "elefant" thay "elephant" vẫn được tính.
       const accepted = [
         ...(correctAnswer.text ? [correctAnswer.text] : []),
         ...(Array.isArray(correctAnswer.accepted) ? correctAnswer.accepted : []),
-      ].map(normalize);
-      const ua = normalize(userAnswer);
-      isCorrect = ua.length > 0 && accepted.includes(ua);
+      ];
+      isCorrect = isAnswerAcceptable(String(userAnswer ?? ""), accepted);
     }
 
     details[q.id] = isCorrect;

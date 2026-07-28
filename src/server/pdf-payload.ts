@@ -4,7 +4,6 @@ import { SKILL_META, type SkillKey } from "@/lib/roadmap";
 import { getEntitlements, isRoadmapLessonLocked } from "@/lib/entitlements";
 import {
   vocabContentSchema,
-  hanziContentSchema,
   writingContentSchema,
   writingReorderContentSchema,
   isReorderWriting,
@@ -37,22 +36,37 @@ const ROADMAP_WRITING_LABEL: Record<string, string> = {
   GUIDED: "Viết có gợi ý",
   PICTURE_DESCRIPTION: "Tả tranh",
 };
+// Nhãn không dấu vì dùng làm TÊN TỆP tải về.
 const SKILL_FILE_LABEL: Record<SkillKey, string> = {
   VOCAB: "Tu vung",
   GRAMMAR: "Ngu phap",
-  HANZI: "Chu Han",
+  PHONICS: "Ghep van",
   READING: "Doc hieu",
   LISTENING: "Nghe hieu",
   WRITING: "Viet",
   SPEAKING: "Luyen noi",
 };
 
-function mapQuestions(qs: { id: string; type: string; prompt: string; promptPinyin: string | null; options: unknown; correctAnswer: unknown; explanation: string | null; supportingQuote: string | null }[]): PdfQuestion[] {
+/** Tiền tố tên tệp cho mọi tài liệu tải về. */
+const FILE_PREFIX = "DingDong Kids";
+
+function mapQuestions(
+  qs: {
+    id: string;
+    type: string;
+    prompt: string;
+    promptTranslation: string | null;
+    options: unknown;
+    correctAnswer: unknown;
+    explanation: string | null;
+    supportingQuote: string | null;
+  }[]
+): PdfQuestion[] {
   return qs.map((q) => ({
     id: q.id,
     type: q.type,
     prompt: q.prompt,
-    promptPinyin: q.promptPinyin,
+    promptTranslation: q.promptTranslation,
     options: q.options,
     correctAnswer: q.correctAnswer,
     explanation: q.explanation,
@@ -60,33 +74,34 @@ function mapQuestions(qs: { id: string; type: string; prompt: string; promptPiny
   }));
 }
 
-function toExamples(raw: unknown): { hanzi: string; pinyin: string; meaning: string }[] {
+/** Câu ví dụ của một từ vựng: { sentence, meaning }. Audio bỏ qua — bản in không phát được. */
+function toExamples(raw: unknown): { sentence: string; meaning: string }[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((e) => {
     const o = (e ?? {}) as Record<string, unknown>;
-    return { hanzi: String(o.hanzi ?? ""), pinyin: String(o.pinyin ?? ""), meaning: String(o.meaning ?? "") };
+    return { sentence: String(o.sentence ?? ""), meaning: String(o.meaning ?? "") };
   });
 }
-function toSentences(raw: unknown): { text: string; pinyin?: string }[] {
+function toSentences(raw: unknown): { text: string; vi?: string }[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((s) => {
       const o = (s ?? {}) as Record<string, unknown>;
-      return { text: String(o.text ?? o.hanzi ?? ""), pinyin: o.pinyin ? String(o.pinyin) : undefined };
+      return { text: String(o.text ?? ""), vi: o.vi ? String(o.vi) : undefined };
     })
     .filter((s) => s.text);
 }
-function toPassage(raw: unknown): { text: string; pinyin?: string } | null {
+function toPassage(raw: unknown): { text: string; vi?: string } | null {
   const o = (raw ?? {}) as Record<string, unknown>;
-  const text = String(o.text ?? o.hanzi ?? "");
-  return text ? { text, pinyin: o.pinyin ? String(o.pinyin) : undefined } : null;
+  const text = String(o.text ?? "");
+  return text ? { text, vi: o.vi ? String(o.vi) : undefined } : null;
 }
-function toSpeakingQuestions(raw: unknown): { question: string; pinyin?: string }[] {
+function toSpeakingQuestions(raw: unknown): { question: string; vi?: string }[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((s) => {
       const o = (s ?? {}) as Record<string, unknown>;
-      return { question: String(o.question ?? o.text ?? ""), pinyin: o.pinyin ? String(o.pinyin) : undefined };
+      return { question: String(o.question ?? o.text ?? ""), vi: o.vi ? String(o.vi) : undefined };
     })
     .filter((q) => q.question);
 }
@@ -96,10 +111,16 @@ export async function loadReadingPayload(testId: string): Promise<PdfLoadResult>
   if (!test || !test.published) return { status: "notfound" };
   return {
     status: "ok",
-    fileName: `DingDong HSK - Doc hieu - ${test.title}`,
+    fileName: `${FILE_PREFIX} - Doc hieu - ${test.title}`,
     payload: {
       kind: "reading",
-      props: { title: test.title, titleZh: test.titleZh, hskLevel: test.hskLevel, passage: test.passage, passagePinyin: test.passagePinyin, questions: mapQuestions(test.questions) },
+      props: {
+        title: test.title,
+        level: test.level,
+        passage: test.passage,
+        passageTranslation: test.passageTranslation,
+        questions: mapQuestions(test.questions),
+      },
     },
   };
 }
@@ -109,10 +130,10 @@ export async function loadListeningPayload(testId: string): Promise<PdfLoadResul
   if (!test || !test.published) return { status: "notfound" };
   return {
     status: "ok",
-    fileName: `DingDong HSK - Nghe hieu - ${test.title}`,
+    fileName: `${FILE_PREFIX} - Nghe hieu - ${test.title}`,
     payload: {
       kind: "listening",
-      props: { title: test.title, hskLevel: test.hskLevel, transcript: test.transcript, questions: mapQuestions(test.questions) },
+      props: { title: test.title, level: test.level, transcript: test.transcript, questions: mapQuestions(test.questions) },
     },
   };
 }
@@ -123,17 +144,16 @@ export async function loadWritingPayload(taskId: string): Promise<PdfLoadResult>
   const shortPrompt = task.prompt.length > 60 ? task.prompt.slice(0, 60) + "…" : task.prompt;
   return {
     status: "ok",
-    fileName: `DingDong HSK - Viet - ${shortPrompt || task.id}`,
+    fileName: `${FILE_PREFIX} - Viet - ${shortPrompt || task.id}`,
     payload: {
       kind: "writing",
       props: {
         title: shortPrompt || "Bài viết",
         taskTypeLabel: WRITING_TYPE_LABEL[task.taskType],
-        hskLevel: task.hskLevel,
+        level: task.level,
         prompt: task.prompt,
-        promptZh: task.promptZh,
         outline: task.outline,
-        minChars: task.minChars,
+        minWords: task.minWords,
         timeLimit: task.timeLimit,
       },
     },
@@ -146,10 +166,10 @@ export async function loadSpeakingPayload(setId: string): Promise<PdfLoadResult>
   const title = set.title || "Bài luyện nói";
   return {
     status: "ok",
-    fileName: `DingDong HSK - Luyen noi - ${title}`,
+    fileName: `${FILE_PREFIX} - Luyen noi - ${title}`,
     payload: {
       kind: "speaking",
-      props: { title, hskLevel: set.hskLevel, part1: toSentences(set.part1Sentences), part2: toPassage(set.part2Passage), part3: toSpeakingQuestions(set.part3Questions) },
+      props: { title, level: set.level, part1: toSentences(set.part1Sentences), part2: toPassage(set.part2Passage), part3: toSpeakingQuestions(set.part3Questions) },
     },
   };
 }
@@ -160,15 +180,22 @@ export async function loadVocabPayload(lessonId: string): Promise<PdfLoadResult>
   const title = lesson.title || "Bài từ vựng";
   return {
     status: "ok",
-    fileName: `DingDong HSK - Tu vung - ${title}`,
+    fileName: `${FILE_PREFIX} - Tu vung - ${title}`,
     payload: {
       kind: "vocab",
       props: {
         lessonTitle: title,
         unitTitle: lesson.unit.title,
-        unitTitleZh: lesson.unit.titleZh,
-        hskLevel: lesson.unit.hskLevel,
-        words: lesson.words.map((w) => ({ id: w.id, hanzi: w.hanzi, pinyin: w.pinyin, meaning: w.meaning, examples: toExamples(w.examples) })),
+        unitTheme: lesson.unit.theme,
+        level: lesson.unit.level,
+        words: lesson.words.map((w) => ({
+          id: w.id,
+          word: w.word,
+          ipa: w.ipa,
+          meaning: w.meaning,
+          partOfSpeech: w.partOfSpeech,
+          examples: toExamples(w.examples),
+        })),
       },
     },
   };
@@ -180,10 +207,10 @@ export async function loadGrammarPayload(lessonId: string): Promise<PdfLoadResul
   const title = lesson.title || "Bài ngữ pháp";
   return {
     status: "ok",
-    fileName: `DingDong HSK - Ngu phap - ${title}`,
+    fileName: `${FILE_PREFIX} - Ngu phap - ${title}`,
     payload: {
       kind: "grammar",
-      props: { lessonTitle: title, unitTitle: lesson.unit.title, unitTitleZh: lesson.unit.titleZh, hskLevel: lesson.unit.hskLevel, content: parseGrammarContent(lesson.exercises) },
+      props: { lessonTitle: title, unitTitle: lesson.unit.title, unitTheme: lesson.unit.theme, level: lesson.unit.level, content: parseGrammarContent(lesson.exercises) },
     },
   };
 }
@@ -203,16 +230,16 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
   if (!lesson.course.published) return { status: "notfound" };
 
   const { levelToSlug } = await import("@/lib/roadmap");
-  const slug = levelToSlug(lesson.course.hskLevel);
+  const slug = levelToSlug(lesson.course.level);
   const backHref = `/roadmap/${slug}`;
 
   const ent = await getEntitlements(userId, role);
   const lessonIndex = await db.roadmapLesson.count({ where: { courseId: lesson.courseId, order: { lt: lesson.order } } });
-  if (isRoadmapLessonLocked(ent, lesson.course.hskLevel, lessonIndex)) return { status: "locked", backHref };
+  if (isRoadmapLessonLocked(ent, lesson.course.level, lessonIndex)) return { status: "locked", backHref };
 
-  const hskLevel = lesson.course.hskLevel;
+  const level = lesson.course.level;
   const content = section.content;
-  const fileName = `DingDong HSK - ${SKILL_FILE_LABEL[skillKey]} - ${lesson.topic}`;
+  const fileName = `${FILE_PREFIX} - ${SKILL_FILE_LABEL[skillKey]} - ${lesson.topic}`;
 
   let payload: PdfPayload;
   switch (skillKey) {
@@ -224,28 +251,27 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
         props: {
           lessonTitle: lesson.topic,
           unitTitle: "Lộ trình · Từ vựng",
-          hskLevel,
-          words: p.data.words.map((w, i) => ({ id: `w${i}`, hanzi: w.hanzi, pinyin: w.pinyin, meaning: w.meaning, examples: w.examples ?? [] })),
+          level,
+          words: p.data.words.map((w, i) => ({
+            id: `w${i}`,
+            word: w.word,
+            ipa: w.ipa,
+            meaning: w.meaning,
+            partOfSpeech: w.partOfSpeech ?? "",
+            examples: w.examples ?? [],
+          })),
         },
       };
       break;
     }
     case "GRAMMAR":
-      payload = { kind: "grammar", props: { lessonTitle: lesson.topic, unitTitle: "Lộ trình · Ngữ pháp", hskLevel, content: parseGrammarContent(content) } };
+      payload = { kind: "grammar", props: { lessonTitle: lesson.topic, unitTitle: "Lộ trình · Ngữ pháp", level, content: parseGrammarContent(content) } };
       break;
-    case "HANZI": {
-      const p = hanziContentSchema.safeParse(content);
-      if (!p.success) return { status: "notfound" };
-      payload = {
-        kind: "hanzi",
-        props: {
-          lessonTitle: lesson.topic,
-          hskLevel,
-          characters: p.data.characters.map((c) => ({ character: c.character, pinyin: c.pinyin, tone: c.tone, meaning: c.meaning, strokeCount: c.strokeCount, examples: c.examples ?? [] })),
-        },
-      };
-      break;
-    }
+    case "PHONICS":
+      // Ghép vần là hoạt động NGHE–CHẠM (nghe âm, kéo chữ cái, nối vần) — in ra
+      // giấy thì mất hết phần âm thanh nên không có mẫu PDF. Trả "không tìm thấy"
+      // để nút tải PDF không hiện ở kỹ năng này.
+      return { status: "notfound" };
     case "READING": {
       const c = normalizeReadingContent(content);
       if (!c.passages.length) return { status: "notfound" };
@@ -253,9 +279,8 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
         kind: "roadmap-reading",
         props: {
           title: c.title || lesson.topic,
-          titleZh: c.titleZh,
-          hskLevel,
-          passages: c.passages.map((p) => ({ passage: p.passage, passagePinyin: p.passagePinyin, titleZh: p.titleZh, questions: toPdfQuestions(p.questions) })),
+          level,
+          passages: c.passages.map((p) => ({ passage: p.passage, questions: toPdfQuestions(p.questions) })),
         },
       };
       break;
@@ -265,12 +290,12 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
       if (!c.clips.length) return { status: "notfound" };
       payload = {
         kind: "roadmap-listening",
-        props: { title: c.title || lesson.topic, hskLevel, clips: c.clips.map((cl) => ({ title: cl.title, transcript: cl.transcript, questions: toPdfQuestions(cl.questions) })) },
+        props: { title: c.title || lesson.topic, level, clips: c.clips.map((cl) => ({ title: cl.title, transcript: cl.transcript, questions: toPdfQuestions(cl.questions) })) },
       };
       break;
     }
     case "WRITING": {
-      // "连词成句" (sắp xếp câu): in thẻ từ cho sẵn + câu đúng & bản dịch.
+      // Sắp xếp từ thành câu: in thẻ từ cho sẵn + câu đúng & bản dịch.
       if (isReorderWriting(content)) {
         const p = writingReorderContentSchema.safeParse(content);
         if (!p.success) return { status: "notfound" };
@@ -278,8 +303,8 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
           kind: "roadmap-writing-reorder",
           props: {
             title: lesson.topic,
-            titleZh: lesson.topicZh || p.data.title || null,
-            hskLevel,
+            subtitle: lesson.topicVi || p.data.title || null,
+            level,
             sentences: p.data.sentences.map((s) => ({ words: s.words, answer: s.answer, translation: s.translation })),
           },
         };
@@ -290,7 +315,7 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
       const d = p.data;
       payload = {
         kind: "writing",
-        props: { title: lesson.topic, taskTypeLabel: ROADMAP_WRITING_LABEL[d.taskType] ?? "Viết luận", hskLevel, prompt: d.prompt, promptZh: d.promptZh, outline: d.outline, minChars: d.minChars, timeLimit: d.timeLimit },
+        props: { title: lesson.topic, taskTypeLabel: ROADMAP_WRITING_LABEL[d.taskType] ?? "Bài viết", level, prompt: d.prompt, outline: d.outline, minWords: d.minWords, timeLimit: d.timeLimit },
       };
       break;
     }
@@ -298,7 +323,7 @@ export async function loadRoadmapPayload(lessonId: string, skillSlug: string, us
       const p = speakingContentSchema.safeParse(content);
       if (!p.success) return { status: "notfound" };
       const d = p.data;
-      payload = { kind: "speaking", props: { title: lesson.topic, hskLevel, part1: d.part1Sentences ?? [], part2: d.part2Passage ?? null, part3: d.part3Questions ?? [] } };
+      payload = { kind: "speaking", props: { title: lesson.topic, level, part1: d.part1Sentences ?? [], part2: d.part2Passage ?? null, part3: d.part3Questions ?? [] } };
       break;
     }
     default:

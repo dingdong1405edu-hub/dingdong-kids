@@ -180,16 +180,10 @@ export default async function AdminReadingDetailPage({ params }: Props) {
             <div className="space-y-1 md:col-span-2">
               <Label>Đoạn văn (Hán tự)</Label>
               <Textarea name="passage" className="min-h-32 font-chinese" defaultValue={test.passage} required />
-              <p className="text-xs text-muted-foreground">Không cần nhập pinyin — máy tự sinh khi hiển thị cho học viên.</p>
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <Label>Dịch bài đọc (tiếng Việt)</Label>
-              <Textarea
-                name="passageTranslation"
-                className="min-h-24"
-                defaultValue={test.passageTranslation ?? ""}
-                placeholder="Bản dịch toàn bộ đoạn văn — hiện cho học viên khi chữa bài. Có thể để trống rồi bấm AI tạo ở mục dưới."
-              />
+              <p className="text-xs text-muted-foreground">
+                Không cần nhập pinyin — máy tự sinh khi hiển thị. Dịch bài đọc + phân tích từng câu quản lý ở mục
+                “Dịch &amp; phân tích bài đọc” bên dưới.
+              </p>
             </div>
             <div className="md:col-span-2">
               <Button type="submit" className="gap-1.5">

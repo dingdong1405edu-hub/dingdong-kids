@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
+import { EXERCISE_TYPE_LABEL } from "@/lib/grammar";
 import { FlashcardPhase, type FlashResult } from "./flashcard-phase";
 import type { Exercise } from "@/types";
 
@@ -22,23 +23,16 @@ interface Props {
 
 type Stage = "review" | "done";
 
-/** Vietnamese labels for the per-type score breakdown. */
-const TYPE_LABEL: Record<string, string> = {
-  match: "Nối từ",
-  translate: "Dịch câu",
-  toneSelect: "Chọn thanh điệu",
-  sentenceOrder: "Sắp xếp câu",
-  sentence_order: "Sắp xếp câu",
-  pinyinMatch: "Nối pinyin",
-  fill_blank: "Điền chỗ trống",
-  answer_question: "Trả lời câu hỏi",
-  type_sentence: "Viết câu",
-};
+// Nhãn tiếng Việt của từng dạng bài — dùng chung với PDF & bộ chấm (src/lib/grammar.ts)
+// để chỗ nào cũng gọi một dạng bài bằng đúng một cái tên.
+const TYPE_LABEL = EXERCISE_TYPE_LABEL;
 
+/** Màu điểm. Mức thấp dùng CAM ẤM chứ không đỏ gắt — trẻ nhìn con số của mình,
+ *  màu đỏ dễ khiến bé thấy như bị mắng. */
 function scoreTone(pct: number): string {
   if (pct >= 80) return "text-green-600 dark:text-green-400";
   if (pct >= 50) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
+  return "text-orange-600 dark:text-orange-400";
 }
 
 /**
@@ -64,12 +58,12 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <BaoBuddy size={88} pose="idle" className="mx-auto" />
-        <h2 className="text-xl font-bold">Chưa có bài tập để ôn</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Phần này chưa có flashcard hay bài tập nào. Hãy quay lại sau nhé!
+        <h2 className="font-display text-xl font-extrabold">Chưa có gì để ôn</h2>
+        <p className="max-w-sm text-[15px] text-muted-foreground">
+          Phần này chưa có thẻ hay bài chơi nào. Bé quay lại sau nhé! 🐻
         </p>
         <Link href={closeHref}>
-          <Button variant="outline">Quay lại</Button>
+          <Button variant="outline" className="font-bold">Quay lại</Button>
         </Link>
       </div>
     );
@@ -91,7 +85,7 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
         onDone={(r) => {
           const totalCards = r.correct + r.wrong + r.skipped;
           const pct = totalCards > 0 ? Math.round((r.correct / totalCards) * 100) : 0;
-          emitBao(pct >= 80 ? "celebrate" : "complete");
+          emitDing(pct >= 80 ? "celebrate" : "complete");
           setResult(r);
           setStage("done");
         }}
@@ -131,47 +125,47 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
           <BaoBuddy
             size={96}
             pose={scorePct >= 80 ? "cheer" : "idle"}
-            message={scorePct >= 80 ? "棒极了!" : "继续加油"}
+            message={scorePct >= 80 ? "Siêu quá!" : "Cố lên nhé!"}
             className="mx-auto"
           />
-          <h2 className="text-2xl font-bold">Kết quả ôn tập</h2>
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <h2 className="font-display text-2xl font-extrabold">Bé ôn xong rồi! 🌟</h2>
+          <p className="text-[15px] text-muted-foreground">{title}</p>
 
-          {/* Headline score */}
+          {/* Điểm to nhất màn hình */}
           <div>
-            <div className={`text-5xl font-extrabold ${scoreTone(scorePct)}`}>{scorePct}%</div>
-            <div className="mt-1 text-sm text-muted-foreground">
-              {correct}/{total} câu đúng
+            <div className={`font-display text-5xl font-extrabold ${scoreTone(scorePct)}`}>{scorePct}%</div>
+            <div className="mt-1 text-[15px] text-muted-foreground">
+              Bé làm đúng {correct}/{total} câu
               {accuracyPct !== null && answered !== total && (
-                <> · độ chính xác khi trả lời {accuracyPct}%</>
+                <> · trong những câu đã trả lời thì đúng {accuracyPct}%</>
               )}
             </div>
           </div>
 
-          {/* Đúng / Sai / Bỏ qua */}
+          {/* Đúng / Cần xem lại / Để lát nữa */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-xl bg-green-50 p-3 dark:bg-green-500/15">
-              <CheckCircle2 className="mx-auto h-5 w-5 text-green-600 dark:text-green-300" />
-              <div className="mt-1 text-lg font-bold text-green-700 dark:text-green-300">{correct}</div>
-              <div className="text-[11px] text-muted-foreground">Đúng</div>
+            <div className="rounded-2xl bg-green-50 p-3 dark:bg-green-500/15">
+              <CheckCircle2 className="mx-auto h-6 w-6 text-green-600 dark:text-green-300" />
+              <div className="mt-1 font-display text-xl font-extrabold text-green-700 dark:text-green-300">{correct}</div>
+              <div className="text-[11px] font-semibold text-muted-foreground">Đúng</div>
             </div>
-            <div className="rounded-xl bg-red-50 p-3 dark:bg-red-500/15">
-              <XCircle className="mx-auto h-5 w-5 text-red-500 dark:text-red-300" />
-              <div className="mt-1 text-lg font-bold text-red-600 dark:text-red-300">{wrong}</div>
-              <div className="text-[11px] text-muted-foreground">Sai</div>
+            <div className="rounded-2xl bg-orange-50 p-3 dark:bg-orange-500/15">
+              <XCircle className="mx-auto h-6 w-6 text-orange-500 dark:text-orange-300" />
+              <div className="mt-1 font-display text-xl font-extrabold text-orange-600 dark:text-orange-300">{wrong}</div>
+              <div className="text-[11px] font-semibold text-muted-foreground">Xem lại</div>
             </div>
-            <div className="rounded-xl bg-muted p-3">
-              <SkipForward className="mx-auto h-5 w-5 text-muted-foreground" />
-              <div className="mt-1 text-lg font-bold text-foreground">{skipped}</div>
-              <div className="text-[11px] text-muted-foreground">Bỏ qua</div>
+            <div className="rounded-2xl bg-muted p-3">
+              <SkipForward className="mx-auto h-6 w-6 text-muted-foreground" />
+              <div className="mt-1 font-display text-xl font-extrabold text-foreground">{skipped}</div>
+              <div className="text-[11px] font-semibold text-muted-foreground">Để lát nữa</div>
             </div>
           </div>
 
-          {/* Per-type breakdown */}
+          {/* Chi tiết theo dạng bài */}
           {typeRows.length > 0 && (
             <div className="space-y-2 text-left">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Chi tiết theo loại bài
+              <div className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+                Bé làm tốt dạng nào nhất?
               </div>
               <ul className="space-y-2">
                 {typeRows.map((r, i) => (
@@ -190,11 +184,11 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
           )}
 
           <div className="flex gap-2 pt-1">
-            <Button variant="outline" className="flex-1" onClick={() => window.location.reload()}>
+            <Button variant="outline" className="flex-1 font-bold" onClick={() => window.location.reload()}>
               Ôn lại
             </Button>
-            <Button className="flex-1" onClick={() => router.push(closeHref)}>
-              Xong
+            <Button className="btn-chunky flex-1 font-extrabold" onClick={() => router.push(closeHref)}>
+              Xong rồi!
             </Button>
           </div>
         </CardContent>

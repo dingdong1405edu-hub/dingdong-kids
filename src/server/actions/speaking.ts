@@ -15,12 +15,11 @@ const schema = z.object({
   durationSec: z.number().optional(),
 });
 
-// Grades one HSKK speaking recording with Groq and persists the result as an
-// Attempt (mirrors gradeWritingAction). The audio→transcript step stays in the
-// /api/transcribe route (Deepgram, with a Groq Whisper fallback) because it
-// uploads a multipart audio file; only the text grading + persistence lives here
-// so the speaking list page can show attempt counts and best scores like every
-// other skill.
+// Chấm MỘT bản ghi âm luyện nói (format Cambridge Speaking) bằng Groq rồi lưu
+// thành một Attempt (giống gradeWritingAction). Bước audio→transcript vẫn nằm ở
+// route /api/transcribe (Deepgram, dự phòng Groq Whisper) vì phải nhận tệp audio
+// multipart; ở đây chỉ chấm văn bản + lưu kết quả, để trang danh sách bài nói
+// đếm được số lượt làm và điểm cao nhất như mọi kỹ năng khác.
 export async function gradeSpeakingAction(input: z.infer<typeof schema>) {
   const session = await auth();
   if (!session?.user) return { ok: false as const, error: "Unauthorized" };
@@ -35,7 +34,7 @@ export async function gradeSpeakingAction(input: z.infer<typeof schema>) {
   const { setId, transcript, referenceText, part, question, index, durationSec } =
     schema.parse(input);
 
-  // hskLevel comes from the DB, never the client.
+  // Cấp độ luôn lấy từ DB, không bao giờ tin client.
   const set = await db.speakingSet.findUnique({ where: { id: setId } });
   if (!set) return { ok: false as const, error: "Set not found" };
 
@@ -45,7 +44,7 @@ export async function gradeSpeakingAction(input: z.infer<typeof schema>) {
       referenceText,
       part,
       question,
-      hskLevel: set.hskLevel,
+      level: set.level,
     });
 
     await db.$transaction([
@@ -79,11 +78,11 @@ const topicSchema = z.object({
   durationSec: z.number().optional(),
 });
 
-// Chấm một bài "Nói theo chủ đề" (HSKK 命题说话): học viên ghi âm trả lời mở →
-// transcript (Deepgram, ở /api/transcribe) → Groq chấm chi tiết. Persist 1 Attempt
-// (skill = SPEAKING, refId = topicId, rawAnswer.kind = "topic") để hub vẫn đếm
-// lượt làm + điểm cao nhất theo refId như mọi kỹ năng khác. Câu hỏi/chủ đề/cấp HSK
-// lấy từ DB (không tin client).
+// Chấm một bài "Nói theo chủ đề": bé ghi âm trả lời mở → transcript (Deepgram,
+// ở /api/transcribe) → Groq chấm chi tiết. Lưu 1 Attempt (skill = SPEAKING,
+// refId = topicId, rawAnswer.kind = "topic") để hub vẫn đếm lượt làm + điểm cao
+// nhất theo refId như mọi kỹ năng khác. Câu hỏi/chủ đề/cấp độ lấy từ DB (không
+// tin client).
 export async function gradeSpeakingTopicAction(input: z.infer<typeof topicSchema>) {
   const session = await auth();
   if (!session?.user) return { ok: false as const, error: "Unauthorized" };
@@ -104,11 +103,11 @@ export async function gradeSpeakingTopicAction(input: z.infer<typeof topicSchema
     const result = await gradeSpeakingTopic({
       transcript,
       topic: topic.topic,
-      questionZh: topic.questionZh,
+      question: topic.question,
       referenceTranscript: topic.transcript,
       outline: topic.outline,
-      hskLevel: topic.hskLevel,
-      minChars: topic.minChars,
+      level: topic.level,
+      minWords: topic.minWords,
       durationSec: durationSec ?? null,
     });
 

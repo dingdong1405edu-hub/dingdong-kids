@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -6,11 +7,16 @@ import { PracticeHub } from "@/components/learn/practice-hub";
 import { TestCard } from "@/components/learn/test-card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 
+export const metadata: Metadata = {
+  title: "Đọc hiểu",
+  description: "Bài đọc tiếng Anh cho bé — đọc truyện ngắn, nghe cô đọc mẫu rồi trả lời câu hỏi.",
+};
+
 const QTYPE_LABEL: Record<string, string> = {
-  MCQ: "Trắc nghiệm",
-  FILL_BLANK: "Điền chỗ trống",
-  TRUE_FALSE: "Đúng / Sai / Không đề cập",
-  MATCHING: "Nối tiêu đề",
+  MCQ: "Chọn đáp án",
+  FILL_BLANK: "Điền từ",
+  TRUE_FALSE: "Đúng / Sai",
+  MATCHING: "Nối tranh",
   SHORT_ANSWER: "Trả lời ngắn",
 };
 
@@ -19,8 +25,8 @@ export default async function ReadingPage() {
   if (!session?.user) redirect("/login");
 
   const tests = await db.readingTest.findMany({
-    where: { published: true }, // ẩn đề nháp khỏi học viên
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    where: { published: true }, // ẩn bài nháp khỏi học viên
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     include: { questions: { select: { type: true } } },
   });
 
@@ -45,18 +51,19 @@ export default async function ReadingPage() {
     <PracticeHub
       accent="green"
       icon={<BookText className="h-7 w-7" />}
-      decoChar="读"
+      decoChar="📖"
       title="Đọc hiểu"
-      subtitle="1 bài đọc mỗi lần luyện tập · không giới hạn thời gian"
+      subtitle="Mỗi lần một bài đọc ngắn — bé đọc thong thả, không bị bấm giờ"
       randomHref={randomHref}
+      randomLabel="Chọn giúp bé một bài"
       tips={[
-        "Mỗi lần luyện 1 bài đọc với nhiều câu hỏi (Trắc nghiệm / Nối tiêu đề / Điền chỗ trống / Đúng–Sai).",
-        "Không bấm giờ — hệ thống chỉ đếm thời gian bạn đã làm.",
-        "AI ưu tiên bài bạn chưa làm gần đây, tránh trùng lặp.",
-        "Sau khi nộp, hệ thống chấm điểm và hiện đáp án + giải thích từng câu.",
+        "Bấm “Nghe cô đọc cả bài” để vừa nghe vừa nhìn chữ.",
+        "Chạm vào một từ lạ để xem phiên âm và nghĩa tiếng Việt.",
+        "Không bấm giờ — bé cứ đọc thật kỹ rồi mới trả lời nhé.",
+        "Nộp xong sẽ có đáp án, bản dịch và giải thích từng câu.",
       ]}
-      gridTitle="Hoặc tự chọn đề"
-      gridSubtitle="Nhấn vào đề bạn muốn làm."
+      gridTitle="Chọn bài đọc"
+      gridSubtitle="Bấm vào bài bé thích."
     >
       {tests.length === 0 ? (
         <EmptyState />
@@ -69,7 +76,7 @@ export default async function ReadingPage() {
                 key={test.id}
                 href={`/reading/${test.id}`}
                 title={test.title}
-                level={test.hskLevel}
+                level={test.level}
                 tags={types}
                 meta={`${test.questions.length} câu hỏi`}
                 attempts={countMap.get(test.id) ?? 0}
@@ -88,9 +95,9 @@ export default async function ReadingPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+    <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
       <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-      <p>Chưa có bài đọc nào. Quản trị viên sẽ thêm bài sớm!</p>
+      <p>Chưa có bài đọc nào. Thầy cô sẽ thêm bài mới sớm thôi! 🌟</p>
     </div>
   );
 }

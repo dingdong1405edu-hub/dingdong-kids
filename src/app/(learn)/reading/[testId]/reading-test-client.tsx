@@ -3,8 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
-  Eye,
-  EyeOff,
   Settings2,
   Clock,
   BookOpen,
@@ -15,7 +13,7 @@ import {
   Eraser,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 import { TestShell } from "@/components/learn/test-shell";
 import { cn, formatDuration } from "@/lib/utils";
 import { submitReadingAction } from "@/server/actions/reading";
@@ -27,11 +25,9 @@ import { ReviewDialog } from "@/components/learn/reading/review-dialog";
 import { ResultsSummary } from "@/components/learn/reading/results-summary";
 import { PassageAnalysis } from "@/components/learn/reading/passage-analysis";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
-import { CharLookup, type LookupAnchor } from "@/components/learn/reading/char-lookup";
 import { SelectionLookup, type SelectionAnchor } from "@/components/learn/reading/selection-lookup";
 import { useReadingSettings } from "@/components/learn/reading/use-reading-settings";
-import { toPinyinArray } from "@/lib/pinyin";
-import type { ReadingTestData } from "@/components/learn/reading/types";
+import { splitPassageTokens, type ReadingTestData } from "@/components/learn/reading/types";
 
 type Pane = "passage" | "questions";
 type ReviewFilter = "all" | "wrong" | "flagged";
@@ -46,6 +42,14 @@ const HIGHLIGHT_COLORS: { name: string; value: string }[] = [
   { name: "Lam", value: "rgba(96, 165, 250, 0.45)" },
   { name: "Hồng", value: "rgba(244, 114, 182, 0.45)" },
 ];
+
+/** Lời khen của Ding theo điểm — luôn khen trước, không dùng nhãn tiêu cực. */
+function cheerLine(score: number): string {
+  if (score >= 90) return "Tuyệt vời luôn! 🎉";
+  if (score >= 70) return "Bé đọc tốt lắm!";
+  if (score >= 50) return "Khá rồi đó, cố thêm chút nữa nhé!";
+  return "Không sao đâu, mình đọc lại cùng nhau nhé 🌟";
+}
 
 export function ReadingTestClient({
   test,
@@ -62,16 +66,15 @@ export function ReadingTestClient({
     answers: Record<string, unknown>;
     durationSec: number;
   }) => Promise<{ ok: boolean; result?: { score: number; details: Record<string, boolean> } }>;
-  /** Lộ trình nhiều đoạn: sau khi nộp, hiện nút đi tiếp thay cho "Quay lại danh sách đề". */
+  /** Lộ trình nhiều đoạn: sau khi nộp, hiện nút đi tiếp thay cho "Quay lại danh sách bài". */
   onContinue?: () => void;
   continueLabel?: string;
   /** Đường dẫn nút "Thoát" (mặc định /reading). */
   backHref?: string;
-  /** Lộ trình: ngưỡng "qua môn" để hiện nhãn Đạt/Chưa đạt trên màn kết quả. */
+  /** Lộ trình: ngưỡng "qua bài" để hiện nhãn Đạt/Chưa đạt trên màn kết quả. */
   passThreshold?: number;
 }) {
   const { settings, setSettings } = useReadingSettings();
-  const [showPinyin, setShowPinyin] = useState(false);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -83,7 +86,6 @@ export function ReadingTestClient({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>("all");
-  const [lookup, setLookup] = useState<LookupAnchor | null>(null);
   const [selection, setSelection] = useState<SelectionAnchor | null>(null);
   const [restored, setRestored] = useState(false);
   const [pendingScroll, setPendingScroll] = useState<number | null>(null);
@@ -119,54 +121,58 @@ export function ReadingTestClient({
   function toggleMode() {
     setMode((m) => {
       const next: ReadMode = m === "highlight" ? "lookup" : "highlight";
-      if (next === "highlight") {
-        // Đóng popup tra cứu đang mở để không lẫn với thao tác tô.
-        setLookup(null);
-        setSelection(null);
-      }
+      // Đóng popup tra nghĩa đang mở để không lẫn với thao tác tô.
+      if (next === "highlight") setSelection(null);
       return next;
     });
   }
 
-  // Phân đoạn đoạn văn ĐÚNG như PinyinText (cùng toPinyinArray) để map trích dẫn của
-  // câu hỏi về chính các segment index mà PinyinText gắn data-idx.
-  const passageSegments = useMemo(() => toPinyinArray(test.passage), [test.passage]);
-  const segOffsets = useMemo(() => {
+  // Tách đoạn văn ĐÚNG như PassagePane (cùng splitPassageTokens) để map trích dẫn của
+  // câu hỏi về chính các token index mà pane đã gắn data-idx.
+  const tokens = useMemo(() => splitPassageTokens(test.passage), [test.passage]);
+  const tokenOffsets = useMemo(() => {
     const offs: number[] = [];
     let acc = 0;
-    for (const s of passageSegments) {
+    for (const t of tokens) {
       offs.push(acc);
-      acc += s.char.length;
+      acc += t.text.length;
     }
     return offs;
-  }, [passageSegments]);
+  }, [tokens]);
   const joinedPassage = useMemo(
-    () => passageSegments.map((s) => s.char).join("").normalize("NFC"),
-    [passageSegments],
+    () => tokens.map((t) => t.text).join("").normalize("NFC"),
+    [tokens],
   );
 
-  // Tìm các segment trong đoạn văn ứng với "supportingQuote" (trích nguyên văn).
+  // Tìm các token trong đoạn văn ứng với "supportingQuote" (trích nguyên văn).
   function locateEvidence(quote: string): number[] {
     const q = quote.normalize("NFC").trim();
     if (!q) return [];
-    const TRIM = /^[\s，。、？！：；,.!?"'“”‘’()（）【】「」]+|[\s，。、？！：；,.!?"'“”‘’()（）【】「」]+$/g;
+    // AI đôi khi thêm/thiếu dấu câu hoặc dấu nháy ở hai đầu trích dẫn.
+    const TRIM = /^[\s.,!?;:"'“”‘’()\[\]]+|[\s.,!?;:"'“”‘’()\[\]]+$/g;
     let pos = joinedPassage.indexOf(q);
     let len = q.length;
     if (pos < 0) {
-      // AI đôi khi thêm/thiếu dấu câu ở hai đầu — thử lại với phần lõi.
       const core = q.replace(TRIM, "");
       if (core && core !== q) {
         pos = joinedPassage.indexOf(core);
         len = core.length;
       }
     }
+    if (pos < 0) {
+      // Cuối cùng: thử không phân biệt hoa/thường (AI hay viết hoa đầu câu).
+      const lower = joinedPassage.toLowerCase();
+      const core = q.replace(TRIM, "").toLowerCase();
+      pos = core ? lower.indexOf(core) : -1;
+      len = core.length;
+    }
     if (pos < 0) return [];
     const end = pos + len;
     const indices: number[] = [];
-    for (let i = 0; i < passageSegments.length; i++) {
-      const segStart = segOffsets[i];
-      const segEnd = segStart + passageSegments[i].char.length;
-      if (segStart < end && segEnd > pos) indices.push(i);
+    for (let i = 0; i < tokens.length; i++) {
+      const start = tokenOffsets[i];
+      const stop = start + tokens[i].text.length;
+      if (start < end && stop > pos) indices.push(i);
     }
     return indices;
   }
@@ -175,11 +181,11 @@ export function ReadingTestClient({
     if (!quote) return;
     const indices = locateEvidence(quote);
     if (indices.length === 0) {
-      toast.message("Không định vị được trích dẫn trong đoạn văn.");
+      toast.message("Chưa tìm được câu đó trong bài đọc.");
       return;
     }
     setEvidence((e) => ({ indices, nonce: (e?.nonce ?? 0) + 1 }));
-    setTab("passage"); // điện thoại/iPad dọc: chuyển sang xem đoạn văn để thấy chỗ tô
+    setTab("passage"); // điện thoại/máy tính bảng dọc: chuyển sang bài đọc để thấy chỗ tô
   }
 
   // Restore in-progress work (answers / flags / elapsed) once on mount.
@@ -195,7 +201,7 @@ export function ReadingTestClient({
       const rawHl = localStorage.getItem(hlKey);
       if (rawHl) {
         const saved = JSON.parse(rawHl) as { len?: number; map?: Record<string, string> };
-        // Chỉ khôi phục khi đoạn văn chưa đổi độ dài (tránh tô nhầm ký tự sau khi admin sửa bài).
+        // Chỉ khôi phục khi đoạn văn chưa đổi độ dài (tránh tô nhầm chỗ sau khi admin sửa bài).
         if (saved && typeof saved === "object" && saved.map && saved.len === passageLen) {
           setHighlights(saved.map as Record<number, string>);
         } else {
@@ -277,7 +283,7 @@ export function ReadingTestClient({
   async function handleSubmit() {
     if (submitting || submitted) return; // re-entrancy guard (no duplicate Attempt/XP)
     setSubmitting(true);
-    emitBao("thinking");
+    emitDing("thinking");
     const res = onSubmit
       ? await onSubmit({ answers, durationSec: elapsed })
       : await submitReadingAction({ testId: test.id, answers, durationSec: elapsed });
@@ -286,16 +292,16 @@ export function ReadingTestClient({
       setResult(res.result);
       setSubmitted(true);
       setReviewOpen(false);
-      setTab("questions"); // reveal graded results on the tabbed (mobile/iPad) layout
+      setTab("questions"); // hiện phần chữa bài trên bố cục dạng thẻ (điện thoại/tablet)
       try {
         localStorage.removeItem(storageKey);
       } catch {
         /* ignore */
       }
-      emitBao(res.result.score >= (passThreshold ?? 80) ? "celebrate" : "complete");
-      toast.success(`Bạn đạt ${Math.round(res.result.score)}%`);
+      emitDing(res.result.score >= (passThreshold ?? 80) ? "celebrate" : "complete");
+      toast.success(`Bé làm đúng ${Math.round(res.result.score)}%`);
     } else {
-      toast.error("Lỗi nộp bài, thử lại sau");
+      toast.error("Chưa gửi được bài, bé thử lại nhé");
     }
   }
 
@@ -312,14 +318,14 @@ export function ReadingTestClient({
         center={
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold tabular-nums",
+              "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold tabular-nums",
               overTime ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" : "bg-muted",
             )}
           >
             <Clock className={cn("h-4 w-4", overTime ? "text-amber-600 dark:text-amber-300" : "text-muted-foreground")} />
             {formatDuration(elapsed)}
             <span className="hidden text-xs font-normal text-muted-foreground sm:inline">
-              / đề xuất {formatDuration(test.timeLimit)}
+              / gợi ý {formatDuration(test.timeLimit)}
             </span>
           </span>
         }
@@ -328,26 +334,17 @@ export function ReadingTestClient({
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 rounded-lg"
+              className="gap-1.5 rounded-xl"
               onClick={() => setSettingsOpen(true)}
-              aria-label="Tuỳ chỉnh đọc"
+              aria-label="Chỉnh cỡ chữ"
             >
               <Settings2 className="h-4 w-4" />
               <span className="hidden lg:inline">Cỡ chữ</span>
             </Button>
             <Button
               size="sm"
-              variant={showPinyin ? "default" : "outline"}
-              className="gap-1.5 rounded-lg"
-              onClick={() => setShowPinyin((v) => !v)}
-            >
-              {showPinyin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              <span className="hidden lg:inline">Pinyin</span>
-            </Button>
-            <Button
-              size="sm"
               variant={mode === "highlight" ? "default" : "outline"}
-              className="gap-1.5 rounded-lg"
+              className="gap-1.5 rounded-xl"
               onClick={toggleMode}
               aria-label="Bút tô màu"
             >
@@ -355,7 +352,7 @@ export function ReadingTestClient({
               <span className="hidden lg:inline">Bút</span>
             </Button>
             {mode === "highlight" && (
-              <div className="flex items-center gap-1 rounded-lg border bg-card/70 px-1.5 py-1">
+              <div className="flex items-center gap-1 rounded-xl border bg-card/70 px-1.5 py-1">
                 {HIGHLIGHT_COLORS.map((c) => (
                   <button
                     key={c.value}
@@ -364,7 +361,7 @@ export function ReadingTestClient({
                     aria-label={`Màu ${c.name}`}
                     title={c.name}
                     className={cn(
-                      "h-5 w-5 rounded-full border-2 transition-transform",
+                      "h-6 w-6 rounded-full border-2 transition-transform",
                       highlightColor === c.value ? "scale-110 border-foreground" : "border-black/10 dark:border-white/20",
                     )}
                     style={{ backgroundColor: c.value }}
@@ -376,7 +373,7 @@ export function ReadingTestClient({
                   disabled={Object.keys(highlights).length === 0}
                   aria-label="Xoá hết tô"
                   title="Xoá hết tô"
-                  className="ml-0.5 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
+                  className="ml-0.5 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted disabled:opacity-40"
                 >
                   <Eraser className="h-4 w-4" />
                 </button>
@@ -401,9 +398,9 @@ export function ReadingTestClient({
         }
       >
         <div className="flex h-full min-h-0 flex-col">
-          {/* Segmented passage/questions switch — phones & iPad portrait */}
+          {/* Segmented passage/questions switch — phones & tablet portrait */}
           <div className="flex shrink-0 gap-1 border-b bg-card/80 p-1.5 backdrop-blur lg:hidden">
-            <SegButton active={tab === "passage"} onClick={() => setTab("passage")} icon={BookOpen} label="Đoạn văn" />
+            <SegButton active={tab === "passage"} onClick={() => setTab("passage")} icon={BookOpen} label="Bài đọc" />
             <SegButton
               active={tab === "questions"}
               onClick={() => setTab("questions")}
@@ -417,19 +414,12 @@ export function ReadingTestClient({
             <div className={cn("h-full min-h-0", tab === "passage" ? "block" : "hidden", "lg:block")}>
               <PassagePane
                 test={test}
-                showPinyin={showPinyin}
                 settings={settings}
                 mode={mode}
                 highlightColor={highlightColor}
                 highlights={highlights}
-                onCharClick={(char, pinyin, e) => {
-                  setSelection(null);
-                  setLookup({ char, pinyin, x: e.clientX, y: e.clientY });
-                }}
-                onSelectText={(text, x, y) => {
-                  setLookup(null);
-                  setSelection({ text, x, y });
-                }}
+                onWordClick={(word, e) => setSelection({ text: word, x: e.clientX, y: e.clientY })}
+                onSelectText={(text, x, y) => setSelection({ text, x, y })}
                 onHighlight={applyHighlight}
                 onEraseHighlight={eraseHighlight}
                 evidence={evidence}
@@ -452,7 +442,7 @@ export function ReadingTestClient({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => jump(Math.max(0, current - 1))}
-                        className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-40"
+                        className="rounded-lg p-1 text-muted-foreground hover:bg-muted disabled:opacity-40"
                         disabled={current === 0}
                         aria-label="Câu trước"
                       >
@@ -463,7 +453,7 @@ export function ReadingTestClient({
                       </span>
                       <button
                         onClick={() => jump(Math.min(total - 1, current + 1))}
-                        className="rounded-md p-1 text-muted-foreground hover:bg-muted disabled:opacity-40"
+                        className="rounded-lg p-1 text-muted-foreground hover:bg-muted disabled:opacity-40"
                         disabled={current === total - 1}
                         aria-label="Câu sau"
                       >
@@ -479,21 +469,21 @@ export function ReadingTestClient({
                       <BaoBuddy
                         size={84}
                         pose={result.score >= 50 ? "cheer" : "idle"}
-                        message={result.score >= 50 ? "做得好!" : "加油!"}
+                        message={cheerLine(result.score)}
                         className="mx-auto"
                       />
                       <ResultsSummary
                         score={result.score}
                         correct={correctCount}
                         total={total}
-                        level={test.hskLevel}
+                        level={test.level}
                         elapsedLabel={`${formatDuration(elapsed)} đã làm`}
                         passThreshold={passThreshold}
                       />
                       <div className="flex gap-1.5">
                         <FilterButton active={reviewFilter === "all"} onClick={() => setReviewFilter("all")} label={`Tất cả · ${total}`} />
-                        <FilterButton active={reviewFilter === "wrong"} onClick={() => setReviewFilter("wrong")} label={`Sai · ${wrongCount}`} />
-                        <FilterButton active={reviewFilter === "flagged"} onClick={() => setReviewFilter("flagged")} label={`Cờ · ${flaggedIdx.length}`} />
+                        <FilterButton active={reviewFilter === "wrong"} onClick={() => setReviewFilter("wrong")} label={`Cần ôn · ${wrongCount}`} />
+                        <FilterButton active={reviewFilter === "flagged"} onClick={() => setReviewFilter("flagged")} label={`Đánh dấu · ${flaggedIdx.length}`} />
                       </div>
                     </>
                   )}
@@ -512,7 +502,6 @@ export function ReadingTestClient({
                         isCorrect={result?.details[q.id]}
                         flagged={!!flags[q.id]}
                         onToggleFlag={() => toggleFlag(q.id)}
-                        showPinyin={showPinyin}
                         isCurrent={current === idx}
                         onActivate={() => setCurrent(idx)}
                         onShowEvidence={() => showEvidence(q.supportingQuote)}
@@ -527,18 +516,17 @@ export function ReadingTestClient({
                     <PassageAnalysis
                       translation={test.passageTranslation}
                       analysis={test.passageAnalysis}
-                      showPinyin={showPinyin}
                     />
                   )}
 
                   {submitted &&
                     (onContinue ? (
-                      <Button className="w-full" onClick={onContinue}>
+                      <Button className="btn-chunky w-full" onClick={onContinue}>
                         {continueLabel ?? "Tiếp tục"}
                       </Button>
                     ) : (
                       <Button asChild variant="outline" className="w-full">
-                        <Link href={backHref}>Quay lại danh sách đề</Link>
+                        <Link href={backHref}>Quay lại danh sách bài đọc</Link>
                       </Button>
                     ))}
                 </div>
@@ -548,7 +536,13 @@ export function ReadingTestClient({
         </div>
       </TestShell>
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} settings={settings} onChange={setSettings} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        settings={settings}
+        onChange={setSettings}
+        hasAudio={!!test.audioUrl}
+      />
       <ReviewDialog
         open={reviewOpen}
         onOpenChange={setReviewOpen}
@@ -560,7 +554,6 @@ export function ReadingTestClient({
         onConfirm={handleSubmit}
         submitting={submitting}
       />
-      {lookup && <CharLookup anchor={lookup} onClose={() => setLookup(null)} source={`reading:${test.id}`} />}
       {selection && (
         <SelectionLookup anchor={selection} onClose={() => setSelection(null)} source={`reading:${test.id}`} />
       )}
@@ -583,7 +576,7 @@ function SegButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+        "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition-colors",
         active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted",
       )}
     >
@@ -597,7 +590,7 @@ function FilterButton({ active, onClick, label }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+        "rounded-full border px-3 py-1 text-xs font-bold transition-colors",
         active ? "border-primary bg-primary/10 text-primary" : "border-input text-muted-foreground hover:border-primary/40",
       )}
     >

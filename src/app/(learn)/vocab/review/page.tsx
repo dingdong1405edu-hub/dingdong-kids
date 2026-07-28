@@ -25,10 +25,12 @@ export default async function VocabReviewPage() {
     id: r.word.id,
     lessonId: r.word.lessonId,
     order: r.word.order,
-    hanzi: r.word.hanzi,
-    pinyin: r.word.pinyin,
+    word: r.word.word,
+    ipa: r.word.ipa,
     meaning: r.word.meaning,
+    partOfSpeech: r.word.partOfSpeech,
     examples: Array.isArray(r.word.examples) ? (r.word.examples as unknown as WordExample[]) : [],
+    imageUrl: r.word.imageUrl,
     audioUrl: r.word.audioUrl,
   }));
 

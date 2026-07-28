@@ -1,9 +1,11 @@
 // Chuyển JSON do admin DÁN (định dạng "tác giả" dễ gõ / AI sinh) → nội dung
-// chuẩn của từng phần kỹ năng trong lộ trình. Tự sinh pinyin khi thiếu.
+// chuẩn của từng phần kỹ năng trong lộ trình.
 //
 // Dùng được ở CẢ client (editor "dán JSON cả phần") lẫn server (nhập bài hàng
-// loạt): chỉ phụ thuộc zod + pinyin-pro + roadmap-content, KHÔNG import prisma.
-import { toPinyin } from "@/lib/pinyin";
+// loạt): chỉ phụ thuộc zod + roadmap-content, KHÔNG import prisma.
+//
+// Ở đây KHÔNG tự sinh phiên âm: IPA do người soạn nhập (hoặc bỏ trống), còn
+// audio thì sinh bằng TTS ở server (src/lib/tts.ts) chứ không sinh ở bước này.
 import {
   authoringToRoadmapQuestions,
   normalizeReadingContent,
@@ -11,29 +13,26 @@ import {
   type RoadmapQuestion,
 } from "@/lib/roadmap-content";
 
-function fillPinyin(text: string, pinyin?: unknown): string {
-  const p = typeof pinyin === "string" ? pinyin.trim() : "";
-  if (p) return p;
-  const t = (text ?? "").trim();
-  return t ? toPinyin(t) : "";
+/** Chuỗi đã cắt khoảng trắng, hoặc undefined nếu rỗng. */
+function trimmed(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
 
 // ───────────────────────── READING ─────────────────────────
 
 /**
- * Nhận: object đầy đủ `{ title?, titleZh?, timeLimit?, passages:[…] }`, shape cũ
- * một-đoạn `{ passage, questions }`, hoặc một MẢNG đoạn `[{ passage, questions }]`.
- * Trả về content Đọc dạng chuẩn `passages[]` (câu hỏi đã đổi `answer→correctAnswer`,
- * pinyin đoạn văn tự sinh khi thiếu).
+ * Nhận: object đầy đủ `{ title?, timeLimit?, passages:[…] }`, shape cũ một-đoạn
+ * `{ passage, questions }`, hoặc một MẢNG đoạn `[{ passage, questions }]`.
+ * Trả về content Đọc dạng chuẩn `passages[]` (câu hỏi đã đổi `answer→correctAnswer`).
  */
 export function buildReadingContent(input: unknown, fallbackTitle = ""): unknown {
   let obj: Record<string, unknown>;
   if (Array.isArray(input)) {
-    // Chấp nhận cả MẢNG "bài đọc đầy đủ" ([{ title, titleZh, passage, questions }, …])
+    // Chấp nhận cả MẢNG "bài đọc đầy đủ" ([{ title, passage, questions }, …])
     // — đúng định dạng JSON nhập hàng loạt ở /admin/reading. Mỗi phần tử thành 1 đoạn;
-    // tiêu đề/thời gian của PHẦN lấy từ phần tử đầu (titleZh riêng mỗi đoạn vẫn giữ).
+    // tiêu đề/thời gian của PHẦN lấy từ phần tử đầu (title riêng mỗi đoạn vẫn giữ).
     const first = (input.find((x) => x && typeof x === "object") ?? {}) as Record<string, unknown>;
-    obj = { passages: input, title: first.title, titleZh: first.titleZh, timeLimit: first.timeLimit };
+    obj = { passages: input, title: first.title, timeLimit: first.timeLimit };
   } else if (input && typeof input === "object") obj = { ...(input as Record<string, unknown>) };
   else throw new Error("Nội dung đọc phải là object hoặc mảng đoạn.");
 
@@ -46,21 +45,21 @@ export function buildReadingContent(input: unknown, fallbackTitle = ""): unknown
       ? p.passageAnalysis
           .map((s) => {
             const x = (s ?? {}) as Record<string, unknown>;
-            const zh = typeof x.zh === "string" ? x.zh.trim() : "";
-            if (!zh) return null;
+            const en = typeof x.en === "string" ? x.en.trim() : "";
+            if (!en) return null;
             return {
-              zh,
+              en,
               vi: typeof x.vi === "string" ? x.vi.trim() : "",
               ...(typeof x.note === "string" && x.note.trim() ? { note: x.note.trim() } : {}),
             };
           })
-          .filter((s): s is { zh: string; vi: string; note?: string } => s !== null)
+          .filter((s): s is { en: string; vi: string; note?: string } => s !== null)
       : [];
     return {
       passage: p.passage,
-      passagePinyin: p.passage ? fillPinyin(p.passage, p.passagePinyin) : null,
+      ...(p.audioUrl ? { audioUrl: p.audioUrl } : {}),
       ...(p.imageUrl ? { imageUrl: p.imageUrl } : {}),
-      ...(p.titleZh ? { titleZh: p.titleZh } : {}),
+      ...(p.title ? { title: p.title } : {}),
       ...(p.passageTranslation ? { passageTranslation: p.passageTranslation } : {}),
       ...(analysis.length ? { passageAnalysis: analysis } : {}),
       questions,
@@ -69,7 +68,6 @@ export function buildReadingContent(input: unknown, fallbackTitle = ""): unknown
 
   return {
     title: norm.title || fallbackTitle,
-    titleZh: norm.titleZh,
     timeLimit: norm.timeLimit,
     passages,
   };
@@ -111,37 +109,62 @@ export function buildListeningContent(input: unknown, fallbackTitle = ""): unkno
   };
 }
 
-// ───────────────────────── SPEAKING (HSKK) ─────────────────────────
+// ───────────────────────── SPEAKING (Cambridge Speaking) ─────────────────────────
 
-/** Chuẩn hoá content Nói: tự sinh pinyin cho từng câu / đoạn khi thiếu. */
+/** Chuẩn hoá content Nói: giữ audio/ảnh đã có, bỏ mục trống. */
 export function buildSpeakingContent(input: unknown): unknown {
   const o = input && typeof input === "object" ? (input as Record<string, unknown>) : {};
+
   const p1 = Array.isArray(o.part1Sentences)
-    ? (o.part1Sentences as unknown[]).map((s) => {
-        const x = (s ?? {}) as Record<string, unknown>;
-        const text = String(x.text ?? "");
-        return { text, pinyin: fillPinyin(text, x.pinyin) };
-      })
+    ? (o.part1Sentences as unknown[])
+        .map((s) => {
+          const x = (s ?? {}) as Record<string, unknown>;
+          const text = String(x.text ?? "").trim();
+          if (!text) return null;
+          return {
+            text,
+            ...(trimmed(x.audioUrl) ? { audioUrl: trimmed(x.audioUrl) } : {}),
+            ...(trimmed(x.imageUrl) ? { imageUrl: trimmed(x.imageUrl) } : {}),
+          };
+        })
+        .filter((s) => s !== null)
     : [];
+
   const rawP2 = o.part2Passage as Record<string, unknown> | null | undefined;
-  const p2Text = rawP2 && typeof rawP2 === "object" ? String(rawP2.text ?? "") : "";
-  const p2 = p2Text.trim() ? { text: p2Text, pinyin: fillPinyin(p2Text, rawP2?.pinyin) } : null;
+  const p2Text = rawP2 && typeof rawP2 === "object" ? String(rawP2.text ?? "").trim() : "";
+  const p2 = p2Text
+    ? {
+        text: p2Text,
+        ...(trimmed(rawP2?.audioUrl) ? { audioUrl: trimmed(rawP2?.audioUrl) } : {}),
+        ...(trimmed(rawP2?.imageUrl) ? { imageUrl: trimmed(rawP2?.imageUrl) } : {}),
+      }
+    : null;
+
   const p3 = Array.isArray(o.part3Questions)
-    ? (o.part3Questions as unknown[]).map((q) => {
-        const x = (q ?? {}) as Record<string, unknown>;
-        const question = String(x.question ?? "");
-        return { question, pinyin: fillPinyin(question, x.pinyin) };
-      })
+    ? (o.part3Questions as unknown[])
+        .map((q) => {
+          const x = (q ?? {}) as Record<string, unknown>;
+          const question = String(x.question ?? "").trim();
+          if (!question) return null;
+          return {
+            question,
+            ...(trimmed(x.audioUrl) ? { audioUrl: trimmed(x.audioUrl) } : {}),
+            ...(trimmed(x.imageUrl) ? { imageUrl: trimmed(x.imageUrl) } : {}),
+            ...(trimmed(x.sampleAnswer) ? { sampleAnswer: trimmed(x.sampleAnswer) } : {}),
+          };
+        })
+        .filter((q) => q !== null)
     : [];
+
   return { part1Sentences: p1, part2Passage: p2, part3Questions: p3 };
 }
 
-// ───────────────────────── WRITING (写作) ─────────────────────────
+// ───────────────────────── WRITING ─────────────────────────
 
 /**
- * Chuẩn hoá content Viết. Nhận: object `{ taskType?, prompt, promptZh?, outline?,
- * imageUrl?, minChars?, timeLimit? }` HOẶC mảng (lấy phần tử đầu hợp lệ — khớp
- * định dạng JSON nhập hàng loạt ở /admin/writing). Điền mặc định, chuẩn hoá taskType.
+ * Chuẩn hoá content Viết. Nhận: object `{ taskType?, prompt, outline?, imageUrl?,
+ * minWords?, timeLimit? }` HOẶC mảng (lấy phần tử đầu hợp lệ — khớp định dạng
+ * JSON nhập hàng loạt ở /admin/writing). Điền mặc định, chuẩn hoá taskType.
  */
 export function buildWritingContent(input: unknown): unknown {
   const src = Array.isArray(input)
@@ -163,10 +186,9 @@ export function buildWritingContent(input: unknown): unknown {
   return {
     taskType,
     prompt,
-    promptZh: str(o.promptZh),
     outline: str(o.outline),
     imageUrl: str(o.imageUrl),
-    minChars: num(o.minChars, 50),
+    minWords: num(o.minWords, 20),
     timeLimit: num(o.timeLimit, 900),
   };
 }
@@ -177,7 +199,8 @@ import type { SkillKey } from "@/lib/roadmap";
 
 export interface LessonBundleInput {
   topic: string;
-  topicZh: string;
+  /** Nhãn phụ TIẾNG VIỆT của chủ đề, vd "Các con vật". */
+  topicVi: string;
   icon?: string;
   description?: string;
   xpReward: number;
@@ -197,12 +220,12 @@ export function buildSectionContent(skill: SkillKey, raw: unknown, fallbackTitle
     case "WRITING":
       return buildWritingContent(raw);
     default:
-      // VOCAB / GRAMMAR / HANZI: admin cung cấp đúng shape, để validate lo.
+      // VOCAB / GRAMMAR / PHONICS: admin cung cấp đúng shape, để validate lo.
       return raw;
   }
 }
 
-const SKILL_SET: SkillKey[] = ["VOCAB", "GRAMMAR", "HANZI", "READING", "LISTENING", "WRITING", "SPEAKING"];
+const SKILL_SET: SkillKey[] = ["VOCAB", "GRAMMAR", "PHONICS", "READING", "LISTENING", "WRITING", "SPEAKING"];
 
 /**
  * Phân tích MẢNG JSON các bài để nhập hàng loạt. Mỗi phần tử có metadata bài +
@@ -227,7 +250,7 @@ export function parseLessonsBundle(input: unknown): LessonBundleInput[] {
     }
     lessons.push({
       topic,
-      topicZh: typeof r.topicZh === "string" ? r.topicZh : "",
+      topicVi: typeof r.topicVi === "string" ? r.topicVi : "",
       icon: typeof r.icon === "string" ? r.icon : undefined,
       description: typeof r.description === "string" ? r.description : undefined,
       xpReward: typeof r.xpReward === "number" ? r.xpReward : Number(r.xpReward) || 20,

@@ -4,7 +4,6 @@ import { ListeningPdf } from "@/components/learn/listening/listening-pdf";
 import { WritingPdf } from "@/components/learn/writing/writing-pdf";
 import { SpeakingPdf } from "@/components/learn/speaking/speaking-pdf";
 import { VocabPdf } from "@/components/learn/vocab/vocab-pdf";
-import { HanziPdf } from "@/components/learn/hanzi/hanzi-pdf";
 import { LessonPdf, type GrammarPdfScope } from "@/components/learn/grammar/lesson-pdf";
 import { RoadmapReadingPdf, RoadmapListeningPdf, RoadmapWritingReorderPdf } from "@/components/learn/roadmap/roadmap-pdf";
 
@@ -18,7 +17,6 @@ export type PdfPayload =
   | { kind: "writing"; props: ComponentProps<typeof WritingPdf> }
   | { kind: "speaking"; props: ComponentProps<typeof SpeakingPdf> }
   | { kind: "vocab"; props: ComponentProps<typeof VocabPdf> }
-  | { kind: "hanzi"; props: ComponentProps<typeof HanziPdf> }
   | { kind: "grammar"; props: Omit<ComponentProps<typeof LessonPdf>, "scope"> }
   | { kind: "roadmap-reading"; props: Omit<ComponentProps<typeof RoadmapReadingPdf>, "scope"> }
   | { kind: "roadmap-listening"; props: Omit<ComponentProps<typeof RoadmapListeningPdf>, "scope"> }
@@ -39,13 +37,13 @@ const PASSAGE_SCOPES = (passageLabel: string): PdfScopeOption[] => [
 
 /** Các tuỳ chọn "chọn nội dung in" theo loại bài (không có = không hiện tab chọn). */
 export const PDF_SCOPES: Partial<Record<PdfKind, PdfScopeOption[]>> = {
-  reading: PASSAGE_SCOPES("Đoạn văn"),
-  "roadmap-reading": PASSAGE_SCOPES("Đoạn văn"),
+  reading: PASSAGE_SCOPES("Bài đọc"),
+  "roadmap-reading": PASSAGE_SCOPES("Bài đọc"),
   listening: PASSAGE_SCOPES("Lời thoại"),
   "roadmap-listening": PASSAGE_SCOPES("Lời thoại"),
   grammar: [
     { key: "both", label: "Cả 2" },
-    { key: "theory", label: "Lý thuyết" },
+    { key: "theory", label: "Mẫu câu" },
     { key: "exercises", label: "Bài tập" },
   ],
 };
@@ -79,7 +77,5 @@ export function payloadToElement(payload: PdfPayload, scope?: string | null): Re
       return createElement(SpeakingPdf, payload.props);
     case "vocab":
       return createElement(VocabPdf, payload.props);
-    case "hanzi":
-      return createElement(HanziPdf, payload.props);
   }
 }

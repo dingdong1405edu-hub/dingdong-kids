@@ -1,14 +1,19 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Library, Clock, ArrowRight } from "lucide-react";
-import { cn, hskLevelLabel, hskBadgeClass } from "@/lib/utils";
+import { cn, levelLabel, levelBadgeClass } from "@/lib/utils";
 import { MATERIAL_CATEGORIES, categoryMeta } from "@/lib/materials";
-import { BaoCover } from "@/components/learn/bao-cover";
-import { HSKLevel, MaterialCategory, Prisma } from "@prisma/client";
+import { DingCover } from "@/components/learn/bao-cover";
+import { LEVELS } from "@/lib/roadmap";
+import { EnglishLevel, MaterialCategory, Prisma } from "@prisma/client";
 
-const LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
+export const metadata: Metadata = {
+  title: "Tài liệu",
+  description: "Ghi chú ngữ pháp, từ vựng, ghép vần và mẹo thi Cambridge cho bé học tiếng Anh.",
+};
 
 export default async function MaterialsPage({
   searchParams,
@@ -19,16 +24,18 @@ export default async function MaterialsPage({
   if (!session?.user) redirect("/login");
 
   const sp = await searchParams;
-  const level = LEVELS.includes(sp.level ?? "") ? (sp.level as HSKLevel) : undefined;
+  const level = (LEVELS as readonly string[]).includes(sp.level ?? "")
+    ? (sp.level as EnglishLevel)
+    : undefined;
   const cat = MATERIAL_CATEGORIES.some((c) => c.value === sp.cat) ? (sp.cat as MaterialCategory) : undefined;
 
   const where: Prisma.MaterialWhereInput = { published: true };
-  if (level) where.hskLevel = level;
+  if (level) where.level = level;
   if (cat) where.category = cat;
 
   const materials = await db.material.findMany({
     where,
-    orderBy: [{ hskLevel: "asc" }, { category: "asc" }, { order: "asc" }],
+    orderBy: [{ level: "asc" }, { category: "asc" }, { order: "asc" }],
   });
 
   const qs = (next: { level?: string; cat?: string }) => {
@@ -44,24 +51,26 @@ export default async function MaterialsPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-green-700 p-6 text-white sm:p-8">
-        <span className="font-chinese pointer-events-none absolute -right-2 -top-4 select-none text-[7rem] font-bold leading-none text-white/10">
-          书
+      <div className="hero-brand relative overflow-hidden rounded-3xl p-6 text-white shadow-soft-lg sm:p-8">
+        <span className="pointer-events-none absolute -right-2 -top-4 select-none text-[7rem] leading-none opacity-20">
+          📚
         </span>
         <div className="relative">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/25">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/25">
               <Library className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Tài liệu</h1>
-              <p className="text-sm text-white/80">Ghi chú ngữ pháp, từ vựng, mẹo thi HSK & văn hóa Trung Hoa</p>
+              <h1 className="font-display text-2xl font-bold">Tài liệu</h1>
+              <p className="text-[15px] text-white/85">
+                Ghi chú ngữ pháp, từ vựng, ghép vần và mẹo thi Cambridge cho bé
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters: HSK level */}
+      {/* Bộ lọc theo cấp Cambridge */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cấp độ</span>
@@ -70,7 +79,7 @@ export default async function MaterialsPage({
           </FilterChip>
           {LEVELS.map((l) => (
             <FilterChip key={l} href={qs({ level: l })} active={level === l}>
-              {hskLevelLabel(l)}
+              {levelLabel(l)}
             </FilterChip>
           ))}
         </div>
@@ -89,9 +98,9 @@ export default async function MaterialsPage({
 
       {/* Grid */}
       {materials.length === 0 ? (
-        <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+        <div className="sticker rounded-3xl border-dashed py-16 text-center text-muted-foreground">
           <Library className="mx-auto mb-3 h-12 w-12 opacity-30" />
-          <p>Chưa có tài liệu nào phù hợp bộ lọc.</p>
+          <p>Chưa có tài liệu nào ở mục này. Bé thử chọn cấp độ khác nhé 🌟</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -101,26 +110,25 @@ export default async function MaterialsPage({
             const tags = Array.isArray(m.tags) ? (m.tags as string[]) : [];
             return (
               <Link key={m.id} href={`/materials/${m.id}`} className="group">
-                <article className="flex h-full flex-col rounded-2xl border border-border/60 bg-card shadow-soft transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft-lg">
+                <article className="sticker flex h-full flex-col p-4 transition-all hover:-translate-y-1 hover:shadow-soft-lg">
                   {m.imageUrl ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={m.imageUrl} alt={m.title} loading="lazy" className="mb-3 h-32 w-full rounded-xl object-cover" />
                     </>
                   ) : (
-                    // Chưa có ảnh minh hoạ → hiện linh vật Bao cho thẻ đỡ trống.
-                    <BaoCover className="mb-3 h-32 w-full rounded-xl" />
+                    // Chưa có ảnh minh hoạ → hiện linh vật cho thẻ đỡ trống.
+                    <DingCover className="mb-3 h-32 w-full rounded-2xl" seed={m.id} />
                   )}
                   <div className="flex items-center justify-between">
                     <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl", meta.color)}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-bold", hskBadgeClass(m.hskLevel))}>
-                      {hskLevelLabel(m.hskLevel)}
+                    <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-bold", levelBadgeClass(m.level))}>
+                      {levelLabel(m.level)}
                     </span>
                   </div>
-                  <h3 className="mt-3 font-bold leading-snug text-foreground">{m.title}</h3>
-                  {m.titleZh && <p className="font-chinese text-sm text-muted-foreground">{m.titleZh}</p>}
+                  <h3 className="font-display mt-3 text-[17px] font-bold leading-snug text-foreground">{m.title}</h3>
                   <p className="mt-1.5 line-clamp-2 flex-1 text-sm text-muted-foreground">{m.summary}</p>
                   <div className="mt-3 flex items-center justify-between border-t pt-3">
                     <span className="text-xs font-medium text-muted-foreground">{meta.label}</span>

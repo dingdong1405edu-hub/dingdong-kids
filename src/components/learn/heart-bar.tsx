@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -8,28 +9,52 @@ interface HeartBarProps {
   unlimited?: boolean;
 }
 
+/**
+ * Dãy tim của bé. Tim vẽ TO hơn bản người lớn (dễ nhìn, dễ chạm trên máy tính
+ * bảng) và khi được tặng thêm tim thì quả tim mới "bật" ra bằng `animate-star-pop`
+ * để bé thấy ngay là mình vừa được thưởng.
+ */
 export function HeartBar({ hearts, maxHearts = 5, unlimited = false }: HeartBarProps) {
+  // Chỉ chạy hiệu ứng khi số tim TĂNG (được tặng / hồi lại), không chạy khi mất tim.
+  const prev = useRef(hearts);
+  const [gained, setGained] = useState(false);
+  useEffect(() => {
+    if (hearts > prev.current) {
+      setGained(true);
+      const t = setTimeout(() => setGained(false), 700);
+      prev.current = hearts;
+      return () => clearTimeout(t);
+    }
+    prev.current = hearts;
+  }, [hearts]);
+
   if (unlimited) {
     return (
       <div className="flex items-center gap-1 text-rose-500" title="Tim không giới hạn">
-        <Heart className="h-5 w-5 fill-rose-500" />
-        <span className="text-sm font-bold leading-none">∞</span>
+        <Heart className="h-7 w-7 fill-rose-500 drop-shadow-sm" />
+        <span className="font-display text-lg font-extrabold leading-none">∞</span>
       </div>
     );
   }
+
   return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: maxHearts }).map((_, i) => (
-        <Heart
-          key={i}
-          className={cn(
-            "h-5 w-5 transition-all",
-            i < hearts
-              ? "fill-rose-500 text-rose-500"
-              : "text-muted-foreground/40 fill-muted-foreground/30"
-          )}
-        />
-      ))}
+    <div className="flex items-center gap-1" title={`${hearts}/${maxHearts} tim`}>
+      {Array.from({ length: maxHearts }).map((_, i) => {
+        const filled = i < hearts;
+        return (
+          <Heart
+            key={i}
+            className={cn(
+              "h-7 w-7 transition-all duration-200",
+              filled
+                ? "fill-rose-500 text-rose-500 drop-shadow-sm"
+                : "scale-90 fill-muted-foreground/20 text-muted-foreground/40",
+              // Quả tim vừa nhận được sẽ nảy lên.
+              gained && filled && i === hearts - 1 && "animate-star-pop",
+            )}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import type { HSKLevel, QuestionType, WritingTaskType } from "@prisma/client";
+import type { EnglishLevel, QuestionType, WritingTaskType } from "@prisma/client";
 import type { SkillKey } from "@/lib/roadmap";
 import { GrammarFlow } from "@/components/learn/grammar/grammar-flow";
-import { RoadmapHanziPlayer } from "./roadmap-hanzi-player";
+import { RoadmapPhonicsPlayer } from "./roadmap-phonics-player";
 import { RoadmapVocabPlayer } from "./roadmap-vocab-player";
 import { RoadmapWritingPlayer } from "./roadmap-writing-player";
 import { ReadingTestClient } from "@/app/(learn)/reading/[testId]/reading-test-client";
@@ -19,7 +19,6 @@ import {
   isReorderWriting,
 } from "@/lib/roadmap-content";
 import type {
-  HanziSectionContent,
   WritingSectionContent,
   SpeakingSectionContent,
 } from "@/lib/roadmap-content";
@@ -41,7 +40,7 @@ interface Props {
   skill: SkillKey;
   lessonId: string;
   sectionId: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   title: string;
   content: unknown;
   backHref: string;
@@ -55,7 +54,7 @@ export function RoadmapSectionPlayer({
   skill,
   lessonId,
   sectionId,
-  hskLevel,
+  level,
   title,
   content,
   backHref,
@@ -114,21 +113,22 @@ export function RoadmapSectionPlayer({
       );
     }
 
-    case "HANZI": {
-      const c = content as HanziSectionContent;
+    case "PHONICS": {
+      // Trình chơi tự đọc content (thẻ tự soạn / trỏ tới bài dựng sẵn / rỗng).
       return (
-        <RoadmapHanziPlayer
+        <RoadmapPhonicsPlayer
+          title={title}
+          content={content}
           closeHref={backHref}
-          characters={(c.characters ?? []).map((ch) => ({
-            character: ch.character,
-            pinyin: ch.pinyin,
-            tone: ch.tone,
-            meaning: ch.meaning,
-            strokeCount: ch.strokeCount,
-            examples: ch.examples ?? [],
-          }))}
-          onComplete={async () => {
-            const r = await completeRoadmapSectionAction({ lessonId, skill: "HANZI" });
+          passThreshold={ROADMAP_PASS_THRESHOLD}
+          onComplete={async (s) => {
+            const r = await completeRoadmapSectionAction({
+              lessonId,
+              skill: "PHONICS",
+              correct: s.correct,
+              total: s.total,
+              durationSec: s.durationSec,
+            });
             return { ok: r.ok };
           }}
         />
@@ -143,7 +143,7 @@ export function RoadmapSectionPlayer({
           <RoadmapMultiReadingPlayer
             sectionId={sectionId}
             lessonId={lessonId}
-            hskLevel={hskLevel}
+            level={level}
             title={c.title}
             passages={c.passages}
             timeLimit={c.timeLimit}
@@ -156,21 +156,21 @@ export function RoadmapSectionPlayer({
       const test: ReadingTestData = {
         id: sectionId,
         title: c.title,
-        titleZh: p.titleZh ?? c.titleZh ?? "",
-        hskLevel,
+        level,
         passage: p.passage,
-        passagePinyin: p.passagePinyin ?? null,
         passageTranslation: p.passageTranslation ?? null,
         passageAnalysis: p.passageAnalysis ?? null,
         imageUrl: p.imageUrl ?? null,
+        audioUrl: p.audioUrl ?? null,
         timeLimit: c.timeLimit ?? 600,
         questions: (p.questions ?? []).map(
           (q, i): ReadingQuestion => ({
             id: roadmapQuestionId(i),
             type: q.type as QuestionType,
             prompt: q.prompt,
-            promptPinyin: q.promptPinyin ?? null,
             promptTranslation: q.promptTranslation ?? null,
+            imageUrl: q.imageUrl ?? null,
+            audioUrl: q.audioUrl ?? null,
             options: q.options,
             correctAnswer: q.correctAnswer,
             explanation: q.explanation ?? null,
@@ -201,7 +201,7 @@ export function RoadmapSectionPlayer({
           <RoadmapMultiListeningPlayer
             sectionId={sectionId}
             lessonId={lessonId}
-            hskLevel={hskLevel}
+            level={level}
             title={c.title}
             clips={c.clips}
             timeLimit={c.timeLimit}
@@ -214,7 +214,7 @@ export function RoadmapSectionPlayer({
       const test: ListeningTestData = {
         id: sectionId,
         title: c.title,
-        hskLevel,
+        level,
         audioUrl: cl.audioUrl ?? "",
         transcript: cl.transcript ?? null,
         transcriptExplanation: cl.transcriptExplanation ?? null,
@@ -225,8 +225,8 @@ export function RoadmapSectionPlayer({
             id: roadmapQuestionId(i),
             type: q.type as QuestionType,
             prompt: q.prompt,
-            promptPinyin: q.promptPinyin ?? null,
             promptTranslation: q.promptTranslation ?? null,
+            imageUrl: q.imageUrl ?? null,
             options: q.options,
             correctAnswer: q.correctAnswer,
             explanation: q.explanation ?? null,
@@ -251,7 +251,7 @@ export function RoadmapSectionPlayer({
     }
 
     case "WRITING": {
-      // "连词成句" (sắp xếp câu — format thi viết HSK2): chấm tự động, không AI.
+      // Sắp xếp từ thành câu (dạng đề viết Movers/Flyers): chấm tự động, không AI.
       if (isReorderWriting(content)) {
         return (
           <RoadmapWritingPlayer
@@ -277,12 +277,11 @@ export function RoadmapSectionPlayer({
         id: sectionId,
         taskType: c.taskType as WritingTaskType,
         prompt: c.prompt,
-        promptZh: c.promptZh ?? null,
         outline: c.outline ?? null,
         imageUrl: c.imageUrl ?? null,
-        minChars: c.minChars ?? 50,
+        minWords: c.minWords ?? 25,
         timeLimit: c.timeLimit ?? 900,
-        hskLevel,
+        level,
       };
       return (
         <WritingClient
@@ -301,10 +300,10 @@ export function RoadmapSectionPlayer({
       const c = content as SpeakingSectionContent;
       const set = {
         id: sectionId,
-        hskLevel,
+        level,
         title,
         part1Sentences: c.part1Sentences ?? [],
-        part2Passage: c.part2Passage ?? { text: "", pinyin: "" },
+        part2Passage: c.part2Passage ?? { text: "" },
         part3Questions: c.part3Questions ?? [],
       };
       return (

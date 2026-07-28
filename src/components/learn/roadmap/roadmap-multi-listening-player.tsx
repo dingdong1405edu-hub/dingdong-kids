@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { HSKLevel, QuestionType } from "@prisma/client";
+import type { EnglishLevel, QuestionType } from "@prisma/client";
 import { ListeningTestClient } from "@/app/(learn)/listening/[testId]/listening-test-client";
 import { roadmapQuestionId, type ListeningClipContent } from "@/lib/roadmap-content";
 import type { ListeningTestData, ListeningQuestion } from "@/components/learn/listening/types";
@@ -17,7 +17,7 @@ import {
 interface Props {
   sectionId: string;
   lessonId: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   title: string;
   clips: ListeningClipContent[];
   timeLimit: number;
@@ -28,7 +28,7 @@ interface Props {
 export function RoadmapMultiListeningPlayer({
   sectionId,
   lessonId,
-  hskLevel,
+  level,
   title,
   clips,
   timeLimit,
@@ -49,7 +49,7 @@ export function RoadmapMultiListeningPlayer({
   const test: ListeningTestData = {
     id: `${sectionId}-c${index}`,
     title: `${c.title || title} · Đoạn ${index + 1}/${total}`,
-    hskLevel,
+    level,
     audioUrl: c.audioUrl ?? "",
     transcript: c.transcript ?? null,
     transcriptExplanation: c.transcriptExplanation ?? null,
@@ -61,8 +61,9 @@ export function RoadmapMultiListeningPlayer({
         id: roadmapQuestionId(i),
         type: q.type as QuestionType,
         prompt: q.prompt,
-        promptPinyin: q.promptPinyin ?? null,
         promptTranslation: q.promptTranslation ?? null,
+        imageUrl: q.imageUrl ?? null,
+        audioUrl: q.audioUrl ?? null,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation ?? null,
@@ -87,7 +88,7 @@ export function RoadmapMultiListeningPlayer({
       durationSec: totalDuration,
     });
     if (r.ok) {
-      toast.success(`Hoàn thành phần Nghe · ${avg}%`);
+      toast.success(`Xong phần Nghe · ${avg}% — tai bé thính lắm! 🎧`);
       router.push(backHref);
       router.refresh();
     } else {
@@ -121,8 +122,8 @@ export function RoadmapMultiListeningPlayer({
         isLast
           ? finalizing
             ? "Đang lưu…"
-            : "Hoàn thành phần Nghe →"
-          : `Tiếp tục đoạn ${index + 2}/${total} →`
+            : "Xong phần Nghe →"
+          : `Nghe tiếp đoạn ${index + 2}/${total} →`
       }
     />
   );

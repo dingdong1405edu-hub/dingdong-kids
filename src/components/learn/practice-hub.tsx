@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export type Accent = "red" | "green" | "blue" | "amber" | "teal" | "rose" | "indigo" | "violet";
 
 const ACCENTS: Record<Accent, { text: string; iconBg: string; btn: string; banner: string }> = {
-  red: { text: "text-primary", iconBg: "bg-primary/10 text-primary", btn: "bg-primary hover:bg-primary/90", banner: "border-green-100 from-green-50 to-white dark:border-green-400/20 dark:from-green-500/10 dark:to-transparent" },
+  red: { text: "text-primary", iconBg: "bg-primary/10 text-primary", btn: "bg-primary hover:bg-primary/90", banner: "border-sky-100 from-sky-50 to-white dark:border-sky-400/20 dark:from-sky-500/10 dark:to-transparent" },
   green: { text: "text-emerald-600", iconBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", btn: "bg-emerald-600 hover:bg-emerald-700", banner: "border-emerald-100 from-emerald-50 to-white dark:border-emerald-400/20 dark:from-emerald-500/10 dark:to-transparent" },
   blue: { text: "text-sky-600", iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300", btn: "bg-sky-600 hover:bg-sky-700", banner: "border-sky-100 from-sky-50 to-white dark:border-sky-400/20 dark:from-sky-500/10 dark:to-transparent" },
   amber: { text: "text-amber-600", iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300", btn: "bg-amber-500 hover:bg-amber-600", banner: "border-amber-100 from-amber-50 to-white dark:border-amber-400/20 dark:from-amber-500/10 dark:to-transparent" },
@@ -19,6 +19,7 @@ const ACCENTS: Record<Accent, { text: string; iconBg: string; btn: string; banne
 interface PracticeHubProps {
   accent?: Accent;
   icon: React.ReactNode;
+  /** Emoji trang trí lớn, mờ ở góc banner. */
   decoChar?: string;
   title: string;
   subtitle: string;
@@ -30,14 +31,15 @@ interface PracticeHubProps {
   children?: React.ReactNode;
 }
 
+/** Khung đầu trang cho mọi khu luyện tập (Đọc, Nghe, Nói, Viết, Ngữ pháp…). */
 export function PracticeHub({
-  accent = "red",
+  accent = "blue",
   icon,
-  decoChar = "学",
+  decoChar = "🎈",
   title,
   subtitle,
   randomHref,
-  randomLabel = "AI chọn đề ngẫu nhiên",
+  randomLabel = "Chọn giúp bé một bài",
   tips,
   gridTitle,
   gridSubtitle,
@@ -48,41 +50,41 @@ export function PracticeHub({
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className={cn("relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 sm:p-6", a.banner)}>
+      <div className={cn("relative overflow-hidden rounded-3xl border bg-gradient-to-br p-5 sm:p-6", a.banner)}>
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className={cn("flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-sm", a.iconBg)}>
+            <div className={cn("flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-soft", a.iconBg)}>
               {icon}
             </div>
             <div>
-              <h1 className="text-xl font-extrabold sm:text-2xl">
-                Luyện tập <span className={a.text}>{title}</span>
+              <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
+                Luyện <span className={a.text}>{title}</span>
               </h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
+              <p className="mt-0.5 text-[15px] text-muted-foreground">{subtitle}</p>
             </div>
           </div>
           {randomHref && (
             <Link href={randomHref} className="shrink-0">
-              <Button className={cn("h-11 gap-2 rounded-xl px-5 text-sm font-semibold shadow-sm", a.btn)}>
+              <Button className={cn("btn-chunky h-12 gap-2 px-6 text-sm font-extrabold", a.btn)}>
                 <Sparkles className="h-4 w-4" /> {randomLabel} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           )}
         </div>
-        <div className="pointer-events-none absolute -right-5 -top-8 select-none font-chinese text-[130px] leading-none text-foreground/[0.04] dark:text-white/[0.05]">
+        <div className="pointer-events-none absolute -right-4 -top-6 select-none text-[130px] leading-none opacity-[0.13] animate-emoji">
           {decoChar}
         </div>
       </div>
 
-      {/* Info box */}
+      {/* Hộp mách nhỏ */}
       {tips && tips.length > 0 && (
-        <div className="rounded-2xl border bg-card p-5">
-          <div className="mb-3 flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-muted-foreground">
-            <Info className={cn("h-4 w-4", a.text)} /> Cần biết trước khi làm
+        <div className="sticker bg-card p-5">
+          <div className="mb-3 flex items-center gap-2 text-[13px] font-extrabold uppercase tracking-wide text-muted-foreground">
+            <Info className={cn("h-4 w-4", a.text)} /> Mách nhỏ trước khi làm
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {tips.map((t, i) => (
-              <div key={i} className="flex items-start gap-2.5 text-sm">
+              <div key={i} className="flex items-start gap-2.5 text-[15px]">
                 <CheckCircle2 className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)} />
                 <span className="text-muted-foreground">{t}</span>
               </div>
@@ -91,12 +93,12 @@ export function PracticeHub({
         </div>
       )}
 
-      {/* Content / grid */}
+      {/* Danh sách bài */}
       {children && (
         <div>
           {gridTitle && (
             <div className="mb-3">
-              <h2 className="flex items-center gap-2 text-lg font-bold">
+              <h2 className="flex items-center gap-2 font-display text-xl font-extrabold">
                 <ListChecks className={cn("h-5 w-5", a.text)} /> {gridTitle}
               </h2>
               {gridSubtitle && <p className="mt-0.5 text-sm text-muted-foreground">{gridSubtitle}</p>}

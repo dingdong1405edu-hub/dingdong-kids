@@ -16,16 +16,13 @@ import {
   roadmapQuestionId,
   type RoadmapQuestion,
 } from "@/lib/roadmap-content";
-import type { SkillKey } from "@/lib/roadmap";
+import { type SkillKey, levelToSlug } from "@/lib/roadmap";
+import { isAnswerAcceptable } from "@/lib/english";
 
 type Ok<T> = { ok: true } & T;
 type Err = { ok: false; error: string };
 
-const SKILL_KEYS: SkillKey[] = ["VOCAB", "GRAMMAR", "HANZI", "READING", "LISTENING", "WRITING", "SPEAKING"];
-
-function normalize(s: string): string {
-  return s.normalize("NFKC").replace(/\s+/g, "").toLowerCase();
-}
+const SKILL_KEYS: SkillKey[] = ["VOCAB", "GRAMMAR", "PHONICS", "READING", "LISTENING", "WRITING", "SPEAKING"];
 
 /** Chấm danh sách câu hỏi (MCQ / Đúng-Sai / Điền từ) — dùng cho Đọc & Nghe. */
 function gradeQuestions(
@@ -42,10 +39,11 @@ function gradeQuestions(
     if (q.type === "MCQ") ok = typeof ca.index === "number" && a === ca.index;
     else if (q.type === "TRUE_FALSE") ok = typeof ca.value === "boolean" && a === ca.value;
     else {
-      const accepted = [ca.text, ...(ca.accepted ?? [])]
-        .filter((s): s is string => typeof s === "string" && s.length > 0)
-        .map(normalize);
-      ok = typeof a === "string" && accepted.includes(normalize(a));
+      // Câu điền từ: chấm nới cho trẻ (bỏ qua hoa/thường, dấu câu, lỗi chính tả nhỏ).
+      const accepted = [ca.text, ...(ca.accepted ?? [])].filter(
+        (s): s is string => typeof s === "string" && s.length > 0
+      );
+      ok = typeof a === "string" && isAnswerAcceptable(a, accepted);
     }
     if (ok) correct++;
     details[id] = ok;
@@ -74,7 +72,7 @@ async function recordSkillDone(
   const lesson = await db.roadmapLesson.findUnique({
     where: { id: lessonId },
     include: {
-      course: { select: { hskLevel: true, id: true } },
+      course: { select: { level: true, id: true } },
       sections: { where: { published: true }, select: { skill: true } },
     },
   });
@@ -85,7 +83,7 @@ async function recordSkillDone(
   const lessonIndex = await db.roadmapLesson.count({
     where: { courseId: lesson.course.id, order: { lt: lesson.order } },
   });
-  if (isRoadmapLessonLocked(ent, lesson.course.hskLevel, lessonIndex)) {
+  if (isRoadmapLessonLocked(ent, lesson.course.level, lessonIndex)) {
     return { error: "Bài học này đang khoá — cần mở khoá lộ trình." };
   }
 
@@ -154,7 +152,7 @@ async function recordSkillDone(
     return { completed: completedNow, xpEarned, skillsDone: merged };
   });
 
-  const slug = lesson.course.hskLevel.toLowerCase();
+  const slug = levelToSlug(lesson.course.level);
   revalidatePath(`/roadmap/${slug}`);
   revalidatePath("/roadmap");
   revalidatePath("/dashboard");
@@ -168,7 +166,7 @@ async function requireUser() {
   return { id: session.user.id, role: (session.user as { role?: string }).role };
 }
 
-// ───────────── Hoàn thành phần chấm phía client (Từ vựng / Ngữ pháp / Chữ Hán / Nói) ─────────────
+// ───────────── Hoàn thành phần chấm phía client (Từ vựng / Ngữ pháp / Ghép vần / Nói) ─────────────
 
 export async function completeRoadmapSectionAction(input: {
   lessonId: string;
@@ -306,7 +304,7 @@ export async function gradeRoadmapWritingAction(input: {
 
   const section = await db.roadmapSection.findUnique({
     where: { id: input.sectionId },
-    select: { skill: true, lessonId: true, content: true, lesson: { select: { course: { select: { hskLevel: true } } } } },
+    select: { skill: true, lessonId: true, content: true, lesson: { select: { course: { select: { level: true } } } } },
   });
   if (!section || section.skill !== Skill.WRITING) return { ok: false, error: "Không tìm thấy nội dung." };
   const parsed = writingContentSchema.safeParse(section.content);
@@ -315,9 +313,9 @@ export async function gradeRoadmapWritingAction(input: {
   try {
     const result = await gradeWriting({
       submission: input.submission,
-      hskLevel: section.lesson.course.hskLevel,
+      level: section.lesson.course.level,
       taskPrompt: parsed.data.prompt,
-      minChars: parsed.data.minChars,
+      minWords: parsed.data.minWords,
       outline: parsed.data.outline ?? null,
     });
     const rec = await recordSkillDone(user.id, user.role, section.lessonId, "WRITING", {
@@ -332,7 +330,7 @@ export async function gradeRoadmapWritingAction(input: {
   }
 }
 
-// ───────────── Nói (HSKK) — chấm từng đoạn ghi âm (không tự đánh dấu hoàn thành) ─────────────
+// ───────────── Nói (Cambridge Speaking) — chấm từng đoạn ghi âm (không tự đánh dấu hoàn thành) ─────────────
 
 export async function gradeRoadmapSpeakingAction(input: {
   sectionId: string;
@@ -349,7 +347,7 @@ export async function gradeRoadmapSpeakingAction(input: {
 
   const section = await db.roadmapSection.findUnique({
     where: { id: input.sectionId },
-    select: { skill: true, lessonId: true, lesson: { select: { course: { select: { hskLevel: true } } } } },
+    select: { skill: true, lessonId: true, lesson: { select: { course: { select: { level: true } } } } },
   });
   if (!section || section.skill !== Skill.SPEAKING) return { ok: false, error: "Không tìm thấy nội dung." };
 
@@ -359,7 +357,7 @@ export async function gradeRoadmapSpeakingAction(input: {
       referenceText: input.referenceText,
       part: input.part,
       question: input.question,
-      hskLevel: section.lesson.course.hskLevel,
+      level: section.lesson.course.level,
     });
     await db.attempt.create({
       data: {

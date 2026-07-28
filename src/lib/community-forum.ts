@@ -13,7 +13,8 @@ export interface RawThread {
   author: string;
   title: string;
   body: string;
-  hsk: string;
+  /** Cấp độ liên quan (EnglishLevel: "STARTERS", "MOVERS"…) — "" nếu không gắn cấp nào. */
+  level: string;
   tag: string;
   likes: number;
   views: number;
@@ -58,10 +59,10 @@ const PINNED: Array<{ category: string; categoryLabel: string; thread: RawThread
     categoryLabel: "Hỏi đáp chung",
     thread: {
       author: "Ban Quản Trị DingDong",
-      title: "🎉 Chào mừng bạn đến với Cộng đồng DingDong HSK!",
+      title: "🎉 Chào mừng ba mẹ đến với Cộng đồng DingDong Kids!",
       body:
-        "Đây là nơi cả nhà cùng hỏi đáp, chia sẻ mẹo học, khoe thành tích và cổ vũ nhau chinh phục tiếng Trung. Hãy giới thiệu bản thân, đặt câu hỏi thoải mái và nhớ giữ thái độ thân thiện nha. Chúc mọi người học vui — 加油! 💪",
-      hsk: "",
+        "Đây là nơi ba mẹ cùng hỏi đáp, chia sẻ mẹo đồng hành với con học tiếng Anh, khoe thành tích của bé và cổ vũ nhau. Ba mẹ cứ thoải mái đặt câu hỏi, kể cả những câu tưởng là nhỏ xíu — thường thì rất nhiều nhà đang thắc mắc giống mình. Chỉ xin một điều: giữ giọng nhẹ nhàng và không so sánh con nhà này với con nhà kia nhé 💛",
+      level: "",
       tag: "Thông báo",
       likes: 214,
       views: 5820,
@@ -69,9 +70,9 @@ const PINNED: Array<{ category: string; categoryLabel: string; thread: RawThread
       solved: false,
       hot: true,
       replies: [
-        { author: "Mèo Con HSK", text: "Diễn đàn có tâm ghê, chào cả nhà mình mới tham gia nè 🙌", time: "2 ngày trước", likes: 28 },
-        { author: "an_nguyen", text: "Cảm ơn admin, cộng đồng dễ thương quá, quyết tâm học đều mỗi ngày!", time: "hôm qua", likes: 19 },
-        { author: "Trần Thu Hà", text: "Hóng có thêm mục thi đua tuần nữa thì tuyệt 🥰", time: "hôm qua", likes: 14 },
+        { author: "Mẹ Bắp 5 tuổi", text: "Diễn đàn có tâm ghê, chào cả nhà mình mới tham gia nè 🙌", time: "2 ngày trước", likes: 28 },
+        { author: "an_nguyen", text: "Cảm ơn admin, cộng đồng dễ thương quá, quyết tâm cùng con học đều mỗi ngày!", time: "hôm qua", likes: 19 },
+        { author: "Trần Thu Hà", text: "Hóng có thêm mục thi đua tuần cho các bé nữa thì tuyệt 🥰", time: "hôm qua", likes: 14 },
       ],
     },
   },
@@ -80,10 +81,10 @@ const PINNED: Array<{ category: string; categoryLabel: string; thread: RawThread
     categoryLabel: "Hỏi đáp chung",
     thread: {
       author: "Ban Quản Trị DingDong",
-      title: "📌 Mẹo đặt câu hỏi để được giải đáp nhanh nhất",
+      title: "📌 Mẹo đặt câu hỏi để được ba mẹ khác trả lời nhanh nhất",
       body:
-        "Khi hỏi về ngữ pháp/từ vựng, bạn nên: (1) ghi rõ câu ví dụ bằng chữ Hán + pinyin, (2) nói mình đang ở cấp HSK mấy, (3) nêu đúng chỗ mình đang bí. Càng cụ thể thì mọi người càng dễ giúp bạn. Chúc học tốt!",
-      hsk: "",
+        "Khi hỏi về việc học của con, ba mẹ nên ghi rõ: (1) bé mấy tuổi và đang ở cấp nào (Pre-Starters, Starters, Movers…), (2) bé học được bao lâu rồi, (3) tình huống cụ thể đang gặp — ví dụ 'bé đọc được chữ nhưng không chịu nói'. Càng cụ thể thì mọi người càng gợi ý đúng chỗ. Chúc cả nhà học vui!",
+      level: "",
       tag: "Hướng dẫn",
       likes: 156,
       views: 3410,
@@ -91,8 +92,8 @@ const PINNED: Array<{ category: string; categoryLabel: string; thread: RawThread
       solved: false,
       hot: false,
       replies: [
-        { author: "Hoàng Minh Đức", text: "Chuẩn luôn, hỏi có ví dụ cụ thể là trả lời cái rẹt 😄", time: "tuần trước", likes: 17 },
-        { author: "susu_learning", text: "Ghim luôn bài này cho người mới đọc ạ 📌", time: "6 ngày trước", likes: 11 },
+        { author: "Hoàng Minh Đức", text: "Chuẩn luôn, hỏi có tình huống cụ thể là được trả lời cái rẹt 😄", time: "tuần trước", likes: 17 },
+        { author: "susu_mom", text: "Ghim luôn bài này cho ba mẹ mới đọc ạ 📌", time: "6 ngày trước", likes: 11 },
       ],
     },
   },

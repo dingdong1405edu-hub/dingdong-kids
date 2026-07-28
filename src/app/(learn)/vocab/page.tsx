@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -7,6 +8,11 @@ import { PracticeHub } from "@/components/learn/practice-hub";
 import { TestCard } from "@/components/learn/test-card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 
+export const metadata: Metadata = {
+  title: "Từ vựng",
+  description: "Học từ vựng tiếng Anh cho bé qua tranh, âm thanh và trò chơi ghi nhớ.",
+};
+
 export default async function VocabPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -14,7 +20,7 @@ export default async function VocabPage() {
   const [units, dueCount] = await Promise.all([
     db.vocabUnit.findMany({
       where: { published: true }, // ẩn unit nháp khỏi học viên
-      orderBy: [{ hskLevel: "asc" }, { order: "asc" }],
+      orderBy: [{ level: "asc" }, { order: "asc" }],
       include: {
         lessons: {
           where: { published: true }, // ẩn bài nháp khỏi học viên
@@ -39,33 +45,33 @@ export default async function VocabPage() {
     <PracticeHub
       accent="blue"
       icon={<BookOpen className="h-7 w-7" />}
-      decoChar="词"
+      decoChar="📚"
       title="Từ vựng"
-      subtitle="Học từ vựng HSK 1–6 theo phong cách Duolingo, có XP và streak"
+      subtitle="Mỗi từ có tranh và tiếng đọc — nhìn, nghe rồi nhớ thật lâu"
       randomHref={randomHref}
       randomLabel="Học tiếp bài đang dở"
       tips={[
-        "Mỗi đơn vị (unit) gồm nhiều bài học ngắn — học bài nào trước cũng được.",
-        "Dạng bài: nối từ, dịch câu, chọn thanh điệu, gõ chữ Hán, nối pinyin.",
-        "Trả lời sai sẽ mất 1 tim ❤️ — hết tim cần đợi hồi hoặc luyện lại.",
-        "Hoàn thành bài học để cộng XP và giữ chuỗi ngày học.",
+        "Mỗi chủ đề gồm nhiều bài ngắn — bé chọn bài nào cũng được.",
+        "Bấm nút loa 🔊 để nghe người bản ngữ đọc từ đó.",
+        "Trò chơi: nhìn tranh chọn từ, nghe rồi chọn tranh, kéo chữ ghép từ.",
+        "Học xong một bài bé được thêm sao ⭐ và giữ chuỗi ngày học.",
       ]}
-      gridTitle="Các đơn vị từ vựng"
-      gridSubtitle="Nhấn vào một đơn vị để bắt đầu học."
+      gridTitle="Các chủ đề từ vựng"
+      gridSubtitle="Bấm vào một chủ đề để bắt đầu."
     >
       {dueCount > 0 && (
         <Link
           href="/vocab/review"
-          className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 transition-colors hover:border-amber-300 dark:border-amber-400/25 dark:from-amber-500/10 dark:to-transparent dark:hover:border-amber-400/40"
+          className="sticker mb-4 flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-br from-amber-50 to-white p-4 transition-transform hover:-translate-y-0.5 dark:from-amber-500/10 dark:to-transparent"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
+              <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <div className="font-semibold">Ôn tập tổng hợp</div>
+              <div className="font-display font-bold">Ôn lại từ cũ</div>
               <p className="text-sm text-muted-foreground">
-                {dueCount} từ đến hạn ôn — lặp lại ngắt quãng để nhớ lâu.
+                {dueCount} từ đến lúc ôn — ôn đúng lúc để nhớ thật lâu nhé!
               </p>
             </div>
           </div>
@@ -81,8 +87,8 @@ export default async function VocabPage() {
               key={u.id}
               href={`/vocab/${u.id}`}
               title={u.title}
-              level={u.hskLevel}
-              tags={[u.titleZh]}
+              level={u.level}
+              tags={u.theme ? [u.theme] : []}
               meta={`${u.done}/${u.total} bài học`}
               score={u.pct}
               seed={u.id}
@@ -97,9 +103,9 @@ export default async function VocabPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+    <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
       <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-      <p>Chưa có đơn vị từ vựng nào.</p>
+      <p>Chưa có chủ đề từ vựng nào. Bé quay lại sau nhé! 🌟</p>
     </div>
   );
 }

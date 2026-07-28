@@ -57,11 +57,15 @@ export function TestShell({
           <span className="hidden sm:inline">Thoát</span>
         </Link>
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-extrabold text-primary-foreground">
-            中
+          {/* Ding (chú gấu con) — mặt cười quen thuộc ở góc mọi màn làm bài. */}
+          <span
+            aria-hidden
+            className="flex h-8 w-8 items-center justify-center rounded-2xl bg-primary/15 text-base leading-none"
+          >
+            🐻
           </span>
-          <span className="hidden text-sm font-semibold md:inline">
-            DingDong <span className="font-normal text-muted-foreground">/ {subtitle}</span>
+          <span className="hidden font-display text-sm font-extrabold md:inline">
+            DingDong Kids <span className="font-sans font-normal text-muted-foreground">/ {subtitle}</span>
           </span>
         </div>
 
@@ -79,7 +83,7 @@ export function TestShell({
             </span>
           )}
           {!submitted && onSubmit && (
-            <Button onClick={onSubmit} disabled={submitting} className="gap-1.5 rounded-lg">
+            <Button onClick={onSubmit} disabled={submitting} className="btn-chunky gap-1.5 font-extrabold">
               <Send className="h-4 w-4" /> <span className="hidden sm:inline">{submitLabel}</span>
             </Button>
           )}
@@ -120,7 +124,7 @@ export function QuestionNavBar({
   return (
     <div className="flex items-center gap-2">
       {partLabel && (
-        <span className="shrink-0 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
+        <span className="shrink-0 rounded-full border-2 border-primary/30 bg-primary/5 px-3 py-1 text-xs font-extrabold text-primary">
           {partLabel}
         </span>
       )}
@@ -132,7 +136,7 @@ export function QuestionNavBar({
               key={i}
               onClick={() => onJump(i)}
               className={cn(
-                "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors",
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 text-sm font-extrabold transition-colors",
                 c === true
                   ? "border-emerald-500 bg-emerald-500 text-white"
                   : c === false

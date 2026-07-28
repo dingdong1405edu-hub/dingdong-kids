@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 interface Props {
   progress: number;
   closeHref: string;
-  /** When provided, shows a "Lý thuyết" button to re-open the theory review. */
+  /** Khi có → hiện nút "Mẫu câu" để mở lại phần xem lại lý thuyết. */
   onReviewTheory?: () => void;
 }
 
@@ -29,9 +29,9 @@ export function FlowHeader({ progress, closeHref, onReviewTheory }: Props) {
           variant="ghost"
           size="sm"
           onClick={onReviewTheory}
-          className="shrink-0 gap-1.5 text-xs"
+          className="shrink-0 gap-1.5 text-xs font-bold"
         >
-          <BookOpen className="h-4 w-4" /> Lý thuyết
+          <BookOpen className="h-4 w-4" /> Mẫu câu
         </Button>
       )}
     </div>

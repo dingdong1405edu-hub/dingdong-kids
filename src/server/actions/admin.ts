@@ -4,13 +4,14 @@ import { isIP } from "node:net";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { HSKLevel, MaterialCategory, Prisma, QuestionType, Role, SubscriptionType, WritingTaskType } from "@prisma/client";
+import { EnglishLevel, MaterialCategory, Prisma, QuestionType, Role, SubscriptionType, WritingTaskType } from "@prisma/client";
 import { getPlan } from "@/lib/payment-plans";
 import { requireAdmin, requireAdminActor } from "@/lib/admin-guard";
 import { logAudit, entityLabel } from "@/lib/audit";
 import { parseGrammarContent } from "@/lib/grammar";
 import { parseMaterialContent } from "@/lib/materials";
-import { toPinyin } from "@/lib/pinyin";
+import { levelLabel } from "@/lib/utils";
+import { ensureAudio } from "@/lib/tts";
 import {
   generateReadingQuestions,
   generateListeningQuestions,
@@ -23,7 +24,7 @@ import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
 export async function adminUpdateUserAction(params: {
   userId: string;
   action: "ban" | "unban" | "resetHearts";
-  hskLevel?: string;
+  level?: string;
 }) {
   const { actor } = await requireAdminActor();
   const { userId, action } = params;
@@ -91,7 +92,7 @@ export async function adminGrantSubscriptionAction(input: {
         data: {
           userId: user.id,
           type: g.type as SubscriptionType,
-          hskLevel: g.hskLevel ? (g.hskLevel as HSKLevel) : null,
+          level: g.level ? (g.level as EnglishLevel) : null,
           startedAt: start,
           expiresAt,
         },
@@ -115,11 +116,9 @@ export async function adminGrantSubscriptionAction(input: {
 // ===== Reading =====
 const readingSchema = z.object({
   title: z.string().min(1),
-  titleZh: z.string().min(1),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   passage: z.string().min(1),
-  passagePinyin: z.string().optional(),
-  passageTranslation: z.string().optional(),
+  audioUrl: z.string().trim().optional(),
   timeLimit: z.coerce.number().min(60),
   imageUrl: z
     .string()
@@ -131,14 +130,19 @@ const readingSchema = z.object({
 export async function createReadingAction(fd: FormData) {
   const { actor } = await requireAdminActor();
   const data = readingSchema.parse(Object.fromEntries(fd));
+  // Đọc mẫu cả đoạn: trẻ vừa nghe vừa nhìn chữ. Chưa có MP3 thì sinh bằng TTS —
+  // lỗi TTS không chặn việc lưu bài (ensureAudio tự nuốt lỗi, trả null).
+  const audioUrl = await ensureAudio(data.audioUrl?.trim() || null, data.passage);
   const created = await db.readingTest.create({
     data: {
-      ...data,
+      title: data.title,
+      level: data.level,
+      passage: data.passage,
+      timeLimit: data.timeLimit,
+      audioUrl,
       // Empty hidden-input / pasted blanks normalise to null (not "") so
       // "has image?" checks stay consistent with updateReadingAction.
       imageUrl: data.imageUrl?.trim() ? data.imageUrl : null,
-      passagePinyin: data.passagePinyin?.trim() ? data.passagePinyin : null,
-      passageTranslation: data.passageTranslation?.trim() ? data.passageTranslation : null,
       published: false, // bản nháp: admin xuất bản sau khi kiểm lại
     },
   });
@@ -160,16 +164,19 @@ export async function updateReadingAction(fd: FormData) {
   const { actor } = await requireAdminActor();
   const { id, ...rest } = updateReadingSchema.parse(Object.fromEntries(fd));
   const before = await db.readingTest.findUnique({ where: { id } });
+  // Sửa đoạn văn mà chưa có audio → sinh đọc mẫu mới. Đã có audio thì giữ nguyên
+  // (admin muốn đổi thì xoá liên kết cũ trước) để không tốn TTS mỗi lần sửa chính tả.
+  const audioUrl = await ensureAudio(rest.audioUrl?.trim() || before?.audioUrl, rest.passage);
   const after = await db.readingTest.update({
     where: { id },
     data: {
       title: rest.title,
-      titleZh: rest.titleZh,
-      hskLevel: rest.hskLevel,
+      level: rest.level,
       passage: rest.passage,
-      // KHÔNG ghi passagePinyin: form sửa đã bỏ ô pinyin nên field không được gửi lên.
-      // Cố ghi sẽ luôn nhận undefined → xoá mất pinyin cũ (vẫn dùng cho xuất PDF). Giữ nguyên giá trị DB.
-      passageTranslation: rest.passageTranslation?.trim() ? rest.passageTranslation : null,
+      audioUrl,
+      // KHÔNG ghi passageTranslation: form sửa không có ô này (bản dịch do
+      // "Dịch & phân tích bài đọc" quản lý). Cố ghi sẽ nhận undefined → xoá mất
+      // dữ liệu cũ. Giữ nguyên giá trị DB.
       timeLimit: rest.timeLimit,
       imageUrl: rest.imageUrl?.trim() ? rest.imageUrl : null,
     },
@@ -251,6 +258,17 @@ function mcqOptions(options: string[], translations?: string[]) {
   });
 }
 
+/**
+ * Sinh audio đọc đề cho một loạt câu hỏi. Trẻ chưa đọc thạo nghe đề mới làm được
+ * bài, nên mọi câu hỏi nên có audio. Chạy TUẦN TỰ và TRƯỚC transaction để không
+ * giữ transaction mở trong lúc chờ mạng; câu nào lỗi thì audioUrl = null.
+ */
+async function audioForPrompts(prompts: string[]): Promise<Array<string | null>> {
+  const out: Array<string | null> = [];
+  for (const p of prompts) out.push(await ensureAudio(null, p));
+  return out;
+}
+
 export async function bulkCreateReadingQuestionsAction(readingId: string, jsonText: string) {
   const { actor } = await requireAdminActor();
   if (!readingId) return { ok: false as const, error: "Thiếu mã bài đọc." };
@@ -282,6 +300,7 @@ export async function bulkCreateReadingQuestionsAction(readingId: string, jsonTe
   if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
 
   const startOrder = (await db.question.count({ where: { readingId } })) + 1;
+  const audios = await audioForPrompts(questions.map((q) => q.prompt));
 
   let created: Awaited<ReturnType<typeof db.question.create>>[];
   try {
@@ -290,6 +309,7 @@ export async function bulkCreateReadingQuestionsAction(readingId: string, jsonTe
         const base = {
           prompt: q.prompt,
           promptTranslation: q.promptTranslation || null,
+          audioUrl: audios[i],
           explanation: q.explanation,
           supportingQuote: q.supportingQuote,
           quoteTranslation: q.quoteTranslation || null,
@@ -336,7 +356,7 @@ export async function generateReadingQuestionsAction(readingId: string, count: n
   }
   const reading = await db.readingTest.findUnique({
     where: { id: readingId },
-    select: { passage: true, hskLevel: true },
+    select: { passage: true, level: true },
   });
   if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
   if (!reading.passage.trim()) return { ok: false as const, error: "Bài đọc chưa có đoạn văn để AI tạo câu hỏi." };
@@ -344,7 +364,7 @@ export async function generateReadingQuestionsAction(readingId: string, count: n
   try {
     const questions = await generateReadingQuestions({
       passage: reading.passage,
-      hskLevel: reading.hskLevel,
+      level: reading.level,
       count,
     });
     if (questions.length === 0) return { ok: false as const, error: "AI chưa tạo được câu hỏi nào — thử lại." };
@@ -360,7 +380,7 @@ export async function generateReadingQuestionsAction(readingId: string, count: n
 // Định nghĩa SỚM ở đây để dùng lại cho: nhập hàng loạt (bulkReadingTestSchema),
 // AI sinh, và lưu tay trên trang chi tiết bài đọc.
 const passageAnalysisSentenceSchema = z.object({
-  zh: z.string().trim().min(1, "câu phân tích thiếu chữ Hán (zh)"),
+  en: z.string().trim().min(1, "câu phân tích thiếu câu tiếng Anh (en)"),
   vi: z.string().trim().default(""),
   note: z.string().trim().optional(),
 });
@@ -381,7 +401,7 @@ export async function generateReadingAnalysisAction(readingId: string) {
   }
   const reading = await db.readingTest.findUnique({
     where: { id: readingId },
-    select: { passage: true, hskLevel: true },
+    select: { passage: true, level: true },
   });
   if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
   if (!reading.passage.trim()) {
@@ -390,7 +410,7 @@ export async function generateReadingAnalysisAction(readingId: string) {
 
   let result: Awaited<ReturnType<typeof generatePassageAnalysis>>;
   try {
-    result = await generatePassageAnalysis({ passage: reading.passage, hskLevel: reading.hskLevel });
+    result = await generatePassageAnalysis({ passage: reading.passage, level: reading.level });
   } catch (e) {
     console.error("generatePassageAnalysis error:", e);
     return { ok: false as const, error: "Lỗi khi gọi AI (Groq). Thử lại sau." };
@@ -428,7 +448,7 @@ export async function saveReadingAnalysisAction(readingId: string, jsonText: str
       data: { passageTranslation: null, passageAnalysis: Prisma.JsonNull },
     });
     revalidatePath(`/admin/reading/${readingId}`);
-    return { ok: true as const, sentences: 0 };
+    return { ok: true as const, cleared: true as const };
   }
 
   let raw: unknown;
@@ -438,32 +458,41 @@ export async function saveReadingAnalysisAction(readingId: string, jsonText: str
     return { ok: false as const, error: "JSON không hợp lệ — kiểm tra lại dấu ngoặc/dấu phẩy." };
   }
   // Chấp nhận: MẢNG câu (= sentences) hoặc object { translation?, sentences?/analysis? }.
-  const src = Array.isArray(raw)
-    ? { sentences: raw }
-    : raw && typeof raw === "object"
-      ? (() => {
-          const o = raw as Record<string, unknown>;
-          return { translation: o.translation, sentences: o.sentences ?? o.analysis };
-        })()
-      : {};
-  const parsed = readingAnalysisInputSchema.safeParse(src);
+  // JSON hợp lệ nhưng là kiểu nguyên thuỷ (chuỗi/số/true/null) → BÁO LỖI, không âm
+  // thầm xoá dữ liệu đang có.
+  const isArr = Array.isArray(raw);
+  const obj = !isArr && raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
+  if (!isArr && !obj) {
+    return {
+      ok: false as const,
+      error: "JSON phải là object { translation, sentences } hoặc một MẢNG câu phân tích.",
+    };
+  }
+  // Chỉ đụng tới field NÀO được cung cấp trong JSON — tránh xoá nhầm phần còn lại
+  // (vd dán mỗi mảng câu thì giữ nguyên bản dịch cũ, và ngược lại).
+  const hasTranslation = !!obj && "translation" in obj;
+  const hasSentences = isArr || (!!obj && ("sentences" in obj || "analysis" in obj));
+  const parsed = readingAnalysisInputSchema.safeParse({
+    translation: obj?.translation,
+    sentences: isArr ? raw : (obj?.sentences ?? obj?.analysis),
+  });
   if (!parsed.success) {
     const first = parsed.error.issues[0];
     const where = first?.path.length ? `(ở ${first.path.join(".")}) ` : "";
     return { ok: false as const, error: `JSON sai cấu trúc ${where}— ${first?.message ?? "không xác định"}` };
   }
 
-  const translation = parsed.data.translation?.trim() || null;
   const sentences = parsed.data.sentences ?? [];
-  await db.readingTest.update({
-    where: { id: readingId },
-    data: {
-      passageTranslation: translation,
-      passageAnalysis: sentences.length ? asJson(sentences) : Prisma.JsonNull,
-    },
-  });
+  const data: Prisma.ReadingTestUpdateInput = {};
+  if (hasTranslation) data.passageTranslation = parsed.data.translation?.trim() ? parsed.data.translation : null;
+  if (hasSentences) data.passageAnalysis = sentences.length ? asJson(sentences) : Prisma.JsonNull;
+  if (Object.keys(data).length === 0) {
+    return { ok: false as const, error: "JSON thiếu cả translation lẫn sentences — không có gì để lưu." };
+  }
+
+  await db.readingTest.update({ where: { id: readingId }, data });
   revalidatePath(`/admin/reading/${readingId}`);
-  return { ok: true as const, sentences: sentences.length };
+  return { ok: true as const, cleared: false as const, sentences: hasSentences ? sentences.length : null };
 }
 
 // ===== Listening =====
@@ -474,7 +503,7 @@ export async function saveReadingAnalysisAction(readingId: string, jsonText: str
 // opaque Prisma crash.
 const listeningSchema = z.object({
   title: z.string().trim().min(1, "Thiếu tiêu đề bài nghe."),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   audioUrl: z.string().trim().optional(),
   transcript: z.string().optional(),
   transcriptExplanation: z.string().optional(),
@@ -482,12 +511,20 @@ const listeningSchema = z.object({
   imageUrl: z.string().trim().optional(),
 });
 
-function listeningData(input: z.infer<typeof listeningSchema>) {
+/**
+ * Chuẩn hoá dữ liệu bài nghe. Bài chỉ có lời thoại mà chưa có MP3 sẽ được sinh
+ * audio tự động bằng TTS — admin không phải tự thu âm. Lỗi TTS không chặn việc
+ * lưu (bài vẫn tạo được, admin bổ sung audio sau).
+ */
+async function listeningData(input: z.infer<typeof listeningSchema>) {
+  const transcript = input.transcript?.trim() ? input.transcript : null;
+  const existing = input.audioUrl?.trim() ? input.audioUrl.trim() : "";
+  const audioUrl = existing || (transcript ? (await ensureAudio(null, transcript)) ?? "" : "");
   return {
     title: input.title,
-    hskLevel: input.hskLevel,
-    audioUrl: input.audioUrl?.trim() ? input.audioUrl.trim() : "",
-    transcript: input.transcript?.trim() ? input.transcript : null,
+    level: input.level,
+    audioUrl,
+    transcript,
     transcriptExplanation: input.transcriptExplanation?.trim() ? input.transcriptExplanation : null,
     timeLimit: input.timeLimit,
     imageUrl: input.imageUrl?.trim() ? input.imageUrl : null,
@@ -499,7 +536,7 @@ export async function createListeningAction(
 ): Promise<{ ok: boolean; id?: string; error?: string }> {
   const { actor } = await requireAdminActor();
   try {
-    const data = listeningData(listeningSchema.parse(Object.fromEntries(fd)));
+    const data = await listeningData(listeningSchema.parse(Object.fromEntries(fd)));
     const created = await db.listeningTest.create({ data: { ...data, published: false } }); // bản nháp
     await logAudit({
       actor,
@@ -521,7 +558,7 @@ export async function updateListeningAction(fd: FormData): Promise<{ ok: boolean
   try {
     const id = (fd.get("id") as string) || "";
     if (!id) return { ok: false, error: "Thiếu id bài nghe." };
-    const data = listeningData(listeningSchema.parse(Object.fromEntries(fd)));
+    const data = await listeningData(listeningSchema.parse(Object.fromEntries(fd)));
     const before = await db.listeningTest.findUnique({ where: { id } });
     const after = await db.listeningTest.update({ where: { id }, data });
     await logAudit({
@@ -588,6 +625,7 @@ export async function bulkCreateListeningQuestionsAction(listeningId: string, js
   if (!listening) return { ok: false as const, error: "Không tìm thấy bài nghe." };
 
   const startOrder = (await db.question.count({ where: { listeningId } })) + 1;
+  const audios = await audioForPrompts(questions.map((q) => q.prompt));
 
   let created: Awaited<ReturnType<typeof db.question.create>>[];
   try {
@@ -596,6 +634,7 @@ export async function bulkCreateListeningQuestionsAction(listeningId: string, js
         const base = {
           prompt: q.prompt,
           promptTranslation: q.promptTranslation || null,
+          audioUrl: audios[i],
           explanation: q.explanation,
           supportingQuote: q.supportingQuote,
           quoteTranslation: q.quoteTranslation || null,
@@ -643,7 +682,7 @@ export async function generateListeningQuestionsAction(listeningId: string, coun
   }
   const listening = await db.listeningTest.findUnique({
     where: { id: listeningId },
-    select: { transcript: true, hskLevel: true },
+    select: { transcript: true, level: true },
   });
   if (!listening) return { ok: false as const, error: "Không tìm thấy bài nghe." };
   if (!listening.transcript?.trim()) {
@@ -653,7 +692,7 @@ export async function generateListeningQuestionsAction(listeningId: string, coun
   try {
     const questions = await generateListeningQuestions({
       transcript: listening.transcript,
-      hskLevel: listening.hskLevel,
+      level: listening.level,
       count,
     });
     if (questions.length === 0) return { ok: false as const, error: "AI chưa tạo được câu hỏi nào — thử lại." };
@@ -673,7 +712,7 @@ export async function generateTranscriptExplanationAction(listeningId: string) {
   }
   const listening = await db.listeningTest.findUnique({
     where: { id: listeningId },
-    select: { transcript: true, hskLevel: true },
+    select: { transcript: true, level: true },
   });
   if (!listening) return { ok: false as const, error: "Không tìm thấy bài nghe." };
   if (!listening.transcript?.trim()) {
@@ -683,7 +722,7 @@ export async function generateTranscriptExplanationAction(listeningId: string) {
   try {
     const ex = await generateTranscriptExplanation({
       transcript: listening.transcript,
-      hskLevel: listening.hskLevel,
+      level: listening.level,
     });
     if (!ex.translation && ex.vocab.length === 0) {
       return { ok: false as const, error: "AI chưa dịch được — thử lại." };
@@ -693,7 +732,7 @@ export async function generateTranscriptExplanationAction(listeningId: string) {
     if (ex.translation) parts.push(`— Dịch lời thoại —\n${ex.translation}`);
     if (ex.vocab.length) {
       const lines = ex.vocab
-        .map((v) => `• ${v.zh}${v.pinyin ? ` (${v.pinyin})` : ""} — ${v.vi}`)
+        .map((v) => `• ${v.en}${v.ipa ? ` (${v.ipa})` : ""} — ${v.vi}`)
         .join("\n");
       parts.push(`— Từ vựng —\n${lines}`);
     }
@@ -751,7 +790,7 @@ async function assertPublicAudioUrl(rawUrl: string): Promise<void> {
   }
 }
 
-// Tạo lời thoại (transcript) tiếng Trung TỪ audio đã có bằng Deepgram (fallback
+// Tạo lời thoại (transcript) tiếng Anh TỪ audio đã có bằng Deepgram (fallback
 // Groq Whisper). Nhận URL audio hiện tại của bài nghe: nếu là tệp lưu trong DB
 // (/api/files/<id>) thì đọc bytes trực tiếp; nếu là URL ngoài (https) thì tải về.
 export async function transcribeListeningAudioAction(audioUrl: string) {
@@ -827,10 +866,10 @@ export async function createWritingAction(fd: FormData) {
     data: {
       taskType: fd.get("taskType") as "FREE" | "GUIDED" | "PICTURE_DESCRIPTION",
       prompt: fd.get("prompt") as string,
-      promptZh: (fd.get("promptZh") as string) || undefined,
-      minChars: parseInt(fd.get("minChars") as string) || 50,
+      outline: (fd.get("outline") as string) || undefined,
+      minWords: parseInt(fd.get("minWords") as string) || 20,
       timeLimit: parseInt(fd.get("timeLimit") as string) || 900,
-      hskLevel: fd.get("hskLevel") as HSKLevel,
+      level: fd.get("level") as EnglishLevel,
       imageUrl: (fd.get("imageUrl") as string) || undefined,
       published: false, // bản nháp: admin xuất bản sau khi kiểm lại
     },
@@ -902,10 +941,18 @@ export async function createQuestionAction(fd: FormData) {
     where: readingId ? { readingId } : { listeningId },
   });
 
+  const prompt = (fd.get("prompt") as string) || "";
+  // Audio đọc đề: trẻ chưa đọc thạo vẫn tự làm được bài. Admin dán MP3 riêng thì
+  // dùng cái đó, không thì sinh bằng TTS (lỗi TTS không chặn việc lưu).
+  const audioUrl = await ensureAudio(optStr(fd, "audioUrl"), prompt);
+
   const created = await db.question.create({
     data: {
       type,
-      prompt: fd.get("prompt") as string,
+      prompt,
+      promptTranslation: optStr(fd, "promptTranslation"),
+      imageUrl: optStr(fd, "imageUrl"),
+      audioUrl,
       options: options ?? Prisma.JsonNull,
       correctAnswer,
       explanation: (fd.get("explanation") as string) || undefined,
@@ -954,14 +1001,16 @@ export async function deleteQuestionAction(
 const KNOWN_EXERCISE_TYPES = [
   "match",
   "translate",
-  "toneSelect",
-  "hanziInput",
   "sentenceOrder",
   "sentence_order",
-  "pinyinMatch",
   "fill_blank",
   "answer_question",
   "type_sentence",
+  // Dành riêng cho trẻ nhỏ (chưa đọc thạo): nhìn hình / nghe audio / kéo chữ cái.
+  "picture_match",
+  "listen_pick",
+  "spell_drag",
+  "rhyme_match",
 ];
 
 type LessonSkill = "vocab" | "grammar";
@@ -1083,27 +1132,27 @@ function parseGrammarLessonInput(raw: string): Prisma.InputJsonValue {
 
 // Cảnh báo MỀM (không chặn lưu): mỗi điểm ngữ pháp nên có đủ 8 minigame —
 // 2× "chọn từ" (fill_blank) + 2× "sắp xếp câu" (sentence_order) + 2× dịch
-// Việt→Trung (translate vi_to_zh) + 2× dịch Trung→Việt (translate zh_to_vi).
+// Việt→Anh (translate vi_to_en) + 2× dịch Anh→Việt (translate en_to_vi).
 function grammarStructureWarning(value: Prisma.InputJsonValue): string | undefined {
   const content = parseGrammarContent(value as unknown);
   const problems: string[] = [];
   content.sections.forEach((s, i) => {
-    const c = { fill: 0, order: 0, vi2zh: 0, zh2vi: 0 };
+    const c = { fill: 0, order: 0, vi2en: 0, en2vi: 0 };
     for (const ex of s.exercises) {
       const e = ex as Record<string, unknown>;
       const t = String(e.type);
       if (t === "fill_blank") c.fill++;
       else if (t === "sentence_order" || t === "sentenceOrder") c.order++;
       else if (t === "translate") {
-        if (e.direction === "vi_to_zh") c.vi2zh++;
-        else if (e.direction === "zh_to_vi") c.zh2vi++;
+        if (e.direction === "vi_to_en") c.vi2en++;
+        else if (e.direction === "en_to_vi") c.en2vi++;
       }
     }
     const missing: string[] = [];
     if (c.fill < 2) missing.push("chọn từ ×2 (fill_blank)");
     if (c.order < 2) missing.push("sắp xếp câu ×2 (sentence_order)");
-    if (c.vi2zh < 2) missing.push("dịch Việt→Trung ×2 (translate vi_to_zh)");
-    if (c.zh2vi < 2) missing.push("dịch Trung→Việt ×2 (translate zh_to_vi)");
+    if (c.vi2en < 2) missing.push("dịch Việt→Anh ×2 (translate vi_to_en)");
+    if (c.en2vi < 2) missing.push("dịch Anh→Việt ×2 (translate en_to_vi)");
     if (missing.length) problems.push(`Phần ${i + 1}${s.title ? ` (“${s.title}”)` : ""}: thiếu ${missing.join(", ")}`);
   });
   if (problems.length === 0) return undefined;
@@ -1224,26 +1273,35 @@ export async function deleteLessonAction(skill: LessonSkill, lessonId: string, u
 }
 
 // ===== Vocab words (per-word learner flow) =====
-// Each VocabWord drives the show → trace → write → flashcard flow. The admin
-// word editor calls these directly with typed objects (not FormData).
+// Mỗi VocabWord chạy luồng xem thẻ → nghe → luyện phát âm → flashcard. Trình soạn
+// từ ở admin gọi thẳng các action này với object đã có kiểu (không phải FormData).
 const wordExampleSchema = z.object({
-  hanzi: z.string().trim().min(1, "Câu ví dụ không được để trống."),
-  pinyin: z.string().trim().default(""),
+  sentence: z.string().trim().min(1, "Câu ví dụ không được để trống."),
   meaning: z.string().trim().default(""),
+  audioUrl: z.string().trim().optional(),
 });
 
 const vocabWordSchema = z.object({
   id: z.string().optional(), // present → update, absent → create
   lessonId: z.string().min(1),
   unitId: z.string().min(1), // for revalidation only
-  hanzi: z.string().trim().min(1, "Thiếu chữ Hán."),
-  pinyin: z.string().trim().min(1, "Thiếu pinyin."),
+  word: z.string().trim().min(1, "Thiếu từ tiếng Anh."),
+  ipa: z.string().trim().default(""),
   meaning: z.string().trim().min(1, "Thiếu nghĩa tiếng Việt."),
+  partOfSpeech: z.string().trim().default(""),
+  imageUrl: z.string().trim().optional(),
   audioUrl: z.string().trim().optional(),
   examples: z.array(wordExampleSchema).default([]),
 });
 
 export type VocabWordInput = z.input<typeof vocabWordSchema>;
+
+/** So khớp "câu có chứa từ này không" — không phân biệt hoa/thường, theo ranh giới từ. */
+function sentenceContainsWord(sentence: string, word: string): boolean {
+  const w = word.trim().toLowerCase();
+  if (!w) return false;
+  return sentence.toLowerCase().includes(w);
+}
 
 export async function saveVocabWordAction(
   input: VocabWordInput
@@ -1252,11 +1310,11 @@ export async function saveVocabWordAction(
     const { actor } = await requireAdminActor();
     const data = vocabWordSchema.parse(input);
 
-    // Every example must contain the word's hanzi — the learner UI auto-bolds it,
-    // so an example without the word would render nothing to highlight.
+    // Câu ví dụ BẮT BUỘC chứa từ đang học — giao diện tự tô đậm từ trong câu, câu
+    // không chứa từ thì chẳng tô được gì.
     for (const ex of data.examples) {
-      if (!ex.hanzi.includes(data.hanzi)) {
-        throw new Error(`Câu ví dụ “${ex.hanzi}” không chứa chữ “${data.hanzi}”.`);
+      if (!sentenceContainsWord(ex.sentence, data.word)) {
+        throw new Error(`Câu ví dụ “${ex.sentence}” không chứa từ “${data.word}”.`);
       }
     }
 
@@ -1269,8 +1327,19 @@ export async function saveVocabWordAction(
       throw new Error("Bài học không hợp lệ.");
     }
 
-    const examples = data.examples as unknown as Prisma.InputJsonValue;
-    const audioUrl = data.audioUrl ? data.audioUrl : null;
+    // Audio: từ chính + từng câu ví dụ. Trẻ phải NGHE được mọi thứ đang học, nên
+    // thiếu MP3 thì sinh bằng TTS. Chạy trước khi ghi DB; lỗi TTS → null, vẫn lưu.
+    const audioUrl = await ensureAudio(data.audioUrl?.trim() || null, data.word);
+    const examplesWithAudio = [];
+    for (const ex of data.examples) {
+      examplesWithAudio.push({
+        sentence: ex.sentence,
+        meaning: ex.meaning,
+        audioUrl: await ensureAudio(ex.audioUrl?.trim() || null, ex.sentence),
+      });
+    }
+    const examples = examplesWithAudio as unknown as Prisma.InputJsonValue;
+    const imageUrl = data.imageUrl?.trim() ? data.imageUrl.trim() : null;
 
     if (data.id) {
       // The word being edited must actually live in this lesson.
@@ -1282,14 +1351,22 @@ export async function saveVocabWordAction(
       }
       const after = await db.vocabWord.update({
         where: { id: data.id },
-        data: { hanzi: data.hanzi, pinyin: data.pinyin, meaning: data.meaning, audioUrl, examples },
+        data: {
+          word: data.word,
+          ipa: data.ipa,
+          meaning: data.meaning,
+          partOfSpeech: data.partOfSpeech,
+          imageUrl,
+          audioUrl,
+          examples,
+        },
       });
       await logAudit({
         actor,
         action: "UPDATE",
         entity: "VocabWord",
         entityId: data.id,
-        summary: `Sửa ${entityLabel("VocabWord")} «${after.hanzi}»`,
+        summary: `Sửa ${entityLabel("VocabWord")} «${after.word}»`,
         before: existing,
         after,
       });
@@ -1299,9 +1376,11 @@ export async function saveVocabWordAction(
         data: {
           lessonId: data.lessonId,
           order: count + 1,
-          hanzi: data.hanzi,
-          pinyin: data.pinyin,
+          word: data.word,
+          ipa: data.ipa,
           meaning: data.meaning,
+          partOfSpeech: data.partOfSpeech,
+          imageUrl,
           audioUrl,
           examples,
         },
@@ -1311,7 +1390,7 @@ export async function saveVocabWordAction(
         action: "CREATE",
         entity: "VocabWord",
         entityId: created.id,
-        summary: `Tạo ${entityLabel("VocabWord")} «${created.hanzi}»`,
+        summary: `Tạo ${entityLabel("VocabWord")} «${created.word}»`,
         after: created,
       });
     }
@@ -1337,7 +1416,7 @@ export async function deleteVocabWordAction(id: string, unitId: string) {
     action: "DELETE",
     entity: "VocabWord",
     entityId: id,
-    summary: `Xóa ${entityLabel("VocabWord")} «${deleted.hanzi}»`,
+    summary: `Xóa ${entityLabel("VocabWord")} «${deleted.word}»`,
     before: deleted,
   });
   revalidatePath(`/admin/vocab/${unitId}`);
@@ -1380,20 +1459,22 @@ export async function reorderVocabWordsAction(unitId: string, orderedIds: string
 // Parsing/preview happens client-side; this action validates and persists the
 // already-mapped rows. Each row → one VocabWord appended to the lesson.
 const bulkRowSchema = z.object({
-  hanzi: z.string().trim().min(1),
-  pinyin: z.string().trim().default(""),
+  word: z.string().trim().min(1),
+  ipa: z.string().trim().default(""),
   meaning: z.string().trim().min(1),
-  exHanzi: z.string().trim().default(""),
-  exPinyin: z.string().trim().default(""),
+  partOfSpeech: z.string().trim().default(""),
+  imageUrl: z.string().trim().default(""),
+  exSentence: z.string().trim().default(""),
   exMeaning: z.string().trim().default(""),
 });
 
 export interface VocabBulkRow {
-  hanzi: string;
-  pinyin?: string;
+  word: string;
+  ipa?: string;
   meaning: string;
-  exHanzi?: string;
-  exPinyin?: string;
+  partOfSpeech?: string;
+  imageUrl?: string;
+  exSentence?: string;
   exMeaning?: string;
 }
 
@@ -1417,9 +1498,12 @@ export async function bulkImportVocabWordsAction(input: {
 
     const rows = Array.isArray(input?.rows) ? input.rows : [];
     const valid: Array<{
-      hanzi: string;
-      pinyin: string;
+      word: string;
+      ipa: string;
       meaning: string;
+      partOfSpeech: string;
+      imageUrl: string | null;
+      audioUrl: string | null;
       examples: Prisma.InputJsonValue;
     }> = [];
     let skipped = 0;
@@ -1431,22 +1515,31 @@ export async function bulkImportVocabWordsAction(input: {
         continue;
       }
       const d = parsed.data;
-      const examples: Array<{ hanzi: string; pinyin: string; meaning: string }> = [];
-      // Keep the example only if it actually contains the word — the learner UI
-      // bolds the word inside the example, so an example without it renders nothing.
-      if (d.exHanzi && d.exHanzi.includes(d.hanzi)) {
-        examples.push({ hanzi: d.exHanzi, pinyin: d.exPinyin, meaning: d.exMeaning });
+      const examples: Array<{ sentence: string; meaning: string; audioUrl: string | null }> = [];
+      // Giữ câu ví dụ chỉ khi nó thật sự chứa từ — giao diện tô đậm từ trong câu,
+      // câu không chứa từ thì chẳng tô được gì.
+      if (d.exSentence && sentenceContainsWord(d.exSentence, d.word)) {
+        examples.push({
+          sentence: d.exSentence,
+          meaning: d.exMeaning,
+          audioUrl: await ensureAudio(null, d.exSentence),
+        });
       }
       valid.push({
-        hanzi: d.hanzi,
-        pinyin: d.pinyin,
+        word: d.word,
+        ipa: d.ipa,
         meaning: d.meaning,
+        partOfSpeech: d.partOfSpeech,
+        imageUrl: d.imageUrl ? d.imageUrl : null,
+        // Sinh audio phát âm ngay khi nhập — nhập hàng loạt xong là học được luôn.
+        // TUẦN TỰ và ngoài transaction; lỗi TTS chỉ làm từ đó thiếu audio.
+        audioUrl: await ensureAudio(null, d.word),
         examples: examples as unknown as Prisma.InputJsonValue,
       });
     }
 
     if (valid.length === 0) {
-      return { ok: false, error: "Không có dòng hợp lệ (cần ít nhất chữ Hán và nghĩa)." };
+      return { ok: false, error: "Không có dòng hợp lệ (cần ít nhất từ tiếng Anh và nghĩa)." };
     }
 
     const count = await db.vocabWord.count({ where: { lessonId } });
@@ -1456,10 +1549,12 @@ export async function bulkImportVocabWordsAction(input: {
           data: {
             lessonId,
             order: count + i + 1,
-            hanzi: v.hanzi,
-            pinyin: v.pinyin,
+            word: v.word,
+            ipa: v.ipa,
             meaning: v.meaning,
-            audioUrl: null,
+            partOfSpeech: v.partOfSpeech,
+            imageUrl: v.imageUrl,
+            audioUrl: v.audioUrl,
             examples: v.examples,
           },
         })
@@ -1491,7 +1586,6 @@ type ContentModel =
   | "vocabLesson"
   | "grammarUnit"
   | "grammarLesson"
-  | "hanzi"
   | "reading"
   | "listening"
   | "writing"
@@ -1508,7 +1602,6 @@ const CONTENT_PATHS: Record<ContentModel, { admin: string; learner: string }> = 
   vocabLesson: { admin: "/admin/vocab", learner: "/vocab" },
   grammarUnit: { admin: "/admin/grammar", learner: "/grammar" },
   grammarLesson: { admin: "/admin/grammar", learner: "/grammar" },
-  hanzi: { admin: "/admin/hanzi", learner: "/hanzi" },
   reading: { admin: "/admin/reading", learner: "/reading" },
   listening: { admin: "/admin/listening", learner: "/listening" },
   writing: { admin: "/admin/writing", learner: "/writing" },
@@ -1533,7 +1626,6 @@ const CONTENT_ENTITY: Record<ContentModel, string> = {
   vocabLesson: "VocabLesson",
   grammarUnit: "GrammarUnit",
   grammarLesson: "GrammarLesson",
-  hanzi: "HanziCharacter",
   reading: "ReadingTest",
   listening: "ListeningTest",
   writing: "WritingTask",
@@ -1564,9 +1656,6 @@ export async function setContentPublishedAction(
         break;
       case "grammarLesson":
         await db.grammarLesson.update({ where: { id }, data: { published } });
-        break;
-      case "hanzi":
-        await db.hanziCharacter.update({ where: { id }, data: { published } });
         break;
       case "reading":
         await db.readingTest.update({ where: { id }, data: { published } });
@@ -1616,7 +1705,7 @@ export async function setContentPublishedAction(
 //  ĐỔI CHỖ (reorder) — sắp xếp lại thứ tự hiển thị
 // ===================================================================
 // Mọi action chuẩn hoá `order` về 1..n trên đúng phạm vi (một unit, hoặc một cấp
-// HSK của một loại) sau khi đã xác thực mọi id thuộc phạm vi đó — tránh làm hỏng
+// độ của một loại) sau khi đã xác thực mọi id thuộc phạm vi đó — tránh làm hỏng
 // chuỗi `order` giữa các phạm vi. Học viên & admin sắp xếp theo [order, createdAt].
 
 // Bài học trong một unit (Từ vựng / Ngữ pháp).
@@ -1677,10 +1766,10 @@ export async function reorderLessonsAction(
   }
 }
 
-// Units trong một cấp HSK (Từ vựng / Ngữ pháp).
+// Units trong một cấp độ (Từ vựng / Ngữ pháp).
 export async function reorderUnitsAction(
   skill: LessonSkill,
-  hskLevel: HSKLevel,
+  level: EnglishLevel,
   orderedIds: string[]
 ): Promise<{ ok: boolean; error?: string }> {
   try {
@@ -1689,9 +1778,9 @@ export async function reorderUnitsAction(
     if (skill === "vocab") {
       const units = await db.vocabUnit.findMany({
         where: { id: { in: orderedIds } },
-        select: { id: true, hskLevel: true },
+        select: { id: true, level: true },
       });
-      if (units.length !== orderedIds.length || units.some((u) => u.hskLevel !== hskLevel)) {
+      if (units.length !== orderedIds.length || units.some((u) => u.level !== level)) {
         return { ok: false, error: "Danh sách sắp xếp không hợp lệ." };
       }
       await db.$transaction(
@@ -1700,9 +1789,9 @@ export async function reorderUnitsAction(
     } else {
       const units = await db.grammarUnit.findMany({
         where: { id: { in: orderedIds } },
-        select: { id: true, hskLevel: true },
+        select: { id: true, level: true },
       });
-      if (units.length !== orderedIds.length || units.some((u) => u.hskLevel !== hskLevel)) {
+      if (units.length !== orderedIds.length || units.some((u) => u.level !== level)) {
         return { ok: false, error: "Danh sách sắp xếp không hợp lệ." };
       }
       await db.$transaction(
@@ -1714,9 +1803,9 @@ export async function reorderUnitsAction(
       actor,
       action: "UPDATE",
       entity: unitEntity,
-      entityId: hskLevel,
-      summary: `Sắp xếp lại thứ tự ${entityLabel(unitEntity)} (${hskLevel})`,
-      after: { hskLevel, orderedIds },
+      entityId: level,
+      summary: `Sắp xếp lại thứ tự ${entityLabel(unitEntity)} (${levelLabel(level)})`,
+      after: { level, orderedIds },
     });
     revalidatePath(skill === "vocab" ? "/admin/vocab" : "/admin/grammar");
     revalidatePath(skill === "vocab" ? "/vocab" : "/grammar");
@@ -1726,34 +1815,32 @@ export async function reorderUnitsAction(
   }
 }
 
-// Bài độc lập (Đọc / Nghe / Viết / Nói / Chữ Hán) trong một cấp HSK.
-type OrderedContentModel = "reading" | "listening" | "writing" | "speaking" | "hanzi";
+// Bài độc lập (Đọc / Nghe / Viết / Nói) trong một cấp độ.
+type OrderedContentModel = "reading" | "listening" | "writing" | "speaking";
 
 export async function reorderContentAction(
   model: OrderedContentModel,
-  hskLevel: HSKLevel,
+  level: EnglishLevel,
   orderedIds: string[]
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const { actor } = await requireAdminActor();
     if (orderedIds.length === 0) return { ok: true };
 
-    // Xác thực: mọi id tồn tại và cùng một cấp HSK (không trộn cấp khi sắp xếp).
+    // Xác thực: mọi id tồn tại và cùng một cấp độ (không trộn cấp khi sắp xếp).
     const rows = await (async () => {
       switch (model) {
         case "reading":
-          return db.readingTest.findMany({ where: { id: { in: orderedIds } }, select: { id: true, hskLevel: true } });
+          return db.readingTest.findMany({ where: { id: { in: orderedIds } }, select: { id: true, level: true } });
         case "listening":
-          return db.listeningTest.findMany({ where: { id: { in: orderedIds } }, select: { id: true, hskLevel: true } });
+          return db.listeningTest.findMany({ where: { id: { in: orderedIds } }, select: { id: true, level: true } });
         case "writing":
-          return db.writingTask.findMany({ where: { id: { in: orderedIds } }, select: { id: true, hskLevel: true } });
+          return db.writingTask.findMany({ where: { id: { in: orderedIds } }, select: { id: true, level: true } });
         case "speaking":
-          return db.speakingSet.findMany({ where: { id: { in: orderedIds } }, select: { id: true, hskLevel: true } });
-        case "hanzi":
-          return db.hanziCharacter.findMany({ where: { id: { in: orderedIds } }, select: { id: true, hskLevel: true } });
+          return db.speakingSet.findMany({ where: { id: { in: orderedIds } }, select: { id: true, level: true } });
       }
     })();
-    if (rows.length !== orderedIds.length || rows.some((r) => r.hskLevel !== hskLevel)) {
+    if (rows.length !== orderedIds.length || rows.some((r) => r.level !== level)) {
       return { ok: false, error: "Danh sách sắp xếp không hợp lệ." };
     }
 
@@ -1769,8 +1856,6 @@ export async function reorderContentAction(
             return db.writingTask.update({ where: { id }, data });
           case "speaking":
             return db.speakingSet.update({ where: { id }, data });
-          case "hanzi":
-            return db.hanziCharacter.update({ where: { id }, data });
         }
       })
     );
@@ -1779,9 +1864,9 @@ export async function reorderContentAction(
       actor,
       action: "UPDATE",
       entity: contentEntity,
-      entityId: hskLevel,
-      summary: `Sắp xếp lại thứ tự ${entityLabel(contentEntity)} (${hskLevel})`,
-      after: { hskLevel, orderedIds },
+      entityId: level,
+      summary: `Sắp xếp lại thứ tự ${entityLabel(contentEntity)} (${levelLabel(level)})`,
+      after: { level, orderedIds },
     });
     revalidateContent(model);
     return { ok: true };
@@ -1861,7 +1946,7 @@ export async function revokeSubscriptionAction(
       action: "DELETE",
       entity: "Subscription",
       entityId: subscriptionId,
-      summary: `Thu hồi ${entityLabel("Subscription")} (${deleted.type}${deleted.hskLevel ? ` ${deleted.hskLevel}` : ""})`,
+      summary: `Thu hồi ${entityLabel("Subscription")} (${deleted.type}${deleted.level ? ` ${levelLabel(deleted.level)}` : ""})`,
       before: deleted,
     });
     revalidatePath(`/admin/users/${sub.userId}`);
@@ -1873,7 +1958,7 @@ export async function revokeSubscriptionAction(
 }
 
 // ===================================================================
-//  CẬP NHẬT (edit) cho các loại còn thiếu action sửa: Viết / Nói / Chữ Hán / Unit
+//  CẬP NHẬT (edit) cho các loại còn thiếu action sửa: Viết / Nói / Unit
 // ===================================================================
 // Các form sửa ở admin (đặt trong <details> trên trang danh sách) POST FormData
 // về đây. Chuẩn hoá chuỗi rỗng → null cho ảnh, và bọc JSON.parse trong try/catch
@@ -1896,11 +1981,10 @@ export async function updateWritingAction(
       data: {
         taskType: fd.get("taskType") as WritingTaskType,
         prompt: (fd.get("prompt") as string) || "",
-        promptZh: optStr(fd, "promptZh"),
         outline: optStr(fd, "outline"),
-        minChars: parseInt(fd.get("minChars") as string) || 50,
+        minWords: parseInt(fd.get("minWords") as string) || 20,
         timeLimit: parseInt(fd.get("timeLimit") as string) || 900,
-        hskLevel: fd.get("hskLevel") as HSKLevel,
+        level: fd.get("level") as EnglishLevel,
         imageUrl: optStr(fd, "imageUrl"),
       },
     });
@@ -1940,7 +2024,7 @@ export async function updateSpeakingAction(
       where: { id },
       data: {
         title: (fd.get("title") as string) || "",
-        hskLevel: fd.get("hskLevel") as HSKLevel,
+        level: fd.get("level") as EnglishLevel,
         imageUrl: optStr(fd, "imageUrl"),
         part1Sentences: parseJson("part1Sentences", "Part 1"),
         part2Passage: parseJson("part2Passage", "Part 2"),
@@ -1965,7 +2049,7 @@ export async function updateSpeakingAction(
 }
 
 // ===== Nói theo chủ đề (SpeakingTopic) — CRUD =====
-// `hints` là chuỗi JSON (mảng [{ text, pinyin?, vi? }]) do SpeakingTopicFields dựng.
+// `hints` là chuỗi JSON (mảng [{ text, vi? }]) do SpeakingTopicFields dựng.
 // Chuẩn hoá ở server: bỏ mục rỗng, chỉ giữ field chuỗi, sai định dạng → mảng rỗng
 // (không sập Prisma). Audio + transcript dùng lại hạ tầng upload/Deepgram của bài nghe.
 function parseTopicHints(fd: FormData): Prisma.InputJsonValue {
@@ -1980,32 +2064,34 @@ function parseTopicHints(fd: FormData): Prisma.InputJsonValue {
     .map((h) => {
       const o = h && typeof h === "object" ? (h as Record<string, unknown>) : {};
       const text = typeof o.text === "string" ? o.text.trim() : "";
-      const pinyin = typeof o.pinyin === "string" ? o.pinyin.trim() : "";
       const vi = typeof o.vi === "string" ? o.vi.trim() : "";
       const item: Record<string, string> = {};
       if (text) item.text = text;
-      if (pinyin) item.pinyin = pinyin;
       if (vi) item.vi = vi;
       return item;
     })
     .filter((item) => Object.keys(item).length > 0);
 }
 
-function topicDataFromForm(fd: FormData) {
+/**
+ * Dựng dữ liệu SpeakingTopic từ form. Câu hỏi của giám khảo LUÔN cần audio (trẻ
+ * nghe câu hỏi rồi trả lời), nên chưa có MP3 thì sinh bằng TTS. Lỗi TTS không
+ * chặn việc lưu chủ đề.
+ */
+async function topicDataFromForm(fd: FormData) {
+  const question = (fd.get("question") as string)?.trim() || "";
   return {
     title: (fd.get("title") as string)?.trim() || "",
-    hskLevel: fd.get("hskLevel") as HSKLevel,
+    level: fd.get("level") as EnglishLevel,
     topic: (fd.get("topic") as string)?.trim() || "",
-    questionZh: (fd.get("questionZh") as string)?.trim() || "",
-    questionPinyin: optStr(fd, "questionPinyin"),
+    question,
     questionVi: optStr(fd, "questionVi"),
     outline: optStr(fd, "outline"),
-    audioUrl: optStr(fd, "audioUrl"),
+    audioUrl: await ensureAudio(optStr(fd, "audioUrl"), question),
     transcript: optStr(fd, "transcript"),
     hints: parseTopicHints(fd),
     sampleAnswer: optStr(fd, "sampleAnswer"),
-    sampleAnswerPinyin: optStr(fd, "sampleAnswerPinyin"),
-    minChars: parseInt(fd.get("minChars") as string) || 0,
+    minWords: parseInt(fd.get("minWords") as string) || 0,
     prepSeconds: parseInt(fd.get("prepSeconds") as string) || 0,
     imageUrl: optStr(fd, "imageUrl"),
     order: parseInt(fd.get("order") as string) || 0,
@@ -2017,15 +2103,15 @@ export async function createSpeakingTopicAction(
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const { actor } = await requireAdminActor();
-    const data = topicDataFromForm(fd);
-    if (!data.questionZh) return { ok: false, error: "Thiếu câu hỏi (tiếng Trung)." };
+    const data = await topicDataFromForm(fd);
+    if (!data.question) return { ok: false, error: "Thiếu câu hỏi (tiếng Anh)." };
     const created = await db.speakingTopic.create({ data: { ...data, published: false } });
     await logAudit({
       actor,
       action: "CREATE",
       entity: "SpeakingTopic",
       entityId: created.id,
-      summary: `Tạo ${entityLabel("SpeakingTopic")} «${created.topic || created.questionZh}»`,
+      summary: `Tạo ${entityLabel("SpeakingTopic")} «${created.topic || created.question}»`,
       after: created,
     });
     revalidatePath("/admin/speaking/topics");
@@ -2042,8 +2128,8 @@ export async function updateSpeakingTopicAction(
     const { actor } = await requireAdminActor();
     const id = (fd.get("id") as string) || "";
     if (!id) return { ok: false, error: "Thiếu id chủ đề." };
-    const data = topicDataFromForm(fd);
-    if (!data.questionZh) return { ok: false, error: "Thiếu câu hỏi (tiếng Trung)." };
+    const data = await topicDataFromForm(fd);
+    if (!data.question) return { ok: false, error: "Thiếu câu hỏi (tiếng Anh)." };
     const before = await db.speakingTopic.findUnique({ where: { id } });
     const after = await db.speakingTopic.update({ where: { id }, data });
     await logAudit({
@@ -2051,7 +2137,7 @@ export async function updateSpeakingTopicAction(
       action: "UPDATE",
       entity: "SpeakingTopic",
       entityId: id,
-      summary: `Sửa ${entityLabel("SpeakingTopic")} «${after.topic || after.questionZh}»`,
+      summary: `Sửa ${entityLabel("SpeakingTopic")} «${after.topic || after.question}»`,
       before,
       after,
     });
@@ -2072,7 +2158,7 @@ export async function deleteSpeakingTopicAction(id: string) {
     action: "DELETE",
     entity: "SpeakingTopic",
     entityId: id,
-    summary: `Xóa ${entityLabel("SpeakingTopic")} «${deleted.topic || deleted.questionZh}»`,
+    summary: `Xóa ${entityLabel("SpeakingTopic")} «${deleted.topic || deleted.question}»`,
     before: deleted,
   });
   revalidatePath("/admin/speaking/topics");
@@ -2080,45 +2166,7 @@ export async function deleteSpeakingTopicAction(id: string) {
   return { ok: true };
 }
 
-export async function updateHanziAction(
-  fd: FormData
-): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const { actor } = await requireAdminActor();
-    const id = (fd.get("id") as string) || "";
-    if (!id) return { ok: false, error: "Thiếu id chữ Hán." };
-    const before = await db.hanziCharacter.findUnique({ where: { id } });
-    const after = await db.hanziCharacter.update({
-      where: { id },
-      data: {
-        character: (fd.get("character") as string) || "",
-        pinyin: (fd.get("pinyin") as string) || "",
-        tone: parseInt(fd.get("tone") as string) || 0,
-        meaning: (fd.get("meaning") as string) || "",
-        hskLevel: fd.get("hskLevel") as HSKLevel,
-        strokeCount: parseInt(fd.get("strokeCount") as string) || 0,
-        imageUrl: optStr(fd, "imageUrl"),
-      },
-    });
-    await logAudit({
-      actor,
-      action: "UPDATE",
-      entity: "HanziCharacter",
-      entityId: id,
-      summary: `Sửa ${entityLabel("HanziCharacter")} «${after.character}»`,
-      before,
-      after,
-    });
-    revalidatePath("/admin/hanzi");
-    revalidatePath("/hanzi");
-    return { ok: true };
-  } catch (e) {
-    // ký tự trùng (cột @unique) hoặc lỗi khác
-    return { ok: false, error: e instanceof Error ? e.message : "Lỗi cập nhật chữ Hán." };
-  }
-}
-
-// Sửa thông tin Unit (Từ vựng / Ngữ pháp): tên VI/ZH, cấp HSK, ảnh.
+// Sửa thông tin Unit (Từ vựng / Ngữ pháp): tên tiếng Việt, chủ đề tiếng Anh, cấp độ, ảnh.
 export async function updateUnitAction(
   skill: LessonSkill,
   fd: FormData
@@ -2129,8 +2177,9 @@ export async function updateUnitAction(
     if (!id) return { ok: false, error: "Thiếu id unit." };
     const data = {
       title: (fd.get("title") as string) || "",
-      titleZh: (fd.get("titleZh") as string) || "",
-      hskLevel: fd.get("hskLevel") as HSKLevel,
+      // Chủ đề ngắn hiển thị trên thẻ, vd "Animals", "My Family".
+      theme: (fd.get("theme") as string) || "",
+      level: fd.get("level") as EnglishLevel,
       imageUrl: optStr(fd, "imageUrl"),
     };
     if (skill === "vocab") {
@@ -2176,7 +2225,11 @@ export async function updateUnitAction(
 //  Mỗi action nhận MỘT chuỗi JSON = MẢNG các mục ĐẦY ĐỦ (kèm câu hỏi lồng
 //  nhau nếu có) để admin tạo nhiều bài cùng lúc — "thần tốc". Mọi mục mới
 //  đều ở trạng thái Bản nháp (published:false) — admin xuất bản sau khi rà
-//  lại. Không cần nhập pinyin/thanh điệu — máy tự sinh khi hiển thị.
+//  lại.
+//  LƯU Ý VỀ AUDIO: các luồng nhập hàng loạt CỐ Ý không tự gọi TTS — một lần
+//  nhập có thể tới hàng trăm mục, gọi TTS cho từng mục sẽ chạy rất lâu và dễ
+//  quá hạn request. Sau khi nhập, admin mở từng bài rồi bấm "Tạo audio" (các
+//  action tạo/sửa đơn lẻ đã tự sinh audio).
 //  Trả về { ok, created, totalQuestions? } | { ok:false, error }.
 // ===================================================================
 
@@ -2246,11 +2299,10 @@ function checkMcqIndexes(questions: BulkQuestion[], where: string): string | nul
 
 // ----- Đọc hiểu -----
 const bulkReadingTestSchema = z.object({
-  title: z.string().trim().min(1, "thiếu title (tiêu đề VI)"),
-  titleZh: z.string().trim().min(1, "thiếu titleZh (tiêu đề ZH)"),
-  hskLevel: z.nativeEnum(HSKLevel),
-  passage: z.string().trim().min(1, "thiếu passage (đoạn văn)"),
-  passagePinyin: z.string().trim().optional(),
+  title: z.string().trim().min(1, "thiếu title (tiêu đề)"),
+  level: z.nativeEnum(EnglishLevel),
+  passage: z.string().trim().min(1, "thiếu passage (đoạn văn tiếng Anh)"),
+  audioUrl: z.string().trim().optional(),
   // Dịch toàn bộ đoạn + phân tích từng câu (hiện khi chữa bài) — đều tuỳ chọn.
   passageTranslation: z.string().trim().optional(),
   passageAnalysis: passageAnalysisSchema.optional(),
@@ -2274,9 +2326,9 @@ export async function bulkImportReadingTestsAction(jsonText: string): Promise<Bu
   }
 
   // Thứ tự hiển thị: nối tiếp sau các bài hiện có trong cùng cấp, giữ đúng thứ tự dán.
-  const nextOrder = new Map<HSKLevel, number>();
-  for (const lv of new Set(tests.map((t) => t.hskLevel))) {
-    nextOrder.set(lv, (await db.readingTest.count({ where: { hskLevel: lv } })) + 1);
+  const nextOrder = new Map<EnglishLevel, number>();
+  for (const lv of new Set(tests.map((t) => t.level))) {
+    nextOrder.set(lv, (await db.readingTest.count({ where: { level: lv } })) + 1);
   }
 
   let totalQuestions = 0;
@@ -2285,15 +2337,14 @@ export async function bulkImportReadingTestsAction(jsonText: string): Promise<Bu
     await db.$transaction(
       async (tx) => {
         for (const t of tests) {
-          const order = nextOrder.get(t.hskLevel)!;
-          nextOrder.set(t.hskLevel, order + 1);
+          const order = nextOrder.get(t.level)!;
+          nextOrder.set(t.level, order + 1);
           const created = await tx.readingTest.create({
             data: {
               title: t.title,
-              titleZh: t.titleZh,
-              hskLevel: t.hskLevel,
+              level: t.level,
               passage: t.passage,
-              passagePinyin: t.passagePinyin?.trim() ? t.passagePinyin : null,
+              audioUrl: t.audioUrl?.trim() ? t.audioUrl.trim() : null,
               passageTranslation: t.passageTranslation?.trim() ? t.passageTranslation : null,
               passageAnalysis: t.passageAnalysis?.length ? asJson(t.passageAnalysis) : Prisma.JsonNull,
               imageUrl: t.imageUrl?.trim() ? t.imageUrl : null,
@@ -2333,7 +2384,7 @@ export async function bulkImportReadingTestsAction(jsonText: string): Promise<Bu
 // ----- Nghe hiểu -----
 const bulkListeningTestSchema = z.object({
   title: z.string().trim().min(1, "thiếu title (tiêu đề)"),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   audioUrl: z.string().trim().optional(),
   transcript: z.string().trim().optional(),
   transcriptExplanation: z.string().trim().optional(),
@@ -2356,9 +2407,9 @@ export async function bulkImportListeningTestsAction(jsonText: string): Promise<
     if (err) return { ok: false, error: err };
   }
 
-  const nextOrder = new Map<HSKLevel, number>();
-  for (const lv of new Set(tests.map((t) => t.hskLevel))) {
-    nextOrder.set(lv, (await db.listeningTest.count({ where: { hskLevel: lv } })) + 1);
+  const nextOrder = new Map<EnglishLevel, number>();
+  for (const lv of new Set(tests.map((t) => t.level))) {
+    nextOrder.set(lv, (await db.listeningTest.count({ where: { level: lv } })) + 1);
   }
 
   let totalQuestions = 0;
@@ -2367,12 +2418,12 @@ export async function bulkImportListeningTestsAction(jsonText: string): Promise<
     await db.$transaction(
       async (tx) => {
         for (const t of tests) {
-          const order = nextOrder.get(t.hskLevel)!;
-          nextOrder.set(t.hskLevel, order + 1);
+          const order = nextOrder.get(t.level)!;
+          nextOrder.set(t.level, order + 1);
           const created = await tx.listeningTest.create({
             data: {
               title: t.title,
-              hskLevel: t.hskLevel,
+              level: t.level,
               audioUrl: t.audioUrl?.trim() ? t.audioUrl.trim() : "",
               transcript: t.transcript?.trim() ? t.transcript : null,
               transcriptExplanation: t.transcriptExplanation?.trim() ? t.transcriptExplanation : null,
@@ -2410,20 +2461,20 @@ export async function bulkImportListeningTestsAction(jsonText: string): Promise<
   return { ok: true, created: tests.length, totalQuestions };
 }
 
-// ----- Luyện nói HSKK (SpeakingSet) -----
+// ----- Luyện nói theo format Cambridge Speaking (SpeakingSet) -----
 const speakingLineSchema = z.object({
   text: z.string().trim().min(1),
-  pinyin: z.string().trim().optional(),
   vi: z.string().trim().optional(),
+  audioUrl: z.string().trim().optional(),
 });
 const speakingQuestionSchema = z.object({
   question: z.string().trim().min(1),
-  pinyin: z.string().trim().optional(),
   vi: z.string().trim().optional(),
+  audioUrl: z.string().trim().optional(),
 });
 const bulkSpeakingSetSchema = z.object({
   title: z.string().trim().optional().default(""),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   imageUrl: z.string().trim().optional(),
   part1Sentences: z.array(speakingLineSchema).optional().default([]),
   // Khi có part2Passage thì BẮT BUỘC có text (speakingLineSchema yêu cầu text) —
@@ -2433,20 +2484,21 @@ const bulkSpeakingSetSchema = z.object({
 });
 const bulkSpeakingSetsSchema = z.array(bulkSpeakingSetSchema).min(1).max(200, "Tối đa 200 bộ mỗi lần.");
 
-// Tự sinh pinyin từ Hán tự khi admin bỏ trống (đúng triết lý "máy tự sinh pinyin"
-// của app) — đồng thời tránh hiển thị "undefined" ở trang luyện nói.
-function fillLinePinyin(l: { text: string; pinyin?: string; vi?: string }) {
+// Chuẩn hoá một dòng/câu hỏi: bỏ field rỗng để trang luyện nói không hiện
+// "undefined". Audio để trống ở đây — nhập hàng loạt không gọi TTS (xem ghi chú
+// đầu mục); admin sinh audio trên trang chi tiết bộ nói.
+function cleanLine(l: { text: string; vi?: string; audioUrl?: string }) {
   return {
     text: l.text,
-    pinyin: l.pinyin?.trim() ? l.pinyin.trim() : l.text ? toPinyin(l.text) : "",
     ...(l.vi ? { vi: l.vi } : {}),
+    ...(l.audioUrl?.trim() ? { audioUrl: l.audioUrl.trim() } : {}),
   };
 }
-function fillQuestionPinyin(q: { question: string; pinyin?: string; vi?: string }) {
+function cleanQuestion(q: { question: string; vi?: string; audioUrl?: string }) {
   return {
     question: q.question,
-    pinyin: q.pinyin?.trim() ? q.pinyin.trim() : q.question ? toPinyin(q.question) : "",
     ...(q.vi ? { vi: q.vi } : {}),
+    ...(q.audioUrl?.trim() ? { audioUrl: q.audioUrl.trim() } : {}),
   };
 }
 
@@ -2458,22 +2510,22 @@ export async function bulkImportSpeakingSetsAction(jsonText: string): Promise<Bu
   if (!result.success) return { ok: false, error: zodWhere(result.error.issues[0]) };
   const sets = result.data;
 
-  const nextOrder = new Map<HSKLevel, number>();
-  for (const lv of new Set(sets.map((s) => s.hskLevel))) {
-    nextOrder.set(lv, (await db.speakingSet.count({ where: { hskLevel: lv } })) + 1);
+  const nextOrder = new Map<EnglishLevel, number>();
+  for (const lv of new Set(sets.map((s) => s.level))) {
+    nextOrder.set(lv, (await db.speakingSet.count({ where: { level: lv } })) + 1);
   }
 
   const creates = sets.map((s) => {
-    const order = nextOrder.get(s.hskLevel)!;
-    nextOrder.set(s.hskLevel, order + 1);
+    const order = nextOrder.get(s.level)!;
+    nextOrder.set(s.level, order + 1);
     return db.speakingSet.create({
       data: {
         title: s.title || "",
-        hskLevel: s.hskLevel,
+        level: s.level,
         imageUrl: s.imageUrl?.trim() ? s.imageUrl : null,
-        part1Sentences: asJson(s.part1Sentences.map(fillLinePinyin)),
-        part2Passage: asJson(fillLinePinyin(s.part2Passage)),
-        part3Questions: asJson(s.part3Questions.map(fillQuestionPinyin)),
+        part1Sentences: asJson(s.part1Sentences.map(cleanLine)),
+        part2Passage: asJson(cleanLine(s.part2Passage)),
+        part3Questions: asJson(s.part3Questions.map(cleanQuestion)),
         order,
         published: false,
       },
@@ -2503,23 +2555,20 @@ export async function bulkImportSpeakingSetsAction(jsonText: string): Promise<Bu
 // ----- Nói theo chủ đề (SpeakingTopic) -----
 const topicHintSchema = z.object({
   text: z.string().trim().min(1),
-  pinyin: z.string().trim().optional(),
   vi: z.string().trim().optional(),
 });
 const bulkSpeakingTopicSchema = z.object({
   title: z.string().trim().optional().default(""),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   topic: z.string().trim().optional().default(""),
-  questionZh: z.string().trim().min(1, "thiếu questionZh (câu hỏi tiếng Trung)"),
-  questionPinyin: z.string().trim().optional(),
+  question: z.string().trim().min(1, "thiếu question (câu hỏi tiếng Anh)"),
   questionVi: z.string().trim().optional(),
   outline: z.string().trim().optional(),
   audioUrl: z.string().trim().optional(),
   transcript: z.string().trim().optional(),
   hints: z.array(topicHintSchema).optional().default([]),
   sampleAnswer: z.string().trim().optional(),
-  sampleAnswerPinyin: z.string().trim().optional(),
-  minChars: z.coerce.number().int().min(0).optional().default(0),
+  minWords: z.coerce.number().int().min(0).optional().default(0),
   prepSeconds: z.coerce.number().int().min(0).optional().default(0),
   imageUrl: z.string().trim().optional(),
 });
@@ -2533,29 +2582,27 @@ export async function bulkImportSpeakingTopicsAction(jsonText: string): Promise<
   if (!result.success) return { ok: false, error: zodWhere(result.error.issues[0]) };
   const topics = result.data;
 
-  const nextOrder = new Map<HSKLevel, number>();
-  for (const lv of new Set(topics.map((t) => t.hskLevel))) {
-    nextOrder.set(lv, (await db.speakingTopic.count({ where: { hskLevel: lv } })) + 1);
+  const nextOrder = new Map<EnglishLevel, number>();
+  for (const lv of new Set(topics.map((t) => t.level))) {
+    nextOrder.set(lv, (await db.speakingTopic.count({ where: { level: lv } })) + 1);
   }
 
   const creates = topics.map((t) => {
-    const order = nextOrder.get(t.hskLevel)!;
-    nextOrder.set(t.hskLevel, order + 1);
+    const order = nextOrder.get(t.level)!;
+    nextOrder.set(t.level, order + 1);
     return db.speakingTopic.create({
       data: {
         title: t.title || "",
-        hskLevel: t.hskLevel,
+        level: t.level,
         topic: t.topic || "",
-        questionZh: t.questionZh,
-        questionPinyin: t.questionPinyin || null,
+        question: t.question,
         questionVi: t.questionVi || null,
         outline: t.outline || null,
         audioUrl: t.audioUrl || null,
         transcript: t.transcript || null,
         hints: asJson(t.hints),
         sampleAnswer: t.sampleAnswer || null,
-        sampleAnswerPinyin: t.sampleAnswerPinyin || null,
-        minChars: t.minChars,
+        minWords: t.minWords,
         prepSeconds: t.prepSeconds,
         imageUrl: t.imageUrl?.trim() ? t.imageUrl : null,
         order,
@@ -2588,12 +2635,11 @@ export async function bulkImportSpeakingTopicsAction(jsonText: string): Promise<
 // ----- Viết luận (WritingTask) -----
 const bulkWritingTaskSchema = z.object({
   taskType: z.nativeEnum(WritingTaskType),
-  prompt: z.string().trim().min(1, "thiếu prompt (đề bài VI)"),
-  promptZh: z.string().trim().optional(),
+  prompt: z.string().trim().min(1, "thiếu prompt (đề bài)"),
   outline: z.string().trim().optional(),
-  minChars: z.coerce.number().int().min(1).optional().default(50),
+  minWords: z.coerce.number().int().min(1).optional().default(20),
   timeLimit: z.coerce.number().int().min(30).optional().default(900),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   imageUrl: z.string().trim().optional(),
 });
 const bulkWritingTasksSchema = z.array(bulkWritingTaskSchema).min(1).max(200, "Tối đa 200 bài mỗi lần.");
@@ -2606,23 +2652,22 @@ export async function bulkImportWritingTasksAction(jsonText: string): Promise<Bu
   if (!result.success) return { ok: false, error: zodWhere(result.error.issues[0]) };
   const tasks = result.data;
 
-  const nextOrder = new Map<HSKLevel, number>();
-  for (const lv of new Set(tasks.map((t) => t.hskLevel))) {
-    nextOrder.set(lv, (await db.writingTask.count({ where: { hskLevel: lv } })) + 1);
+  const nextOrder = new Map<EnglishLevel, number>();
+  for (const lv of new Set(tasks.map((t) => t.level))) {
+    nextOrder.set(lv, (await db.writingTask.count({ where: { level: lv } })) + 1);
   }
 
   const creates = tasks.map((t) => {
-    const order = nextOrder.get(t.hskLevel)!;
-    nextOrder.set(t.hskLevel, order + 1);
+    const order = nextOrder.get(t.level)!;
+    nextOrder.set(t.level, order + 1);
     return db.writingTask.create({
       data: {
         taskType: t.taskType,
         prompt: t.prompt,
-        promptZh: t.promptZh || null,
         outline: t.outline?.trim() ? t.outline.trim() : null,
-        minChars: t.minChars,
+        minWords: t.minWords,
         timeLimit: t.timeLimit,
-        hskLevel: t.hskLevel,
+        level: t.level,
         imageUrl: t.imageUrl?.trim() ? t.imageUrl : null,
         order,
         published: false,
@@ -2652,14 +2697,13 @@ export async function bulkImportWritingTasksAction(jsonText: string): Promise<Bu
 
 // ----- Tài liệu (Material) -----
 // `content` chấp nhận CẢ HAI: chuỗi markup (như form thường — # tiêu đề, - danh
-// sách, > ghi chú, 汉字 | pinyin | nghĩa) HOẶC mảng block đã cấu trúc sẵn.
+// sách, > ghi chú, từ | IPA | nghĩa) HOẶC mảng block đã cấu trúc sẵn.
 // `tags` chấp nhận mảng chuỗi HOẶC chuỗi ngăn bằng dấu phẩy.
 const materialBlockSchema = z.object({ type: z.string().trim().min(1) }).passthrough();
 const bulkMaterialSchema = z.object({
-  title: z.string().trim().min(1, "thiếu title (tiêu đề VI)"),
-  titleZh: z.string().trim().optional(),
+  title: z.string().trim().min(1, "thiếu title (tiêu đề)"),
   category: z.nativeEnum(MaterialCategory),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   summary: z.string().trim().min(1, "thiếu summary (tóm tắt)"),
   imageUrl: z.string().trim().optional(),
   content: z.union([z.string(), z.array(materialBlockSchema).min(1)]),
@@ -2676,17 +2720,17 @@ export async function bulkImportMaterialsAction(jsonText: string): Promise<BulkI
   if (!result.success) return { ok: false, error: zodWhere(result.error.issues[0]) };
   const materials = result.data;
 
-  // Thứ tự hiển thị tính theo (phân loại + cấp HSK) như createMaterialAction.
+  // Thứ tự hiển thị tính theo (phân loại + cấp độ) như createMaterialAction.
   const nextOrder = new Map<string, number>();
   for (const m of materials) {
-    const key = `${m.category}|${m.hskLevel}`;
+    const key = `${m.category}|${m.level}`;
     if (!nextOrder.has(key)) {
-      nextOrder.set(key, (await db.material.count({ where: { category: m.category, hskLevel: m.hskLevel } })) + 1);
+      nextOrder.set(key, (await db.material.count({ where: { category: m.category, level: m.level } })) + 1);
     }
   }
 
   const creates = materials.map((m) => {
-    const key = `${m.category}|${m.hskLevel}`;
+    const key = `${m.category}|${m.level}`;
     const order = nextOrder.get(key)!;
     nextOrder.set(key, order + 1);
     const blocks = typeof m.content === "string" ? parseMaterialContent(m.content) : m.content;
@@ -2696,9 +2740,8 @@ export async function bulkImportMaterialsAction(jsonText: string): Promise<BulkI
     return db.material.create({
       data: {
         title: m.title,
-        titleZh: m.titleZh || null,
         category: m.category,
-        hskLevel: m.hskLevel,
+        level: m.level,
         summary: m.summary,
         imageUrl: m.imageUrl?.trim() ? m.imageUrl : null,
         content: asJson(blocks),

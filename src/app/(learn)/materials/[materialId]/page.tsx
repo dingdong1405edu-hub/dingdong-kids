@@ -1,11 +1,26 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
-import { cn, hskLevelLabel, hskBadgeClass } from "@/lib/utils";
+import { cn, levelLabel, levelBadgeClass } from "@/lib/utils";
 import { categoryMeta, type MaterialBlock } from "@/lib/materials";
 import { MaterialContent } from "@/components/learn/material-content";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ materialId: string }>;
+}): Promise<Metadata> {
+  const { materialId } = await params;
+  const m = await db.material.findUnique({
+    where: { id: materialId },
+    select: { title: true, summary: true, published: true },
+  });
+  if (!m || !m.published) return { title: "Tài liệu" };
+  return { title: m.title, description: m.summary.slice(0, 160) };
+}
 
 export default async function MaterialDetailPage({
   params,
@@ -26,7 +41,7 @@ export default async function MaterialDetailPage({
 
   const related = await db.material.findMany({
     where: { published: true, category: material.category, id: { not: material.id } },
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }],
     take: 4,
   });
 
@@ -46,12 +61,11 @@ export default async function MaterialDetailPage({
             <Icon className="h-5 w-5" />
           </div>
           <span className="text-sm font-semibold text-muted-foreground">{meta.label}</span>
-          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-bold", hskBadgeClass(material.hskLevel))}>
-            {hskLevelLabel(material.hskLevel)}
+          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-bold", levelBadgeClass(material.level))}>
+            {levelLabel(material.level)}
           </span>
         </div>
-        <h1 className="text-2xl font-bold leading-tight sm:text-3xl">{material.title}</h1>
-        {material.titleZh && <p className="font-chinese text-lg text-primary">{material.titleZh}</p>}
+        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">{material.title}</h1>
         <p className="text-[15px] leading-relaxed text-muted-foreground">{material.summary}</p>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Clock className="h-3.5 w-3.5" /> {material.readMinutes} phút đọc
@@ -59,11 +73,11 @@ export default async function MaterialDetailPage({
       </header>
 
       {/* Body */}
-      <article className="rounded-2xl border bg-card p-5 sm:p-7">
+      <article className="sticker p-5 sm:p-7">
         {blocks.length > 0 ? (
           <MaterialContent blocks={blocks} />
         ) : (
-          <p className="text-sm text-muted-foreground">Nội dung đang được cập nhật.</p>
+          <p className="text-sm text-muted-foreground">Nội dung đang được cô chuẩn bị, bé quay lại sau nhé 🌟</p>
         )}
       </article>
 

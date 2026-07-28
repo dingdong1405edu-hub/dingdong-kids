@@ -1,73 +1,75 @@
 "use client";
 import { MapPin, Volume2, Bookmark, BookmarkCheck, Headphones } from "lucide-react";
-import { PinyinText } from "@/components/learn/pinyin-text";
+import { TappableEnglish } from "@/components/learn/reading/word-lookup";
 import { cn } from "@/lib/utils";
 import type { TranscriptSegment } from "@/lib/transcript";
 
 interface QuestionEvidenceProps {
   segment: TranscriptSegment | null;
-  showPinyin: boolean;
   canReplay: boolean;
   onPlay: () => void;
   saved: boolean;
   onToggleSave: () => void;
-  onCharClick: (char: string, pinyin: string, e: React.MouseEvent) => void;
+  onWordClick: (word: string, e: React.MouseEvent) => void;
 }
 
-/** Shown under a question in review mode: where the answer comes from in the
- *  audio + a one-tap replay of that sentence + save-for-later (ôn tập). */
+/** Hiện dưới mỗi câu hỏi khi chữa bài: câu trả lời nằm ở đoạn nào trong audio +
+ *  nút nghe lại đúng câu đó + cất lại để ôn sau. */
 export function QuestionEvidence({
   segment,
-  showPinyin,
   canReplay,
   onPlay,
   saved,
   onToggleSave,
-  onCharClick,
+  onWordClick,
 }: QuestionEvidenceProps) {
   return (
-    <div className="mt-3 rounded-xl border border-teal-200 dark:border-teal-500/25 bg-teal-50/60 dark:bg-teal-500/10 p-3">
+    <div className="mt-3 rounded-2xl border-2 border-primary/25 bg-primary/5 p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 dark:text-teal-300">
-          <MapPin className="h-3.5 w-3.5" /> Đáp án nằm ở đoạn này
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary">
+          <MapPin className="h-4 w-4" /> Câu trả lời nằm ở đây
         </span>
         <button
           type="button"
           onClick={onToggleSave}
           className={cn(
-            "inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold transition-colors",
-            saved ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" : "text-muted-foreground hover:bg-muted",
+            "inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-colors",
+            saved ? "bg-sunny/25 text-amber-700 dark:text-amber-300" : "text-muted-foreground hover:bg-muted",
           )}
+          style={{ minHeight: 36 }}
         >
-          {saved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-          {saved ? "Đã lưu ôn tập" : "Lưu ôn tập"}
+          {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+          {saved ? "Đã cất để ôn" : "Cất để ôn"}
         </button>
       </div>
 
       {segment ? (
         <div className="mt-2 flex items-start gap-2">
           {segment.speaker && (
-            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-card text-[10px] font-bold text-teal-700 dark:text-teal-300">
-              {segment.speaker.toUpperCase()}
+            <span className="mt-0.5 flex h-6 shrink-0 items-center justify-center rounded-full bg-card px-2 text-[11px] font-bold text-primary">
+              {segment.speaker.length === 1 ? segment.speaker.toUpperCase() : segment.speaker}
             </span>
           )}
-          <div className="min-w-0 flex-1 font-chinese text-sm leading-relaxed">
-            <PinyinText text={segment.text} showPinyin={showPinyin} onWordClick={onCharClick} />
-          </div>
+          <TappableEnglish
+            text={segment.text}
+            onWordClick={onWordClick}
+            className="font-primer min-w-0 flex-1 text-[15px] leading-relaxed"
+          />
           {canReplay && (
             <button
               type="button"
               onClick={onPlay}
               aria-label="Nghe lại đoạn này"
-              className="shrink-0 rounded-lg border border-teal-300 dark:border-teal-500/40 bg-card p-1.5 text-teal-700 dark:text-teal-300 transition-colors hover:bg-teal-100 dark:hover:bg-teal-500/20"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10"
+              style={{ minHeight: 40 }}
             >
-              <Volume2 className="h-4 w-4" />
+              <Volume2 className="h-5 w-5" />
             </button>
           )}
         </div>
       ) : (
         <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Headphones className="h-3.5 w-3.5" /> Không tự dò được vị trí — hãy nghe lại toàn bộ lời thoại bên dưới.
+          <Headphones className="h-4 w-4" /> Chưa dò được đúng chỗ — bé nghe lại cả lời thoại bên dưới nhé.
         </p>
       )}
     </div>

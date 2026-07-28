@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -5,9 +6,20 @@ import { RoadmapMap } from "@/components/learn/roadmap/roadmap-map";
 import { slugToLevel, type RoadmapLessonDTO, type SkillKey } from "@/lib/roadmap";
 import { getEntitlements, isRoadmapLessonLocked, FREE_ROADMAP_LESSONS } from "@/lib/entitlements";
 import { roadmapPlanForLevel } from "@/lib/payment-plans";
+import { levelLabel } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ level: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { level: slug } = await params;
+  const level = slugToLevel(slug);
+  if (!level) return { title: "Lộ trình" };
+  return {
+    title: `Lộ trình ${levelLabel(level)}`,
+    description: `Bản đồ học tiếng Anh cho bé cấp ${levelLabel(level)} — từ vựng, ghép vần, ngữ pháp, nghe, nói, đọc, viết.`,
+  };
 }
 
 export default async function CourseMapPage({ params }: Props) {
@@ -27,7 +39,7 @@ export default async function CourseMapPage({ params }: Props) {
   });
 
   const course = await db.course.findUnique({
-    where: { hskLevel: level },
+    where: { level },
     include: {
       lessons: {
         // Sắp theo (chương, thứ tự bài) để mỗi chương luôn là một khối liền mạch
@@ -53,7 +65,7 @@ export default async function CourseMapPage({ params }: Props) {
       id: l.id,
       order: l.order,
       topic: l.topic,
-      topicZh: l.topicZh,
+      topicVi: l.topicVi,
       icon: l.icon,
       description: l.description,
       chapter: l.chapter,
@@ -73,7 +85,7 @@ export default async function CourseMapPage({ params }: Props) {
     <RoadmapMap
       level={level}
       courseTitle={course.title}
-      courseTitleZh={course.titleZh}
+      courseSubtitle={course.subtitle}
       lessons={lessons}
       hasFullAccess={ent.roadmapLevels.has(level) || ent.isAdmin}
       upgradePlanId={upgradePlanId}

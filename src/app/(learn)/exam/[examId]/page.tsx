@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -6,6 +7,15 @@ import type { ExamData } from "./types";
 
 interface Props {
   params: Promise<{ examId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { examId } = await params;
+  const e = await db.mockExam.findUnique({ where: { id: examId }, select: { title: true } });
+  return {
+    title: e?.title ?? "Thi thử",
+    description: "Đề thi thử tiếng Anh cho bé theo đúng format Cambridge.",
+  };
 }
 
 export default async function MockExamPage({ params }: Props) {
@@ -35,8 +45,7 @@ export default async function MockExamPage({ params }: Props) {
   const data: ExamData = {
     id: exam.id,
     title: exam.title,
-    titleZh: exam.titleZh,
-    hskLevel: exam.hskLevel,
+    level: exam.level,
     description: exam.description,
     totalTime: exam.totalTime,
     sections: exam.sections.map((s) => ({
@@ -50,20 +59,22 @@ export default async function MockExamPage({ params }: Props) {
         instructions: p.instructions,
         imageUrl: p.imageUrl,
         passage: p.passage,
-        passagePinyin: p.passagePinyin,
         audioUrl: p.audioUrl,
         transcript: p.transcript,
         writingPrompt: p.writingPrompt,
-        writingMinChars: p.writingMinChars,
+        writingMinWords: p.writingMinWords,
         questions: p.questions.map((q) => ({
           id: q.id,
           type: q.type,
           prompt: q.prompt,
-          promptPinyin: q.promptPinyin,
+          promptTranslation: q.promptTranslation,
+          imageUrl: q.imageUrl,
+          audioUrl: q.audioUrl,
           options: q.options,
           correctAnswer: q.correctAnswer,
           explanation: q.explanation,
           supportingQuote: q.supportingQuote,
+          quoteTranslation: q.quoteTranslation,
           order: q.order,
         })),
       })),

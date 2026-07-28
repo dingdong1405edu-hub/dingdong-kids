@@ -34,7 +34,7 @@ function Chips({
   onOpenChange: (o: boolean) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {nums.map((i) => (
         <button
           key={i}
@@ -42,8 +42,9 @@ function Chips({
             onJump(i);
             onOpenChange(false);
           }}
+          style={{ minHeight: 40 }}
           className={cn(
-            "flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-transform hover:scale-110",
+            "flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-transform hover:scale-110",
             className,
           )}
         >
@@ -67,23 +68,23 @@ export function ReviewDialog({
 }: ReviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] max-w-md overflow-y-auto">
+      <DialogContent className="max-h-[85dvh] max-w-md overflow-y-auto rounded-3xl">
         <DialogHeader>
-          <DialogTitle>Xem lại trước khi nộp</DialogTitle>
+          <DialogTitle>Kiểm tra lại nào!</DialogTitle>
           <DialogDescription>
-            Bạn đã trả lời <b>{answeredCount}/{total}</b> câu.
+            Bé đã trả lời <b>{answeredCount}/{total}</b> câu.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {unanswered.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-rose-600 dark:text-rose-300">
-                <CircleHelp className="h-4 w-4" /> Chưa trả lời ({unanswered.length})
+            <div className="space-y-2">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-primary">
+                <CircleHelp className="h-4 w-4" /> Còn bỏ trống ({unanswered.length}) — bấm số để quay lại
               </span>
               <Chips
                 nums={unanswered}
-                className="border-rose-300 bg-rose-50 text-rose-600 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300"
+                className="border-primary/40 bg-primary/10 text-primary"
                 onJump={onJump}
                 onOpenChange={onOpenChange}
               />
@@ -91,13 +92,13 @@ export function ReviewDialog({
           )}
 
           {flagged.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="flex items-center gap-1.5 text-sm font-semibold text-amber-600 dark:text-amber-300">
-                <Flag className="h-4 w-4" /> Đã gắn cờ ({flagged.length})
+            <div className="space-y-2">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-300">
+                <Flag className="h-4 w-4" /> Bé đã đánh dấu ({flagged.length})
               </span>
               <Chips
                 nums={flagged}
-                className="border-amber-300 bg-amber-50 text-amber-600 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-300"
+                className="border-sunny bg-sunny/20 text-amber-600 dark:text-amber-300"
                 onJump={onJump}
                 onOpenChange={onOpenChange}
               />
@@ -105,17 +106,17 @@ export function ReviewDialog({
           )}
 
           {unanswered.length === 0 && (
-            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-              Tuyệt vời — bạn đã trả lời hết các câu hỏi! 🎉
+            <p className="rounded-2xl bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+              Tuyệt vời — bé đã làm hết tất cả các câu! 🎉
             </p>
           )}
         </div>
 
-        <div className="mt-2 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Tiếp tục làm bài
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button variant="outline" className="rounded-2xl" onClick={() => onOpenChange(false)} disabled={submitting}>
+            Làm tiếp
           </Button>
-          <Button onClick={onConfirm} disabled={submitting} className="gap-1.5">
+          <Button onClick={onConfirm} disabled={submitting} className="btn-chunky gap-1.5 rounded-2xl">
             <Send className="h-4 w-4" /> {submitting ? "Đang nộp…" : "Nộp bài"}
           </Button>
         </div>

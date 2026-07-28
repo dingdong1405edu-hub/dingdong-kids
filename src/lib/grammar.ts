@@ -42,7 +42,7 @@ function normalizeBreakdown(raw: unknown): FormulaPart[] | undefined {
       const p = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
       const part = str(p.part).trim();
       if (!part) return null;
-      return { part, pinyin: optStr(p.pinyin), role: optStr(p.role), meaning: str(p.meaning) };
+      return { part, role: optStr(p.role), meaning: str(p.meaning) };
     })
     .filter((p): p is FormulaPart => p !== null);
   return parts.length ? parts : undefined;
@@ -72,7 +72,7 @@ function normalizeSection(raw: unknown): GrammarSection {
   return {
     id: str(s.id),
     title: str(s.title),
-    titleZh: optStr(s.titleZh),
+    titleEn: optStr(s.titleEn),
     structure: optStr(s.structure),
     breakdown: normalizeBreakdown(s.breakdown),
     explanation: str(s.explanation),
@@ -180,13 +180,16 @@ export function grammarReviewExercises(raw: unknown): Exercise[] {
 export const EXERCISE_TYPE_LABEL: Record<string, string> = {
   match: "Nối từ",
   translate: "Dịch câu",
-  toneSelect: "Chọn thanh điệu",
   sentenceOrder: "Sắp xếp câu",
   sentence_order: "Sắp xếp câu",
-  pinyinMatch: "Nối pinyin",
   fill_blank: "Điền chỗ trống",
   answer_question: "Trả lời câu hỏi",
   type_sentence: "Viết câu",
+  // Các dạng dành cho bé chưa đọc thạo
+  picture_match: "Nhìn hình chọn từ",
+  listen_pick: "Nghe rồi chọn hình",
+  spell_drag: "Ghép chữ cái",
+  rhyme_match: "Nối từ cùng vần",
 };
 
 /** A flattened, printable view of one exercise: the question, any options, the
@@ -194,7 +197,6 @@ export const EXERCISE_TYPE_LABEL: Record<string, string> = {
 export interface PdfExercise {
   typeLabel: string;
   question: string;
-  questionPinyin?: string;
   options?: string[];
   answer: string;
   explanation?: string;
@@ -220,22 +222,35 @@ export function describeExercise(ex: Exercise): PdfExercise {
       return { typeLabel: label, question: s("prompt") ?? "", options: list("options"), answer: s("answer") ?? "", explanation };
     case "answer_question": {
       const accept = list("accept");
-      return { typeLabel: label, question: s("question") ?? "", questionPinyin: s("questionPinyin"), answer: s("sampleAnswer") ?? accept?.[0] ?? "", explanation };
+      return { typeLabel: label, question: s("question") ?? "", answer: s("sampleAnswer") ?? accept?.[0] ?? "", explanation };
     }
     case "type_sentence":
       return { typeLabel: label, question: s("prompt") ?? "", answer: list("accept")?.[0] ?? "", explanation };
-    case "toneSelect": {
-      const options = list("options");
-      const correct = typeof e.correct === "number" ? (e.correct as number) : 0;
-      return { typeLabel: label, question: `${s("question") ?? ""} (${s("word") ?? ""})`.trim(), options, answer: options?.[correct] ?? "", explanation };
-    }
     case "match": {
       const pairs = Array.isArray(e.pairs) ? (e.pairs as Array<Record<string, unknown>>) : [];
-      return { typeLabel: label, question: "Nối từ với nghĩa tương ứng", answer: pairs.map((p) => `${p.zh} = ${p.vi}`).join(" · "), explanation };
+      return { typeLabel: label, question: "Nối từ với nghĩa tương ứng", answer: pairs.map((p) => `${p.en} = ${p.vi}`).join(" · "), explanation };
     }
-    case "pinyinMatch": {
+    case "picture_match": {
+      const options = list("options");
+      const correct = typeof e.correct === "number" ? (e.correct as number) : 0;
+      return { typeLabel: label, question: "Nhìn hình và chọn từ đúng", options, answer: options?.[correct] ?? "", explanation };
+    }
+    case "listen_pick": {
+      const opts = Array.isArray(e.options) ? (e.options as Array<Record<string, unknown>>) : [];
+      const correct = typeof e.correct === "number" ? (e.correct as number) : 0;
+      return {
+        typeLabel: label,
+        question: `Nghe rồi chọn hình đúng${s("text") ? ` — “${s("text")}”` : ""}`,
+        options: opts.map((o) => String(o.label ?? "")),
+        answer: String(opts[correct]?.label ?? ""),
+        explanation,
+      };
+    }
+    case "spell_drag":
+      return { typeLabel: label, question: "Kéo các chữ cái để ghép thành từ", answer: s("word") ?? "", explanation };
+    case "rhyme_match": {
       const pairs = Array.isArray(e.pairs) ? (e.pairs as Array<Record<string, unknown>>) : [];
-      return { typeLabel: label, question: "Nối Hán tự với pinyin", answer: pairs.map((p) => `${p.zh} = ${p.pinyin}`).join(" · "), explanation };
+      return { typeLabel: label, question: "Nối hai từ cùng vần", answer: pairs.map((p) => `${p.a} – ${p.b}`).join(" · "), explanation };
     }
     default:
       return {
@@ -247,22 +262,17 @@ export function describeExercise(ex: Exercise): PdfExercise {
   }
 }
 
-/**
- * Normalise a free-typed answer for deterministic comparison: trim, lowercase
- * (for Latin / pinyin), drop all whitespace, and strip common CN + Latin
- * punctuation so "他是老师。" matches "他是老师".
- */
-export function normalizeAnswer(s: string): string {
-  return s
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(/[。，、．！？；：“”‘’（）【】「」《》〈〉()[\]{}.,!?;:"'`~·…—-]/g, "");
-}
+// Chấm câu trả lời tự gõ. Không so khớp tuyệt đối: khoảng trắng LÀ ranh giới từ
+// nên không bỏ đi được, và trẻ nhỏ gõ sai chính tả liên tục — vì vậy dùng chung
+// bộ chấm "nới cho trẻ" ở src/lib/english.ts (cho phép lệch 1–2 ký tự tuỳ độ dài
+// đáp án).
+export { normalizeAnswer } from "@/lib/english";
+import { isAnswerAcceptable } from "@/lib/english";
 
-/** Whether a typed answer matches any accepted variant (after normalisation). */
-export function matchesAccepted(input: string, accept: string[]): boolean {
-  const norm = normalizeAnswer(input);
-  if (!norm) return false;
-  return accept.some((a) => normalizeAnswer(a) === norm);
+/**
+ * Câu trả lời tự gõ có khớp một đáp án chấp nhận được không.
+ * `strict = true` (dùng cho bài kiểm tra cuối bài / thi thử) bắt khớp tuyệt đối.
+ */
+export function matchesAccepted(input: string, accept: string[], strict = false): boolean {
+  return isAnswerAcceptable(input, accept, strict);
 }

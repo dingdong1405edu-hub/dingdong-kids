@@ -58,21 +58,21 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
     const passed = pct >= 60;
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
+        <Card className="sticker max-w-md w-full text-center">
           <CardContent className="pt-8 pb-6 space-y-4">
             <BaoBuddy
               size={104}
               pose={passed ? "cheer" : "idle"}
-              message={passed ? "棒极了!" : "加油!"}
+              message={passed ? "Giỏi quá!" : "Cố lên nhé!"}
               className="mx-auto"
             />
-            <h2 className="text-2xl font-bold">{passed ? "Xuất sắc!" : "Cố lên!"}</h2>
-            <div className="text-4xl font-bold text-primary">{pct}%</div>
+            <h2 className="font-display text-2xl font-bold">{passed ? "Bé giỏi lắm! 🌟" : "Gần đúng rồi!"}</h2>
+            <div className="font-display text-5xl font-bold text-primary">{pct}%</div>
             <div className="text-muted-foreground text-sm">
-              {result.correct}/{result.total} câu đúng
+              Bé làm đúng {result.correct}/{result.total} câu
             </div>
             {result.xpEarned !== undefined && result.xpEarned > 0 && (
-              <div className="text-yellow-600 font-semibold">+{result.xpEarned} XP</div>
+              <div className="font-bold text-sunny">+{result.xpEarned} sao ⭐</div>
             )}
             <div className="flex gap-2 pt-2">
               <Button
@@ -80,10 +80,10 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
                 className="flex-1"
                 onClick={() => window.location.reload()}
               >
-                Làm lại
+                Chơi lại
               </Button>
               <Button
-                className="flex-1"
+                className="btn-chunky flex-1"
                 onClick={() => router.push(`/${skill}/${unitId}`)}
               >
                 Tiếp tục

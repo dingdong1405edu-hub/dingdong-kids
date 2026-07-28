@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
 
+/**
+ * Ghi âm của bé → văn bản tiếng Anh (Deepgram `en-US`, dự phòng Groq Whisper).
+ * Dùng cho phần Luyện nói: có transcript rồi mới chấm phát âm / ngữ điệu được.
+ */
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   const formData = await req.formData();
   const file = formData.get("audio") as File | null;
-  if (!file) return NextResponse.json({ error: "No audio file" }, { status: 400 });
+  if (!file) return NextResponse.json({ error: "Chưa có bản ghi âm nào" }, { status: 400 });
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -23,6 +27,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ transcript });
   } catch (e) {
     console.error("Transcribe error:", e);
-    return NextResponse.json({ error: "Không thể chuyển giọng nói thành văn bản" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Máy chưa nghe rõ. Bé nói to và chậm hơn một chút rồi thu lại nhé!" },
+      { status: 500 }
+    );
   }
 }

@@ -1,8 +1,8 @@
-// Unified speech-to-text: **Deepgram Nova-3** (primary, best Mandarin) with a
-// **Groq Whisper** fallback so transcription keeps working if Deepgram is down
-// or its key is missing. Public surface: transcribeAudio +
-// isTranscriptionConfigured — the single STT entry point for the whole app
-// (/api/transcribe and the admin "Tạo transcript từ audio" action).
+// Chuyển giọng nói → văn bản (STT) hợp nhất: **Deepgram Nova-3** (chính) với
+// **Groq Whisper** dự phòng, để việc chuyển lời thoại vẫn chạy khi Deepgram lỗi
+// hoặc thiếu key. Bề mặt công khai: transcribeAudio + isTranscriptionConfigured
+// — cửa vào STT duy nhất của toàn app (/api/transcribe và thao tác admin
+// "Tạo lời thoại từ audio").
 
 import { isDeepgramConfigured, transcribeWithDeepgram } from "@/lib/deepgram";
 import { isGradingConfigured as isGroqConfigured, transcribeWithGroq } from "@/lib/groq";
@@ -12,20 +12,20 @@ export function isTranscriptionConfigured(): boolean {
 }
 
 /**
- * Transcribe Mandarin audio to text. Tries Deepgram first; on an API error (not
- * an empty result) falls back to Groq Whisper when that key is present. Returns
- * "" when no speech was detected. Throws only when no provider is configured or
- * the last available provider fails.
+ * Chuyển audio tiếng Anh thành văn bản. Thử Deepgram trước; nếu API lỗi (không
+ * phải kết quả rỗng) thì rơi sang Groq Whisper khi có key. Trả "" khi không phát
+ * hiện giọng nói. Chỉ ném lỗi khi không có nhà cung cấp nào được cấu hình hoặc
+ * nhà cung cấp cuối cùng cũng lỗi.
  */
 export async function transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
   if (isDeepgramConfigured()) {
     try {
       return await transcribeWithDeepgram(audioBuffer, mimeType);
     } catch (e) {
-      // Only fall back if Groq is actually available; otherwise surface the real
-      // Deepgram error so the caller can show a meaningful reason.
+      // Chỉ rơi sang dự phòng khi Groq thực sự sẵn sàng; nếu không, đẩy lỗi
+      // Deepgram thật ra ngoài để nơi gọi hiển thị nguyên nhân có ý nghĩa.
       if (!isGroqConfigured()) throw e;
-      console.error("Deepgram STT failed — falling back to Groq Whisper:", e);
+      console.error("Deepgram STT lỗi — chuyển sang Groq Whisper:", e);
     }
   }
 

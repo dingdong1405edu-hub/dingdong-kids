@@ -12,7 +12,7 @@ interface Props {
 /**
  * Hub ôn tập tổng hợp LỘ TRÌNH: mọi từ vựng lộ trình đã đến hạn ôn (SRS) trên toàn
  * bộ các cấp, gom về một phiên. Lấy theo dueAt tăng dần (quá hạn lâu nhất trước),
- * giới hạn 1 phiên. `?level=hsk1` để quay về đúng trang map đã vào.
+ * giới hạn 1 phiên. `?level=starters` để quay về đúng trang map đã vào.
  */
 export default async function RoadmapReviewPage({ searchParams }: Props) {
   const session = await auth();
@@ -33,10 +33,12 @@ export default async function RoadmapReviewPage({ searchParams }: Props) {
     id: `rm-${r.id}`,
     lessonId: "roadmap-review",
     order: i + 1,
-    hanzi: r.hanzi,
-    pinyin: r.pinyin,
+    word: r.word,
+    ipa: r.ipa,
     meaning: r.meaning,
+    partOfSpeech: "",
     examples: Array.isArray(r.examples) ? (r.examples as unknown as WordExample[]) : [],
+    imageUrl: r.imageUrl,
     audioUrl: r.audioUrl,
   }));
 

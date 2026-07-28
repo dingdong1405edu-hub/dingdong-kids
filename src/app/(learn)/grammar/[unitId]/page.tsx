@@ -32,12 +32,12 @@ export default async function GrammarUnitPage({ params }: Props) {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{unit.title}</h1>
-          <p className="font-chinese text-muted-foreground">{unit.titleZh}</p>
+          <h1 className="font-display text-2xl font-bold">{unit.title}</h1>
+          {unit.theme && <p className="font-primer text-muted-foreground">{unit.theme}</p>}
         </div>
         <Link href={`/grammar/${unitId}/review`} className="shrink-0">
           <Button variant="outline" size="sm" className="gap-1.5 border-violet-300 text-violet-700 dark:border-violet-400/25 dark:text-violet-300">
-            <Repeat className="h-4 w-4" /> Ôn cả unit
+            <Repeat className="h-4 w-4" /> Ôn cả chủ đề
           </Button>
         </Link>
       </div>
@@ -55,11 +55,11 @@ export default async function GrammarUnitPage({ params }: Props) {
           const base = `/grammar/${unitId}/lesson/${lesson.id}`;
           const hasTest = grammarTestCount(lesson.exercises) > 0;
           return (
-            <Card key={lesson.id} className={!available ? "opacity-60" : ""}>
+            <Card key={lesson.id} className={`sticker ${!available ? "opacity-60" : ""}`}>
               <CardContent className="space-y-3 p-4">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full font-bold ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl font-bold ${
                       done
                         ? "bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-300"
                         : available
@@ -70,7 +70,7 @@ export default async function GrammarUnitPage({ params }: Props) {
                     {done ? <CheckCircle2 className="h-5 w-5" /> : available ? idx + 1 : <Lock className="h-4 w-4" />}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium">{lesson.title || `Bài ${idx + 1}`}</div>
+                    <div className="font-display font-bold">{lesson.title || `Bài ${idx + 1}`}</div>
                     <div className="text-xs text-muted-foreground">
                       {grammarItemCount(lesson.exercises)} bài tập
                     </div>
@@ -80,7 +80,7 @@ export default async function GrammarUnitPage({ params }: Props) {
                 {available ? (
                   <div className="flex flex-wrap gap-2">
                     <Link href={base}>
-                      <Button size="sm" variant={done ? "outline" : "default"} className="gap-1.5">
+                      <Button size="sm" variant={done ? "outline" : "default"} className={`gap-1.5 ${done ? "" : "btn-chunky"}`}>
                         <BookOpen className="h-4 w-4" /> {studyLabel}
                       </Button>
                     </Link>
@@ -103,7 +103,7 @@ export default async function GrammarUnitPage({ params }: Props) {
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground">Hoàn thành bài trước để mở khoá.</p>
+                  <p className="text-xs text-muted-foreground">Bé học xong bài trước là bài này mở ra nhé 🔓</p>
                 )}
               </CardContent>
             </Card>

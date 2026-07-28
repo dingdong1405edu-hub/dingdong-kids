@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { LessonEditor } from "@/components/admin/lesson-editor";
 import { VocabWordEditor } from "@/components/admin/vocab-word-editor";
 import { ImageUpload } from "@/components/admin/image-upload";
@@ -92,10 +92,10 @@ export default async function AdminVocabUnitPage({ params }: Props) {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">{unit.title}</h1>
-          <span className="font-chinese text-muted-foreground">{unit.titleZh}</span>
+          <span className="text-muted-foreground">{unit.theme}</span>
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <Badge variant="outline">{hskLevelLabel(unit.hskLevel)}</Badge>
+          <Badge variant="outline">{levelLabel(unit.level)}</Badge>
           <span className="text-xs text-muted-foreground">{unit.lessons.length} bài học</span>
         </div>
       </div>
@@ -133,12 +133,13 @@ export default async function AdminVocabUnitPage({ params }: Props) {
             <input type="hidden" name="unitId" value={unitId} />
             <div className="flex-1 space-y-1">
               <Label>Tên bài học</Label>
-              <Input name="title" placeholder="VD: Chào hỏi cơ bản" />
+              <Input name="title" placeholder="VD: Con vật quanh em" />
             </div>
             <Button type="submit">Tạo bài</Button>
           </form>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Tạo bài rồi thêm từng từ vựng (chữ Hán, pinyin, nghĩa, ví dụ) ở danh sách bên dưới.
+            Tạo bài rồi thêm từng từ (từ tiếng Anh, phiên âm IPA, nghĩa, ảnh, câu ví dụ) ở danh sách bên dưới.
+            Với các bé nhỏ, ảnh minh hoạ quan trọng hơn chữ — nhớ thêm ảnh cho mỗi từ.
             Bài mới sẽ ở trạng thái Bản nháp — bấm “Đang hiện/Bản nháp” để xuất bản.
           </p>
         </CardContent>
@@ -159,10 +160,12 @@ export default async function AdminVocabUnitPage({ params }: Props) {
                 id: w.id,
                 lessonId: w.lessonId,
                 order: w.order,
-                hanzi: w.hanzi,
-                pinyin: w.pinyin,
+                word: w.word,
+                ipa: w.ipa,
                 meaning: w.meaning,
+                partOfSpeech: w.partOfSpeech,
                 examples: Array.isArray(w.examples) ? (w.examples as unknown as WordExample[]) : [],
+                imageUrl: w.imageUrl,
                 audioUrl: w.audioUrl,
               }));
               return {

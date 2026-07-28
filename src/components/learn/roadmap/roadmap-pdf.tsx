@@ -3,6 +3,7 @@ import { PdfDocument, PdfSection, PdfNotice, PdfCard, PdfNumChip, PdfAnswer, Pdf
 import { PdfPassage, type PassageScope } from "@/components/learn/reading/reading-pdf";
 import { PdfQuestionList, type PdfQuestion } from "@/components/learn/pdf/pdf-question-list";
 import { PDF, PDF_FONT } from "@/lib/pdf/theme";
+import { SITE_NAME } from "@/lib/site";
 import { roadmapQuestionId, type RoadmapQuestion } from "@/lib/roadmap-content";
 
 /** Chuyển câu hỏi lộ trình (Đọc/Nghe) → PdfQuestion cho bảng đáp án in. */
@@ -11,7 +12,6 @@ export function toPdfQuestions(questions: RoadmapQuestion[]): PdfQuestion[] {
     id: roadmapQuestionId(i),
     type: q.type,
     prompt: q.prompt,
-    promptPinyin: q.promptPinyin ?? null,
     options: q.options,
     correctAnswer: q.correctAnswer,
     explanation: q.explanation ?? null,
@@ -21,31 +21,31 @@ export function toPdfQuestions(questions: RoadmapQuestion[]): PdfQuestion[] {
 
 interface PassageData {
   passage: string;
-  passagePinyin?: string | null;
-  titleZh?: string;
+  /** Tên riêng của đoạn (vd "My pet dog"). */
+  title?: string;
   questions: PdfQuestion[];
 }
 
 /** PDF đọc hiểu lộ trình — hỗ trợ nhiều đoạn (mỗi đoạn kèm câu hỏi & đáp án). */
 export function RoadmapReadingPdf({
   title,
-  titleZh,
-  hskLevel,
+  subtitle,
+  level,
   passages,
   scope = "both",
 }: {
   title: string;
-  titleZh?: string;
-  hskLevel: string;
+  subtitle?: string | null;
+  level: string;
   passages: PassageData[];
   scope?: PassageScope;
 }) {
   const multi = passages.length > 1;
   return (
-    <PdfDocument kicker="Đọc hiểu · 阅读" title={title || "Bài đọc hiểu"} titleZh={titleZh} hskLevel={hskLevel}>
+    <PdfDocument kicker="Đọc hiểu" title={title || "Bài đọc hiểu"} subtitle={subtitle} level={level}>
       {passages.map((p, i) => (
-        <PdfSection key={i} title={multi ? `Đoạn ${i + 1}` : "Đoạn văn"} titleZh={p.titleZh || (multi ? undefined : "短文")}>
-          {scope !== "questions" && <PdfPassage passage={p.passage} pinyin={p.passagePinyin} />}
+        <PdfSection key={i} title={p.title || (multi ? `Bài đọc ${i + 1}` : "Đoạn văn")}>
+          {scope !== "questions" && <PdfPassage passage={p.passage} />}
           {scope !== "passage" && (
             <div style={{ marginTop: scope === "questions" ? 0 : 10 }}>
               <PdfQuestionList questions={p.questions} />
@@ -63,22 +63,29 @@ interface ReorderSentence {
   translation?: string;
 }
 
-/** PDF luyện viết lộ trình kiểu "连词成句": mỗi câu có thẻ từ cho sẵn + câu đúng & bản dịch. */
+/** PDF tập viết lộ trình kiểu "sắp xếp từ thành câu": mỗi câu có thẻ từ cho sẵn
+ *  + câu đúng & nghĩa tiếng Việt. */
 export function RoadmapWritingReorderPdf({
   title,
-  titleZh,
-  hskLevel,
+  subtitle,
+  level,
   sentences,
 }: {
   title: string;
-  titleZh?: string | null;
-  hskLevel: string;
+  subtitle?: string | null;
+  level: string;
   sentences: ReorderSentence[];
 }) {
   return (
-    <PdfDocument kicker="Viết · 连词成句" title={title || "Luyện viết"} titleZh={titleZh} subtitle="Sắp xếp từ thành câu" hskLevel={hskLevel}>
+    <PdfDocument
+      kicker="Tập viết câu"
+      title={title || "Tập viết câu"}
+      subtitle={subtitle ?? "Sắp xếp từ thành câu"}
+      level={level}
+    >
       <PdfNotice>
-        ✍️ Sắp xếp các từ cho sẵn thành câu đúng (dạng đề <b>VIẾT HSK2</b>) — phần đáp án &amp; bản dịch ở ngay dưới mỗi câu.
+        ✍️ Con hãy sắp xếp các thẻ từ cho sẵn thành một câu tiếng Anh đúng, rồi đối chiếu với đáp án
+        &amp; nghĩa tiếng Việt ở ngay bên dưới mỗi câu.
       </PdfNotice>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {sentences.map((s, i) => (
@@ -91,7 +98,7 @@ export function RoadmapWritingReorderPdf({
                     <span
                       key={j}
                       style={{
-                        fontFamily: PDF_FONT.chinese,
+                        fontFamily: PDF_FONT.word,
                         fontSize: 14,
                         fontWeight: 600,
                         color: PDF.ink,
@@ -129,23 +136,29 @@ interface ClipData {
 /** PDF nghe hiểu lộ trình — hỗ trợ nhiều đoạn nghe (lời thoại + câu hỏi & đáp án). */
 export function RoadmapListeningPdf({
   title,
-  hskLevel,
+  subtitle,
+  level,
   clips,
   scope = "both",
 }: {
   title: string;
-  hskLevel: string;
+  subtitle?: string | null;
+  level: string;
   clips: ClipData[];
   scope?: PassageScope;
 }) {
   const multi = clips.length > 1;
   return (
-    <PdfDocument kicker="Nghe hiểu · 听力" title={title || "Bài nghe hiểu"} hskLevel={hskLevel}>
+    <PdfDocument kicker="Nghe hiểu" title={title || "Bài nghe hiểu"} subtitle={subtitle} level={level}>
       <PdfNotice>
-        🎧 Nghe phần âm thanh trực tiếp tại <b>dingdonghsk.com</b> — bản PDF chỉ gồm lời thoại &amp; đáp án.
+        🎧 Phần âm thanh nghe trực tiếp trên <b>{SITE_NAME}</b> — bản in này chỉ gồm lời thoại &amp;
+        đáp án để bố mẹ cùng con kiểm tra lại.
       </PdfNotice>
       {clips.map((c, i) => (
-        <PdfSection key={i} title={multi ? `Đoạn nghe ${i + 1}${c.title ? ` · ${c.title}` : ""}` : "Lời thoại"} titleZh={multi ? undefined : "听力原文"}>
+        <PdfSection
+          key={i}
+          title={multi ? `Đoạn nghe ${i + 1}${c.title ? ` · ${c.title}` : ""}` : "Lời thoại"}
+        >
           {scope !== "questions" && c.transcript && <PdfPassage passage={c.transcript} />}
           {scope !== "passage" && (
             <div style={{ marginTop: scope === "questions" ? 0 : 10 }}>

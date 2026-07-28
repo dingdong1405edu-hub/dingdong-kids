@@ -5,22 +5,26 @@ import { PdfNumChip, PdfTag, PdfAnswer, PdfAnswerLine } from "@/components/learn
 export interface PdfQuestion {
   id: string;
   type: string;
+  /** Câu hỏi bằng tiếng Anh. */
   prompt: string;
-  promptPinyin?: string | null;
+  /** Bản dịch tiếng Việt của câu hỏi — in nhỏ bên dưới cho ba mẹ đọc cùng bé. */
+  promptTranslation?: string | null;
   options?: unknown;
   correctAnswer: unknown;
   explanation?: string | null;
+  /** Câu trong bài chứng minh đáp án. */
   supportingQuote?: string | null;
+  quoteTranslation?: string | null;
 }
 
 const OPT_LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 const TYPE_LABEL: Record<string, string> = {
-  MCQ: "Trắc nghiệm",
-  FILL_BLANK: "Điền khuyết",
+  MCQ: "Chọn đáp án",
+  FILL_BLANK: "Điền vào chỗ trống",
   TRUE_FALSE: "Đúng / Sai",
   MATCHING: "Nối",
-  SHORT_ANSWER: "Tự luận ngắn",
+  SHORT_ANSWER: "Trả lời ngắn",
 };
 
 function optionTexts(options: unknown): string[] {
@@ -70,10 +74,10 @@ export function PdfQuestionList({ questions }: { questions: PdfQuestion[] }) {
               <PdfNumChip n={i + 1} size={20} />
               <PdfTag>{TYPE_LABEL[q.type] ?? q.type}</PdfTag>
             </div>
-            <div style={{ fontFamily: PDF_FONT.chinese, fontSize: 15, color: PDF.ink }}>{q.prompt}</div>
-            {q.promptPinyin && (
-              <div style={{ fontFamily: PDF_FONT.pinyin, fontSize: 12, color: PDF.brand, marginTop: 2 }}>
-                {q.promptPinyin}
+            <div style={{ fontFamily: PDF_FONT.word, fontSize: 15, color: PDF.ink }}>{q.prompt}</div>
+            {q.promptTranslation && (
+              <div style={{ fontSize: 12, fontStyle: "italic", color: PDF.muted, marginTop: 2 }}>
+                {q.promptTranslation}
               </div>
             )}
             {opts.length > 0 && (
@@ -87,23 +91,26 @@ export function PdfQuestionList({ questions }: { questions: PdfQuestion[] }) {
                 }}
               >
                 {opts.map((o, oi) => (
-                  <div key={oi} style={{ fontFamily: PDF_FONT.chinese, fontSize: 13, color: PDF.ink2 }}>
+                  <div key={oi} style={{ fontFamily: PDF_FONT.word, fontSize: 13, color: PDF.ink2 }}>
                     <span style={{ color: PDF.faint, fontWeight: 700 }}>{OPT_LETTERS[oi] ?? oi + 1}.</span> {o}
                   </div>
                 ))}
               </div>
             )}
             <PdfAnswer>
-              <PdfAnswerLine>{ans || "— (xem trên dingdonghsk.com)"}</PdfAnswerLine>
+              <PdfAnswerLine>{ans || "— (xem trên dingdongkids.com)"}</PdfAnswerLine>
               {q.supportingQuote && (
                 <div style={{ marginTop: 3, fontSize: 12.5, color: PDF.correct }}>
-                  <span style={{ fontWeight: 700 }}>Dẫn chứng: </span>
-                  <span style={{ fontFamily: PDF_FONT.chinese }}>{q.supportingQuote}</span>
+                  <span style={{ fontWeight: 700 }}>Câu trong bài: </span>
+                  <span style={{ fontFamily: PDF_FONT.word }}>{q.supportingQuote}</span>
+                  {q.quoteTranslation && (
+                    <span style={{ color: PDF.muted, fontStyle: "italic" }}> — {q.quoteTranslation}</span>
+                  )}
                 </div>
               )}
               {q.explanation && (
                 <div style={{ marginTop: 3, fontSize: 12.5, color: PDF.ink2 }}>
-                  <span style={{ fontWeight: 700, color: PDF.ink }}>Giải thích: </span>
+                  <span style={{ fontWeight: 700, color: PDF.ink }}>Vì sao: </span>
                   {q.explanation}
                 </div>
               )}

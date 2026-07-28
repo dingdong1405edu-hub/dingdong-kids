@@ -50,11 +50,16 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        /** Vàng nắng — màu nhấn phụ, dùng cho sao/thưởng/streak. */
+        sunny: {
+          DEFAULT: "hsl(var(--sunny))",
+          foreground: "hsl(var(--sunny-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
       },
       keyframes: {
         "accordion-down": {
@@ -74,23 +79,44 @@ const config: Config = {
           "25%": { transform: "translateX(-8px)" },
           "75%": { transform: "translateX(8px)" },
         },
+        /** Nảy vui khi trả lời đúng — trẻ thích phản hồi có chuyển động. */
+        "pop-in": {
+          "0%": { transform: "scale(0.6)", opacity: "0" },
+          "60%": { transform: "scale(1.12)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-3deg)" },
+          "50%": { transform: "rotate(3deg)" },
+        },
+        "bounce-soft": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-12px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "correct-pulse": "correct-pulse 0.3s ease-in-out",
         "wrong-shake": "wrong-shake 0.3s ease-in-out",
+        "pop-in": "pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both",
+        wiggle: "wiggle 0.6s ease-in-out infinite",
+        "bounce-soft": "bounce-soft 2.4s ease-in-out infinite",
       },
       fontFamily: {
-        sans: ["Nunito", "Noto Sans SC", "system-ui", "sans-serif"],
-        display: ["Nunito", "system-ui", "sans-serif"],
-        chinese: ["Noto Sans SC", "sans-serif"],
-        pinyin: ["Noto Serif", "serif"],
+        // Baloo 2 — chữ tròn, mập, rất hợp trẻ em; Nunito cho phần thân chữ.
+        sans: ["Nunito", "system-ui", "sans-serif"],
+        display: ["'Baloo 2'", "Nunito", "system-ui", "sans-serif"],
+        /** Phông chữ dạy đọc: chữ "a" và "g" một tầng, giống chữ trẻ tập viết. */
+        primer: ["'Andika'", "'Comic Sans MS'", "Nunito", "sans-serif"],
       },
       boxShadow: {
         soft: "0 1px 2px -1px rgba(16,24,40,0.04), 0 4px 16px -4px rgba(16,24,40,0.08)",
         "soft-lg": "0 2px 4px -2px rgba(16,24,40,0.05), 0 12px 32px -8px rgba(16,24,40,0.12)",
-        "soft-primary": "0 8px 24px -8px hsl(88 30% 36% / 0.35)",
+        "soft-primary": "0 8px 24px -8px hsl(var(--primary) / 0.4)",
+        /** Gờ 3D kiểu nút bấm đồ chơi — dùng cho nút chính & node lộ trình. */
+        chunky: "0 6px 0 0 hsl(var(--primary) / 0.55)",
+        "chunky-sm": "0 4px 0 0 rgb(0 0 0 / 0.14)",
       },
     },
   },

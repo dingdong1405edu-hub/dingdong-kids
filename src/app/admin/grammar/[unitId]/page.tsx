@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { grammarItemCount } from "@/lib/grammar";
 import { LessonEditor } from "@/components/admin/lesson-editor";
 import { GrammarAuthorGuide } from "@/components/admin/grammar-author-guide";
@@ -37,10 +37,10 @@ export default async function AdminGrammarUnitPage({ params }: Props) {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">{unit.title}</h1>
-          <span className="font-chinese text-muted-foreground">{unit.titleZh}</span>
+          <span className="text-muted-foreground">{unit.theme}</span>
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <Badge variant="outline">{hskLevelLabel(unit.hskLevel)}</Badge>
+          <Badge variant="outline">{levelLabel(unit.level)}</Badge>
           <span className="text-xs text-muted-foreground">{unit.lessons.length} bài học</span>
         </div>
       </div>

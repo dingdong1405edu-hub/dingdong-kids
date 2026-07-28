@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -6,13 +7,18 @@ import { PracticeHub } from "@/components/learn/practice-hub";
 import { TestCard } from "@/components/learn/test-card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 
+export const metadata: Metadata = {
+  title: "Ngữ pháp",
+  description: "Bé học cách đặt câu tiếng Anh đúng qua ví dụ có tranh và bài tập ngắn.",
+};
+
 export default async function GrammarPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
   const units = await db.grammarUnit.findMany({
     where: { published: true }, // ẩn unit nháp khỏi học viên
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }],
     include: {
       lessons: {
         where: { published: true }, // ẩn bài nháp khỏi học viên
@@ -35,19 +41,19 @@ export default async function GrammarPage() {
     <PracticeHub
       accent="violet"
       icon={<SpellCheck className="h-7 w-7" />}
-      decoChar="语"
+      decoChar="📝"
       title="Ngữ pháp"
-      subtitle="Nắm cấu trúc câu tiếng Trung qua các bài tập tương tác ngắn"
+      subtitle="Học cách đặt câu tiếng Anh đúng — dễ hiểu, nhiều ví dụ có tranh"
       randomHref={randomHref}
       randomLabel="Học tiếp bài đang dở"
       tips={[
-        "Mỗi đơn vị gồm nhiều bài tập: điền chỗ trống, sắp xếp câu, dịch câu.",
-        "Có ví dụ minh hoạ kèm pinyin và nghĩa tiếng Việt.",
-        "Trả lời sai sẽ mất 1 tim ❤️.",
-        "Hoàn thành bài học để cộng XP và mở khoá bài tiếp theo.",
+        "Mỗi bài có phần giải thích ngắn rồi tới trò chơi luyện tập ngay.",
+        "Ví dụ nào cũng có câu tiếng Anh, nghĩa tiếng Việt và nút loa 🔊.",
+        "Trả lời chưa đúng thì được xem đáp án và thử lại — không sao cả!",
+        "Làm xong bài kiểm tra cuối để nhận sao ⭐ và mở bài tiếp theo.",
       ]}
-      gridTitle="Các đơn vị ngữ pháp"
-      gridSubtitle="Nhấn vào một đơn vị để bắt đầu học."
+      gridTitle="Các chủ đề ngữ pháp"
+      gridSubtitle="Bấm vào một chủ đề để bắt đầu."
     >
       {withStats.length === 0 ? (
         <EmptyState />
@@ -58,8 +64,8 @@ export default async function GrammarPage() {
               key={u.id}
               href={`/grammar/${u.id}`}
               title={u.title}
-              level={u.hskLevel}
-              tags={[u.titleZh]}
+              level={u.level}
+              tags={u.theme ? [u.theme] : []}
               meta={`${u.done}/${u.total} bài học`}
               score={u.pct}
               seed={u.id}
@@ -74,9 +80,9 @@ export default async function GrammarPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+    <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
       <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-      <p>Chưa có đơn vị ngữ pháp nào.</p>
+      <p>Chưa có chủ đề ngữ pháp nào. Bé quay lại sau nhé! 🌟</p>
     </div>
   );
 }

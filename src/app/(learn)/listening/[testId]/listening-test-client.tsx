@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Clock, Eye, EyeOff, Headphones, RefreshCw, ListChecks, GraduationCap, AlertTriangle } from "lucide-react";
+import { Clock, Headphones, RefreshCw, ListChecks, GraduationCap, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TestShell } from "@/components/learn/test-shell";
 import { ReadingPalette } from "@/components/learn/reading/reading-palette";
@@ -11,7 +11,7 @@ import { QuestionCard } from "@/components/learn/reading/question-card";
 import { ResultsSummary } from "@/components/learn/reading/results-summary";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { ReviewDialog } from "@/components/learn/reading/review-dialog";
-import { CharLookup, type LookupAnchor } from "@/components/learn/reading/char-lookup";
+import { SelectionLookup, type SelectionAnchor } from "@/components/learn/reading/selection-lookup";
 import { AudioPlayer } from "@/components/learn/listening/audio-player";
 import { Tapescript } from "@/components/learn/listening/tapescript";
 import { TranscriptExplanation } from "@/components/learn/listening/transcript-explanation";
@@ -19,23 +19,23 @@ import { QuestionEvidence } from "@/components/learn/listening/question-evidence
 import { useListeningAudio } from "@/components/learn/listening/use-listening-audio";
 import type { ListeningTestData } from "@/components/learn/listening/types";
 import { splitTranscript, findEvidenceIndex } from "@/lib/transcript";
-import { cn, formatDuration, hskBadgeClass, hskLevelLabel } from "@/lib/utils";
+import { cn, formatDuration, levelBadgeClass, levelLabel } from "@/lib/utils";
 import { submitListeningAction } from "@/server/actions/listening";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 
-/** Câu chúc tiếng Trung của Bao (bóng thoại) theo điểm số. */
+/** Lời khen ngắn của Ding hiện trên bóng thoại. Luôn khen trước, không chê. */
 function baoBubble(score: number): string {
-  if (score >= 90) return "太棒了!";
-  if (score >= 70) return "做得好!";
-  if (score >= 50) return "加油!";
-  return "别灰心!";
+  if (score >= 90) return "Siêu quá!";
+  if (score >= 70) return "Giỏi lắm!";
+  if (score >= 50) return "Cố lên nhé!";
+  return "Mình thử lại nào!";
 }
-/** Lời cổ vũ tiếng Việt theo điểm số. */
+/** Lời cổ vũ dài hơn theo điểm số. */
 function baoLine(score: number): string {
-  if (score >= 90) return "Xuất sắc! Bạn nghe rất tốt 🎉";
-  if (score >= 70) return "Làm tốt lắm! Cố thêm chút nữa nhé.";
-  if (score >= 50) return "Khá rồi! Ôn lại các câu sai cho chắc.";
-  return "Đừng nản — nghe lại lời thoại & xem giải thích nhé!";
+  if (score >= 90) return "Tuyệt vời! Tai bé nghe tiếng Anh rất tinh 🎉";
+  if (score >= 70) return "Bé nghe tốt lắm! Thêm chút nữa là trọn điểm.";
+  if (score >= 50) return "Khá rồi đó! Nghe lại các câu còn phân vân nhé.";
+  return "Không sao đâu — nghe lại lời thoại rồi mình làm lại nhé 🌟";
 }
 
 const SAVED_KEY = "dingdong:listening:saved";
@@ -67,16 +67,18 @@ export function ListeningTestClient({
     answers: Record<string, unknown>;
     durationSec: number;
   }) => Promise<{ ok: boolean; result?: { score: number; details: Record<string, boolean> } }>;
-  /** Lộ trình nhiều đoạn: sau khi nộp, hiện nút đi tiếp thay cho "Quay lại danh sách đề". */
+  /** Lộ trình nhiều đoạn: sau khi nộp, hiện nút đi tiếp thay cho "Quay lại danh sách bài". */
   onContinue?: () => void;
   continueLabel?: string;
   /** Đường dẫn nút "Thoát" (mặc định /listening). */
   backHref?: string;
-  /** Lộ trình: ngưỡng "qua môn" để hiện nhãn Đạt/Chưa đạt trên màn kết quả. */
+  /** Lộ trình: ngưỡng "qua bài" để hiện nhãn Đạt/Chưa đạt trên màn kết quả. */
   passThreshold?: number;
 }) {
   const segments = useMemo(() => splitTranscript(test.transcript), [test.transcript]);
-  const maxPlays = test.hskLevel === "HSK1" || test.hskLevel === "HSK2" ? 3 : 2;
+  // Bé nhỏ tuổi cần nghe nhiều lần hơn: 3 lượt cho các cấp đầu, 2 lượt cho cấp lớn.
+  const maxPlays =
+    test.level === "PRE_STARTERS" || test.level === "STARTERS" || test.level === "MOVERS" ? 3 : 2;
 
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [flags, setFlags] = useState<Record<string, boolean>>({});
@@ -85,10 +87,9 @@ export function ListeningTestClient({
   const [result, setResult] = useState<{ score: number; details: Record<string, boolean> } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [current, setCurrent] = useState(0);
-  const [showPinyin, setShowPinyin] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>("all");
-  const [lookup, setLookup] = useState<LookupAnchor | null>(null);
+  const [selection, setSelection] = useState<SelectionAnchor | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [restored, setRestored] = useState(false);
   const [pendingScroll, setPendingScroll] = useState<number | null>(null);
@@ -241,10 +242,14 @@ export function ListeningTestClient({
         /* ignore */
       }
       const passMark = passThreshold ?? 80;
-      emitBao(res.result.score >= passMark ? "celebrate" : "complete");
-      toast.success(auto ? `Hết giờ! Bạn đạt ${Math.round(res.result.score)}%` : `Bạn đạt ${Math.round(res.result.score)}%`);
+      emitDing(res.result.score >= passMark ? "celebrate" : "complete");
+      toast.success(
+        auto
+          ? `Hết giờ rồi! Bé làm đúng ${Math.round(res.result.score)}%`
+          : `Bé làm đúng ${Math.round(res.result.score)}%`,
+      );
     } else {
-      toast.error("Lỗi nộp bài, thử lại sau");
+      toast.error("Chưa gửi được bài, bé thử lại nhé");
     }
   }
 
@@ -278,8 +283,9 @@ export function ListeningTestClient({
     setSavedIds(new Set(list.filter((x) => x.testId === test.id).map((x) => x.qid)));
   }
 
-  const onCharClick = (char: string, pinyin: string, e: React.MouseEvent) =>
-    setLookup({ char, pinyin, x: e.clientX, y: e.clientY });
+  /** Bé chạm vào một từ trong lời thoại → mở popup tra nghĩa. */
+  const onWordClick = (word: string, e: React.MouseEvent) =>
+    setSelection({ text: word, x: e.clientX, y: e.clientY });
 
   const timerCritical = !submitted && remaining <= 30;
   // Only fall back to revealing the transcript once we've settled the audio mode
@@ -302,7 +308,7 @@ export function ListeningTestClient({
           !submitted ? (
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold tabular-nums",
+                "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold tabular-nums",
                 timerCritical ? "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300" : "bg-muted",
               )}
             >
@@ -311,21 +317,10 @@ export function ListeningTestClient({
               <span className="hidden text-xs font-normal text-muted-foreground sm:inline">còn lại</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300">
               {Math.round(result?.score ?? 0)}% · {correctCount}/{total}
             </span>
           )
-        }
-        tools={
-          <Button
-            size="sm"
-            variant={showPinyin ? "default" : "outline"}
-            className="gap-1.5 rounded-lg"
-            onClick={() => setShowPinyin((v) => !v)}
-          >
-            {showPinyin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="hidden lg:inline">Pinyin</span>
-          </Button>
         }
         nav={
           total > 0 ? (
@@ -348,48 +343,47 @@ export function ListeningTestClient({
         <div className="h-full overflow-y-auto">
           <div className="mx-auto max-w-2xl space-y-5 p-4 sm:p-6">
             {/* Title */}
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-teal-100 dark:border-teal-400/25 bg-gradient-to-r from-teal-50 to-emerald-50/40 dark:from-teal-500/10 dark:to-emerald-500/5 p-3.5">
+            <div className="sticker flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-r from-teal-50 to-emerald-50/40 dark:from-teal-500/10 dark:to-emerald-500/5 p-3.5">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 dark:bg-teal-500/15 text-teal-600 dark:text-teal-300">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-100 dark:bg-teal-500/15 text-teal-600 dark:text-teal-300">
                   <Headphones className="h-5 w-5" />
                 </span>
-                <h1 className="text-lg font-bold sm:text-xl">{test.title}</h1>
+                <h1 className="font-display text-lg font-bold sm:text-xl">{test.title}</h1>
               </div>
-              <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold", hskBadgeClass(test.hskLevel))}>
-                {hskLevelLabel(test.hskLevel)}
+              <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold", levelBadgeClass(test.level))}>
+                {levelLabel(test.level)}
               </span>
             </div>
 
             {/* Sticky audio player */}
-            <div className="sticky top-0 z-20 -mx-4 bg-[#faf7f2]/85 dark:bg-background/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
+            <div className="sticky top-0 z-20 -mx-4 bg-background/85 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
               <AudioPlayer audio={audio} reviewMode={submitted} segmentCount={segments.length} />
             </div>
 
             {/* Honest empty-state: neither audio nor transcript exists */}
             {noContent && (
-              <div className="flex items-start gap-2 rounded-xl border border-amber-200 dark:border-amber-400/25 bg-amber-50 dark:bg-amber-500/15 p-3 text-sm text-amber-800 dark:text-amber-200">
+              <div className="flex items-start gap-2 rounded-2xl border-2 border-amber-200 dark:border-amber-400/25 bg-amber-50 dark:bg-amber-500/15 p-3 text-sm text-amber-800 dark:text-amber-200">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
                 <p>
-                  Bài nghe này chưa có audio hoặc lời thoại. Bạn vẫn trả lời được câu hỏi, nhưng nên báo giáo viên bổ
-                  sung nội dung.
+                  Bài này chưa có tiếng đọc. Bé vẫn trả lời câu hỏi được, và nhớ nhắn thầy cô bổ sung phần nghe nhé.
                 </p>
               </div>
             )}
 
-            {/* Instructions (test mode) — kèm linh vật Bao chào học viên */}
+            {/* Instructions (test mode) — kèm linh vật Ding chào bé */}
             {!submitted && (
-              <div className="flex items-center gap-3 rounded-xl border border-teal-100 dark:border-teal-400/25 bg-teal-50/50 dark:bg-teal-500/10 p-3 text-sm text-teal-900 dark:text-teal-200">
-                <BaoBuddy size={54} pose="idle" className="shrink-0" aria-label="Bao chào bạn" />
+              <div className="flex items-center gap-3 rounded-2xl border-2 border-teal-100 dark:border-teal-400/25 bg-teal-50/50 dark:bg-teal-500/10 p-3 text-sm text-teal-900 dark:text-teal-200">
+                <BaoBuddy size={54} pose="idle" className="shrink-0" aria-label="Ding chào bé" />
                 <p>
                   {audio.available ? (
                     <>
-                      Nghe audio (tối đa <b>{maxPlays}</b> lần) rồi trả lời tất cả câu hỏi.{" "}
+                      Bé nghe (tối đa <b>{maxPlays}</b> lần) rồi trả lời hết các câu hỏi nhé.{" "}
                     </>
                   ) : (
-                    <>Trả lời tất cả câu hỏi.{" "}</>
+                    <>Bé trả lời hết các câu hỏi nhé.{" "}</>
                   )}
-                  {segments.length > 0 ? "Lời thoại & lời giải sẽ hiện sau khi nộp bài. " : "Lời giải sẽ hiện sau khi nộp bài. "}
-                  Hết giờ bài sẽ tự nộp.
+                  {segments.length > 0 ? "Nộp xong sẽ hiện lời thoại và lời giải. " : "Nộp xong sẽ hiện lời giải. "}
+                  Hết giờ bài tự nộp giúp bé.
                 </p>
               </div>
             )}
@@ -398,23 +392,22 @@ export function ListeningTestClient({
             {showTranscriptDuringTest && (
               <Tapescript
                 segments={segments}
-                showPinyin={showPinyin}
                 evidenceMap={new Map()}
                 currentSegment={audio.currentSegment}
                 canReplay={audio.canSpeakSegments}
                 onPlaySegment={(i) => audio.speakSegment(i)}
-                onCharClick={onCharClick}
+                onWordClick={onWordClick}
               />
             )}
 
-            {/* Results (review) — sảnh chúc mừng với linh vật Bao nổi bật */}
+            {/* Results (review) — sảnh chúc mừng với linh vật Ding nổi bật */}
             {submitted && result && (
               <>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.92, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                  className="relative overflow-hidden rounded-3xl border border-amber-200/70 dark:border-amber-400/25 bg-gradient-to-br from-amber-50 via-rose-50 to-teal-50 dark:from-amber-500/10 dark:via-rose-500/10 dark:to-teal-500/10 px-5 py-6 text-center shadow-sm"
+                  className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50 via-rose-50 to-teal-50 dark:from-amber-500/10 dark:via-rose-500/10 dark:to-teal-500/10 px-5 py-6 text-center"
                 >
                   <BaoBuddy
                     size={120}
@@ -422,19 +415,19 @@ export function ListeningTestClient({
                     message={baoBubble(result.score)}
                     className="mx-auto"
                   />
-                  <div className="mt-1 text-4xl font-extrabold tracking-tight text-foreground">
+                  <div className="font-display mt-1 text-4xl font-extrabold tracking-tight text-foreground">
                     {Math.round(result.score)}%
                   </div>
                   <div className="mt-0.5 text-sm font-medium text-muted-foreground">
                     {correctCount}/{total} câu đúng · {formatDuration(elapsed)}
                   </div>
-                  <div className="mt-1.5 text-sm font-semibold text-primary">{baoLine(result.score)}</div>
+                  <div className="mt-1.5 text-sm font-bold text-primary">{baoLine(result.score)}</div>
                 </motion.div>
                 <ResultsSummary
                   score={result.score}
                   correct={correctCount}
                   total={total}
-                  level={test.hskLevel}
+                  level={test.level}
                   elapsedLabel={`${formatDuration(elapsed)} đã làm`}
                   passThreshold={passThreshold}
                 />
@@ -447,13 +440,13 @@ export function ListeningTestClient({
 
             {/* Questions */}
             {total === 0 ? (
-              <p className="rounded-2xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+              <p className="rounded-3xl border-2 border-dashed py-10 text-center text-sm text-muted-foreground">
                 Bài nghe này chưa có câu hỏi.
               </p>
             ) : (
               <div className="space-y-3">
                 {!submitted && (
-                  <h2 className="flex items-center gap-2 text-base font-bold text-primary">
+                  <h2 className="font-display flex items-center gap-2 text-base font-bold text-primary">
                     <ListChecks className="h-4 w-4" /> Câu hỏi ({total})
                   </h2>
                 )}
@@ -472,7 +465,6 @@ export function ListeningTestClient({
                         isCorrect={result?.details[q.id]}
                         flagged={!!flags[q.id]}
                         onToggleFlag={() => toggleFlag(q.id)}
-                        showPinyin={showPinyin}
                         isCurrent={current === idx}
                         onActivate={() => setCurrent(idx)}
                         cardRef={(el) => {
@@ -482,12 +474,11 @@ export function ListeningTestClient({
                       {submitted && (
                         <QuestionEvidence
                           segment={evidenceSeg ?? null}
-                          showPinyin={showPinyin}
                           canReplay={audio.canSpeakSegments && segIdx !== undefined && segIdx >= 0}
                           onPlay={() => segIdx !== undefined && segIdx >= 0 && audio.speakSegment(segIdx)}
                           saved={savedIds.has(q.id)}
                           onToggleSave={() => toggleSave(q.id)}
-                          onCharClick={onCharClick}
+                          onWordClick={onWordClick}
                         />
                       )}
                     </div>
@@ -501,25 +492,24 @@ export function ListeningTestClient({
               <div className="space-y-4">
                 <Tapescript
                   segments={segments}
-                  showPinyin={showPinyin}
                   evidenceMap={evidenceMap}
                   currentSegment={audio.currentSegment}
                   canReplay={audio.canSpeakSegments}
                   onPlaySegment={(i) => audio.speakSegment(i)}
-                  onCharClick={onCharClick}
+                  onWordClick={onWordClick}
                 />
 
                 {test.transcriptExplanation && <TranscriptExplanation text={test.transcriptExplanation} />}
 
-                <div className="rounded-2xl border bg-card p-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
-                    <GraduationCap className="h-4 w-4" /> Ôn tập
+                <div className="sticker rounded-3xl bg-card p-4">
+                  <div className="font-display mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+                    <GraduationCap className="h-4 w-4" /> Ôn lại
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {savedIds.size > 0
-                      ? `Đã lưu ${savedIds.size} câu để ôn lại. `
+                      ? `Bé đã cất ${savedIds.size} câu để ôn lại. `
                       : "Bấm “Lưu ôn tập” ở mỗi câu để xem lại sau. "}
-                    Lọc “Cần ôn” để tập trung vào các câu còn sai.
+                    Chọn “Cần ôn” để xem những câu bé còn phân vân.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button
@@ -536,12 +526,12 @@ export function ListeningTestClient({
                       <RefreshCw className="h-4 w-4" /> Làm lại từ đầu
                     </Button>
                     {onContinue ? (
-                      <Button className="gap-1.5" onClick={onContinue}>
+                      <Button className="btn-chunky gap-1.5" onClick={onContinue}>
                         {continueLabel ?? "Tiếp tục"}
                       </Button>
                     ) : (
                       <Button asChild variant="ghost">
-                        <Link href={backHref}>Quay lại danh sách đề</Link>
+                        <Link href={backHref}>Quay lại danh sách bài nghe</Link>
                       </Button>
                     )}
                   </div>
@@ -563,7 +553,13 @@ export function ListeningTestClient({
         onConfirm={() => doSubmit(false)}
         submitting={submitting}
       />
-      {lookup && <CharLookup anchor={lookup} onClose={() => setLookup(null)} />}
+      {selection && (
+        <SelectionLookup
+          anchor={selection}
+          onClose={() => setSelection(null)}
+          source={`listening:${test.id}`}
+        />
+      )}
     </>
   );
 }
@@ -573,7 +569,7 @@ function FilterButton({ active, onClick, label }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+        "rounded-full border px-3 py-1 text-xs font-bold transition-colors",
         active ? "border-primary bg-primary/10 text-primary" : "border-input text-muted-foreground hover:border-primary/40",
       )}
     >

@@ -1,6 +1,9 @@
 import { db } from "@/lib/db";
+import { db as prisma } from "@/lib/db";
 import { requireAdminActor } from "@/lib/admin-guard";
 import { logAudit } from "@/lib/audit";
+import { ensureAudio } from "@/lib/tts";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,23 +14,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList, type ReorderItem } from "@/components/admin/reorder-list";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import { deleteReadingAction, bulkImportReadingTestsAction } from "@/server/actions/admin";
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db as prisma } from "@/lib/db";
-import { HSKLevel } from "@prisma/client";
+import { EnglishLevel } from "@prisma/client";
+import { Trash2, Plus, ChevronRight } from "lucide-react";
 
 async function createReadingAction(fd: FormData): Promise<void> {
   "use server";
   const { actor } = await requireAdminActor();
+  const passage = fd.get("passage") as string;
+  // Đọc mẫu cả đoạn bằng TTS: bé vừa nghe vừa nhìn chữ. Lỗi TTS không chặn việc
+  // lưu bài (ensureAudio tự nuốt lỗi, trả null) — admin bổ sung audio sau.
+  const audioUrl = await ensureAudio(null, passage);
   const created = await prisma.readingTest.create({
     data: {
       title: fd.get("title") as string,
-      titleZh: fd.get("titleZh") as string,
-      hskLevel: fd.get("hskLevel") as HSKLevel,
-      passage: fd.get("passage") as string,
+      level: fd.get("level") as EnglishLevel,
+      passage,
+      audioUrl,
       imageUrl: (fd.get("imageUrl") as string) || undefined,
       timeLimit: parseInt(fd.get("timeLimit") as string),
       published: false,
@@ -46,39 +53,37 @@ async function createReadingAction(fd: FormData): Promise<void> {
   // admin thêm câu hỏi liền mạch (không phải tìm và bấm sang mục khác).
   redirect(`/admin/reading/${created.id}`);
 }
-import { Trash2, Plus, ChevronRight } from "lucide-react";
 
 const READING_SAMPLE = `[
   {
-    "title": "Cuối tuần của tôi",
-    "titleZh": "我的周末",
-    "hskLevel": "HSK3",
+    "title": "Chú mèo của Lan",
+    "level": "STARTERS",
     "timeLimit": 600,
-    "passage": "周末我去了公园。早上我和朋友一起跑步，下午我们一起看了电影。",
-    "passageTranslation": "Cuối tuần tôi đã đi công viên. Buổi sáng tôi cùng bạn chạy bộ, buổi chiều chúng tôi cùng xem phim.",
+    "passage": "Lan has a small cat. The cat is white and grey. It likes milk and it likes to sleep on the sofa. Every morning Lan gives the cat some food before school.",
+    "passageTranslation": "Lan có một chú mèo nhỏ. Chú mèo màu trắng và xám. Nó thích sữa và thích ngủ trên ghế sofa. Mỗi sáng, Lan cho mèo ăn trước khi đi học.",
     "passageAnalysis": [
-      { "zh": "周末我去了公园。", "vi": "Cuối tuần tôi đã đi công viên.", "note": "了 sau động từ 去 chỉ hành động đã hoàn thành." },
-      { "zh": "早上我和朋友一起跑步，下午我们一起看了电影。", "vi": "Buổi sáng tôi cùng bạn chạy bộ, buổi chiều chúng tôi cùng xem phim.", "note": "和…一起 = cùng với… làm gì; hai vế đối theo thời gian (早上 / 下午)." }
+      { "en": "Lan has a small cat.", "vi": "Lan có một chú mèo nhỏ.", "note": "has = có (dùng với he/she/it)." },
+      { "en": "It likes milk and it likes to sleep on the sofa.", "vi": "Nó thích sữa và thích ngủ trên ghế sofa.", "note": "like + danh từ hoặc like to + động từ." }
     ],
     "questions": [
-      { "type": "MCQ", "prompt": "作者周末去了哪里？", "options": ["公园", "学校", "商店", "医院"], "answer": 0, "explanation": "Đoạn văn nói tác giả đi công viên." },
-      { "type": "TRUE_FALSE", "prompt": "作者下午看了电影。", "answer": true },
-      { "type": "FILL_BLANK", "prompt": "作者和朋友一起去 ___。", "answer": "跑步", "accepted": ["跑步了"] }
+      { "type": "MCQ", "prompt": "What colour is the cat?", "options": ["White and grey", "Black", "Brown", "Yellow"], "answer": 0, "explanation": "Bài đọc nói chú mèo màu trắng và xám." },
+      { "type": "TRUE_FALSE", "prompt": "The cat likes milk.", "answer": true },
+      { "type": "FILL_BLANK", "prompt": "Lan gives the cat some ___ before school.", "answer": "food", "accepted": ["some food"] }
     ]
   }
 ]`;
 
 export default async function AdminReadingPage() {
   const tests = await db.readingTest.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { questions: true } } },
   });
 
-  // Nhóm theo cấp HSK — đổi thứ tự được giới hạn trong từng cấp.
-  const byLevel = new Map<HSKLevel, typeof tests>();
+  // Nhóm theo cấp độ — đổi thứ tự được giới hạn trong từng cấp.
+  const byLevel = new Map<EnglishLevel, typeof tests>();
   for (const t of tests) {
-    if (!byLevel.has(t.hskLevel)) byLevel.set(t.hskLevel, []);
-    byLevel.get(t.hskLevel)!.push(t);
+    if (!byLevel.has(t.level)) byLevel.set(t.level, []);
+    byLevel.get(t.level)!.push(t);
   }
 
   return (
@@ -92,7 +97,7 @@ export default async function AdminReadingPage() {
           hasQuestions
           sampleJson={READING_SAMPLE}
           sampleFileName="mau-bai-doc.json"
-          description="Mỗi mục = 1 bài đọc đầy đủ: title (VI) · titleZh (ZH) · hskLevel · passage (đoạn văn) · timeLimit (giây, tùy chọn) · passageTranslation (dịch cả bài, tùy chọn) · passageAnalysis[] (phân tích từng câu: zh·vi·note, tùy chọn) · questions[]. Câu hỏi: MCQ (kèm options + answer là chỉ số từ 0), TRUE_FALSE (answer true/false), FILL_BLANK (answer là chữ Hán). Không cần nhập pinyin — máy tự sinh. Dịch & phân tích hiện cho học viên khi chữa bài."
+          description="Mỗi mục = 1 bài đọc đầy đủ: title (VI) · level · passage (đoạn văn tiếng Anh) · timeLimit (giây, tùy chọn) · passageTranslation (dịch cả bài, tùy chọn) · passageAnalysis[] (phân tích từng câu: en·vi·note, tùy chọn) · questions[]. Câu hỏi: MCQ (kèm options + answer là chỉ số từ 0), TRUE_FALSE (answer true/false), FILL_BLANK (answer là từ/cụm tiếng Anh). Dịch & phân tích hiện cho bé khi chữa bài."
         />
       </div>
 
@@ -103,17 +108,13 @@ export default async function AdminReadingPage() {
           <form action={createReadingAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label>Tiêu đề (VI)</Label>
-              <Input name="title" placeholder="Tên bài đọc..." required />
+              <Input name="title" placeholder="VD: Chú mèo của Lan" required />
             </div>
             <div className="space-y-1">
-              <Label>Tiêu đề (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" placeholder="标题..." required />
-            </div>
-            <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
-              <select name="hskLevel" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" required>
-                {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => (
-                  <option key={l} value={l}>{l}</option>
+              <Label>Cấp độ</Label>
+              <select name="level" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" required>
+                {LEVELS.map((l) => (
+                  <option key={l} value={l}>{themeFor(l).label}</option>
                 ))}
               </select>
             </div>
@@ -126,9 +127,11 @@ export default async function AdminReadingPage() {
               <ImageUpload name="imageUrl" />
             </div>
             <div className="space-y-1 md:col-span-2">
-              <Label>Đoạn văn (Hán tự)</Label>
-              <Textarea name="passage" className="font-chinese min-h-32" placeholder="Nội dung đoạn văn..." required />
-              <p className="text-xs text-muted-foreground">Không cần nhập pinyin — máy tự sinh khi hiển thị cho học viên.</p>
+              <Label>Đoạn văn (tiếng Anh)</Label>
+              <Textarea name="passage" className="min-h-32" placeholder="Lan has a small cat..." required />
+              <p className="text-xs text-muted-foreground">
+                Hệ thống tự tạo audio đọc mẫu cả đoạn để bé vừa nghe vừa nhìn chữ.
+              </p>
             </div>
             <div className="md:col-span-2 space-y-2">
               <Button type="submit">Tạo bài đọc &amp; thêm câu hỏi</Button>
@@ -141,7 +144,7 @@ export default async function AdminReadingPage() {
         </CardContent>
       </Card>
 
-      {/* List — nhóm theo cấp HSK, mỗi cấp một ReorderList riêng */}
+      {/* List — nhóm theo cấp độ, mỗi cấp một ReorderList riêng */}
       <div className="space-y-8">
         {[...byLevel.entries()].map(([level, group]) => {
           const items: ReorderItem[] = group.map((test) => ({
@@ -159,10 +162,9 @@ export default async function AdminReadingPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{test.title}</span>
-                        <span className="font-chinese text-muted-foreground text-sm">{test.titleZh}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline">{hskLevelLabel(test.hskLevel)}</Badge>
+                        <Badge variant="outline">{levelLabel(test.level)}</Badge>
                         <span className="text-xs text-muted-foreground">{test._count.questions} câu hỏi</span>
                       </div>
                     </div>
@@ -186,8 +188,8 @@ export default async function AdminReadingPage() {
           }));
           return (
             <div key={level} className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
-              <ReorderList spec={{ kind: "content", model: "reading", hskLevel: level }} items={items} />
+              <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
+              <ReorderList spec={{ kind: "content", model: "reading", level }} items={items} />
             </div>
           );
         })}

@@ -1,45 +1,49 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { themeFor } from "@/lib/roadmap";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function countChineseChars(text: string): number {
+/**
+ * Đếm SỐ TỪ của một đoạn tiếng Anh (bản tiếng Trung trước đây đếm ký tự Hán).
+ * Dùng cho bộ đếm realtime ở phần Viết và cho ngưỡng `minWords`.
+ */
+export function countWords(text: string): number {
   if (!text) return 0;
-  // Fall back to a regex count where Intl.Segmenter is unavailable (old webviews)
-  // so this never throws during render and blanks the screen.
-  try {
-    const segmenter = new Intl.Segmenter("zh", { granularity: "grapheme" });
-    let count = 0;
-    for (const seg of segmenter.segment(text)) {
-      if (/\p{Script=Han}/u.test(seg.segment)) count++;
-    }
-    return count;
-  } catch {
-    return (text.match(/\p{Script=Han}/gu) ?? []).length;
-  }
+  const m = text.trim().match(/[A-Za-z0-9'’-]+/g);
+  return m ? m.length : 0;
 }
 
 /**
- * Split a sentence into segments, flagging every occurrence of `word` so the
- * caller can bold it (used to highlight the target word inside example
- * sentences). Plain string match — Chinese has no spaces so substring is exact.
+ * Tách câu thành các đoạn, đánh dấu mọi lần xuất hiện của `word` để nơi gọi in
+ * đậm (dùng để làm nổi từ đang học trong câu ví dụ). Khác bản tiếng Trung ở chỗ
+ * tiếng Anh CÓ khoảng trắng nên phải khớp theo RANH GIỚI TỪ — nếu không "cat" sẽ
+ * khớp nhầm bên trong "category". Không phân biệt hoa/thường.
  */
 export function markWord(sentence: string, word: string): Array<{ text: string; match: boolean }> {
-  if (!word || !sentence.includes(word)) return [{ text: sentence, match: false }];
-  const out: Array<{ text: string; match: boolean }> = [];
-  let i = 0;
-  while (i < sentence.length) {
-    const idx = sentence.indexOf(word, i);
-    if (idx === -1) {
-      out.push({ text: sentence.slice(i), match: false });
-      break;
-    }
-    if (idx > i) out.push({ text: sentence.slice(i, idx), match: false });
-    out.push({ text: word, match: true });
-    i = idx + word.length;
+  const w = word.trim();
+  if (!w) return [{ text: sentence, match: false }];
+
+  const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  let re: RegExp;
+  try {
+    re = new RegExp(`\\b${escaped}\\b`, "gi");
+  } catch {
+    return [{ text: sentence, match: false }];
   }
+
+  const out: Array<{ text: string; match: boolean }> = [];
+  let last = 0;
+  for (const m of sentence.matchAll(re)) {
+    const idx = m.index ?? 0;
+    if (idx > last) out.push({ text: sentence.slice(last, idx), match: false });
+    out.push({ text: m[0], match: true });
+    last = idx + m[0].length;
+  }
+  if (last === 0) return [{ text: sentence, match: false }];
+  if (last < sentence.length) out.push({ text: sentence.slice(last), match: false });
   return out;
 }
 
@@ -49,27 +53,15 @@ export function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export function hskLevelLabel(level: string): string {
-  const map: Record<string, string> = {
-    HSK1: "HSK 1",
-    HSK2: "HSK 2",
-    HSK3: "HSK 3",
-    HSK4: "HSK 4",
-    HSK5: "HSK 5",
-    HSK6: "HSK 6",
-  };
-  return map[level] ?? level;
+/** Nhãn hiển thị của một cấp độ, vd "Movers". Nguồn: src/lib/roadmap.ts. */
+export function levelLabel(level: string): string {
+  return themeFor(level).label;
 }
 
-export function toneColor(tone: number): string {
-  const colors: Record<number, string> = {
-    1: "text-red-500",
-    2: "text-green-500",
-    3: "text-blue-500",
-    4: "text-purple-500",
-    0: "text-zinc-400",
-  };
-  return colors[tone] ?? "text-foreground";
+/** Nhãn đầy đủ kèm độ tuổi, vd "Movers · 7–9 tuổi". */
+export function levelLabelWithAge(level: string): string {
+  const t = themeFor(level);
+  return `${t.label} · ${t.age}`;
 }
 
 export function xpToLevel(xp: number): { level: number; progress: number; next: number } {
@@ -85,21 +77,21 @@ export function xpToLevel(xp: number): { level: number; progress: number; next: 
   return { level, progress, next };
 }
 
-/** Solid colored badge classes per HSK level (for level chips on cards). */
-export function hskBadgeClass(level: string): string {
+/** Class badge đặc màu theo cấp độ (chip cấp trên các thẻ). */
+export function levelBadgeClass(level: string): string {
   const map: Record<string, string> = {
-    HSK1: "bg-emerald-500 text-white",
-    HSK2: "bg-teal-500 text-white",
-    HSK3: "bg-sky-500 text-white",
-    HSK4: "bg-violet-500 text-white",
-    HSK5: "bg-orange-500 text-white",
-    HSK6: "bg-rose-600 text-white",
+    PRE_STARTERS: "bg-amber-500 text-white",
+    STARTERS: "bg-emerald-500 text-white",
+    MOVERS: "bg-sky-500 text-white",
+    FLYERS: "bg-violet-500 text-white",
+    KET: "bg-orange-500 text-white",
+    PET: "bg-rose-600 text-white",
   };
   return map[level] ?? "bg-zinc-500 text-white";
 }
 
-// Decorative cover art for cards (we have no uploaded images): a soft gradient
-// plus a large translucent Hán character, picked deterministically from a seed.
+// Ảnh bìa trang trí cho thẻ khi chưa có ảnh tải lên: một dải gradient mềm cộng
+// một emoji lớn mờ, chọn tất định theo seed để không nhảy khi tải lại trang.
 const COVER_GRADIENTS = [
   "from-rose-400 to-orange-300",
   "from-emerald-400 to-teal-300",
@@ -110,7 +102,11 @@ const COVER_GRADIENTS = [
   "from-indigo-400 to-purple-300",
   "from-red-400 to-amber-300",
 ];
-const COVER_CHARS = ["学", "读", "听", "写", "说", "字", "文", "语", "词", "句", "书", "课", "汉", "中", "习", "好"];
+/** Emoji bìa — thay cho chữ Hán trang trí ở bản cũ. Chọn theo chủ đề trẻ em. */
+const COVER_EMOJI = [
+  "🐻", "🚀", "🌈", "🎈", "🦊", "🐳", "🎨", "⭐",
+  "🍎", "🐤", "🌻", "🎪", "🦁", "🐧", "🎵", "🧩",
+];
 
 function seedHash(seed: string): number {
   let h = 0;
@@ -120,18 +116,16 @@ function seedHash(seed: string): number {
 export function coverGradient(seed: string): string {
   return COVER_GRADIENTS[seedHash(seed) % COVER_GRADIENTS.length];
 }
-export function coverChar(seed: string): string {
-  return COVER_CHARS[seedHash(seed + "·") % COVER_CHARS.length];
+export function coverEmoji(seed: string): string {
+  return COVER_EMOJI[seedHash(seed + "·") % COVER_EMOJI.length];
 }
 
 /**
  * "Lượt làm" hiển thị trên thẻ bài — số lượt cộng đồng ước tính, cố định theo
- * từng đề (deterministic theo seed nên không nhảy khi tải lại, và mỗi đề một
- * con số khác nhau cho tự nhiên). Nằm trong khoảng vài chục → vài trăm.
- * Cộng thêm số lượt thật của người dùng để badge vẫn tăng khi họ luyện lại.
+ * từng đề (tất định theo seed nên không nhảy khi tải lại, và mỗi đề một con số
+ * khác nhau cho tự nhiên). Nằm trong khoảng vài chục → vài trăm.
  */
 export function socialProofCount(seed: string): number {
   const h = seedHash(seed);
-  // 27 + [0..60] + [0..330]  →  ~27 đến ~417, phân bố lệch cho đỡ đều tăm tắp.
   return 27 + (h % 61) + (seedHash(seed + "#") % 331);
 }

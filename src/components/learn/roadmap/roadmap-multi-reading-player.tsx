@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { HSKLevel, QuestionType } from "@prisma/client";
+import type { EnglishLevel, QuestionType } from "@prisma/client";
 import { ReadingTestClient } from "@/app/(learn)/reading/[testId]/reading-test-client";
 import { roadmapQuestionId, type ReadingPassageContent } from "@/lib/roadmap-content";
 import type { ReadingTestData, ReadingQuestion } from "@/components/learn/reading/types";
@@ -17,7 +17,7 @@ import {
 interface Props {
   sectionId: string;
   lessonId: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   title: string;
   passages: ReadingPassageContent[];
   timeLimit: number;
@@ -28,7 +28,7 @@ interface Props {
 export function RoadmapMultiReadingPlayer({
   sectionId,
   lessonId,
-  hskLevel,
+  level,
   title,
   passages,
   timeLimit,
@@ -48,14 +48,13 @@ export function RoadmapMultiReadingPlayer({
 
   const test: ReadingTestData = {
     id: `${sectionId}-p${index}`,
-    title: `${title} · Đoạn ${index + 1}/${total}`,
-    titleZh: p.titleZh ?? "",
-    hskLevel,
+    title: `${title} · Bài đọc ${index + 1}/${total}`,
+    level,
     passage: p.passage,
-    passagePinyin: p.passagePinyin ?? null,
     passageTranslation: p.passageTranslation ?? null,
     passageAnalysis: p.passageAnalysis ?? null,
     imageUrl: p.imageUrl ?? null,
+    audioUrl: p.audioUrl ?? null,
     // Mỗi đoạn được trọn thời gian đề xuất (không chia nhỏ) — tránh cắt giờ quá ngắn.
     timeLimit,
     questions: (p.questions ?? []).map(
@@ -63,8 +62,9 @@ export function RoadmapMultiReadingPlayer({
         id: roadmapQuestionId(i),
         type: q.type as QuestionType,
         prompt: q.prompt,
-        promptPinyin: q.promptPinyin ?? null,
         promptTranslation: q.promptTranslation ?? null,
+        imageUrl: q.imageUrl ?? null,
+        audioUrl: q.audioUrl ?? null,
         options: q.options,
         correctAnswer: q.correctAnswer,
         explanation: q.explanation ?? null,
@@ -89,7 +89,7 @@ export function RoadmapMultiReadingPlayer({
       durationSec: totalDuration,
     });
     if (r.ok) {
-      toast.success(`Hoàn thành phần Đọc · ${avg}%`);
+      toast.success(`Xong phần Đọc · ${avg}% — giỏi lắm! 🌟`);
       router.push(backHref);
       router.refresh();
     } else {
@@ -123,8 +123,8 @@ export function RoadmapMultiReadingPlayer({
         isLast
           ? finalizing
             ? "Đang lưu…"
-            : "Hoàn thành phần Đọc →"
-          : `Tiếp tục đoạn ${index + 2}/${total} →`
+            : "Xong phần Đọc →"
+          : `Sang bài đọc ${index + 2}/${total} →`
       }
     />
   );

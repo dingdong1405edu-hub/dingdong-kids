@@ -10,7 +10,8 @@ interface CourseWorldCardProps {
   slug: string;
   level: string;
   title: string;
-  titleZh: string;
+  /** Dòng phụ tiếng Việt của khoá (Course.subtitle). */
+  subtitle?: string | null;
   description?: string | null;
   total: number;
   done: number;
@@ -18,12 +19,12 @@ interface CourseWorldCardProps {
   index: number;
 }
 
-/** Thẻ "thế giới" cho một khóa HSK ở trang chọn lộ trình. */
+/** Thẻ "thế giới" cho một cấp Cambridge ở trang chọn lộ trình. */
 export function CourseWorldCard({
   slug,
   level,
   title,
-  titleZh,
+  subtitle,
   description,
   total,
   done,
@@ -43,15 +44,21 @@ export function CourseWorldCard({
       className="h-full"
     >
       <Link href={`/roadmap/${slug}`} className="group block h-full">
-        <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-card shadow-soft transition-all duration-200 hover:-translate-y-1.5 hover:shadow-soft-lg">
+        <div className="flex h-full flex-col overflow-hidden rounded-3xl border-2 border-border/60 bg-card shadow-soft transition-all duration-200 hover:-translate-y-1.5 hover:shadow-soft-lg">
           {/* Cover */}
-          <div className={cn("relative h-32 overflow-hidden bg-gradient-to-br", t.cardCover)}>
-            <span className="pointer-events-none absolute -right-2 -top-5 select-none font-chinese text-[120px] leading-none text-white/20 transition-transform duration-300 group-hover:scale-110">
-              {t.char}
+          <div className={cn("relative h-36 overflow-hidden bg-gradient-to-br", t.cardCover)}>
+            <span
+              className="pointer-events-none absolute -right-3 -top-3 select-none text-[116px] leading-none opacity-30 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+              aria-hidden
+            >
+              {t.emoji}
             </span>
-            <div className="absolute left-4 top-4 flex items-center gap-2">
+            <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-white/25 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur">
                 {t.label}
+              </span>
+              <span className="rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+                {t.age}
               </span>
               {recommended && (
                 <span className={cn("rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide shadow", t.accentText)}>
@@ -60,29 +67,29 @@ export function CourseWorldCard({
               )}
             </div>
             {complete && (
-              <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow">
-                <Check className={cn("h-4 w-4", t.accentText)} strokeWidth={3} />
+              <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">
+                <Check className={cn("h-5 w-5", t.accentText)} strokeWidth={3} />
               </span>
             )}
             <div className="absolute bottom-3 left-4 right-4 text-white">
-              <div className="text-lg font-extrabold leading-tight drop-shadow">{title}</div>
-              <div className="font-chinese text-sm text-white/90">{titleZh}</div>
+              <div className="font-display text-xl font-extrabold leading-tight drop-shadow">{title}</div>
+              <div className="text-sm font-semibold text-white/90">{subtitle ?? t.sub}</div>
             </div>
           </div>
 
           {/* Body */}
           <div className="flex flex-1 flex-col p-4">
-            {description && <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">{description}</p>}
+            {description && <p className="line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{description}</p>}
             <div className="mt-3">
-              <div className="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
                 <span className="tabular-nums">{done}/{total} bài</span>
-                <span className="font-semibold tabular-nums">{pct}%</span>
+                <span className="tabular-nums">{pct}%</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-muted">
+              <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                 <div className={cn("h-full rounded-full transition-all", t.accentBg)} style={{ width: `${pct}%` }} />
               </div>
             </div>
-            <div className={cn("mt-4 inline-flex items-center gap-1 text-sm font-bold", t.accentText)}>
+            <div className={cn("mt-4 inline-flex items-center gap-1 font-display text-base font-extrabold", t.accentText)}>
               {cta} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </div>
           </div>

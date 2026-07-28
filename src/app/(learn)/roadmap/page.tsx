@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -6,6 +7,11 @@ import { Ambient } from "@/components/motion/ambient";
 import { CourseWorldCard } from "@/components/learn/roadmap/course-world-card";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { levelToSlug } from "@/lib/roadmap";
+
+export const metadata: Metadata = {
+  title: "Học theo lộ trình",
+  description: "Bản đồ học tiếng Anh cho bé theo chuẩn Cambridge, từ Pre-Starters tới Preliminary.",
+};
 
 export default async function RoadmapPage() {
   const session = await auth();
@@ -36,28 +42,28 @@ export default async function RoadmapPage() {
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-green-700 p-6 text-primary-foreground shadow-soft-lg sm:p-8">
+      <div className="hero-brand relative overflow-hidden rounded-3xl p-6 text-white shadow-soft-lg sm:p-8">
         <Ambient variant="calm" className="opacity-40" />
         <div className="relative z-10 max-w-2xl">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur">
             <Route className="h-3.5 w-3.5" /> Học theo lộ trình
           </div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Chọn hành trình của bạn</h1>
-          <p className="mt-1.5 text-sm text-primary-foreground/85">
-            6 khóa HSK, mỗi khóa là một bản đồ học tập gồm từ vựng, ngữ pháp, nghe, nói, đọc và viết.
-            Đi từng bước, mở khoá từng bài như một cuộc phiêu lưu.
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">Bé chọn thế giới nào?</h1>
+          <p className="mt-1.5 text-[15px] text-white/90">
+            6 thế giới từ Pre-Starters tới Preliminary. Mỗi thế giới là một bản đồ gồm từ vựng, ghép
+            vần, ngữ pháp, nghe, nói, đọc và viết. Đi từng bước, mở khoá từng bài như một cuộc phiêu lưu.
           </p>
         </div>
-        <div className="pointer-events-none absolute -right-4 -top-10 select-none font-chinese text-[150px] leading-none opacity-15">
-          道
+        <div className="pointer-events-none absolute -right-4 -top-8 select-none text-[140px] leading-none opacity-20">
+          🗺️
         </div>
       </div>
 
       {/* Lưới khóa học */}
       {courses.length === 0 ? (
-        <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
+        <div className="sticker rounded-3xl border-dashed py-16 text-center text-muted-foreground">
           <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-          <p>Chưa có khóa học nào trong lộ trình.</p>
+          <p>Bản đồ đang được cô vẽ nốt. Bé quay lại sau nhé 🌟</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -65,10 +71,10 @@ export default async function RoadmapPage() {
             <CourseWorldCard
               key={c.id}
               index={i}
-              slug={levelToSlug(c.hskLevel)}
-              level={c.hskLevel}
+              slug={levelToSlug(c.level)}
+              level={c.level}
               title={c.title}
-              titleZh={c.titleZh}
+              subtitle={c.subtitle}
               description={c.description}
               total={c._count.lessons}
               done={doneByCourse.get(c.id) ?? 0}

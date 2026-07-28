@@ -5,18 +5,21 @@ import { ChapterBanner } from "./chapter-banner";
 import { LessonNode } from "./lesson-node";
 import type { CourseTheme, LessonStatus, RoadmapLessonDTO } from "@/lib/roadmap";
 
-// ===== Hình học đường đi uốn lượn (toạ độ px, không gian cố định 300px) =====
-const COL_W = 300;
+// ===== Hình học đường đi uốn lượn (toạ độ px, không gian cố định 320px) =====
+const COL_W = 320;
 const CENTER = COL_W / 2;
-const AMP = 84; // biên độ lệch ngang
-const SIZE = 76; // đường kính node
+const AMP = 92; // biên độ lệch ngang — càng lớn đường càng uốn lượn
+const SIZE = 84; // đường kính node (to cho ngón tay trẻ nhỏ)
 const R = SIZE / 2;
-const STEP = 116; // khoảng cách dọc giữa tâm các node
-// Chừa đủ chỗ phía trên node đầu tiên cho bong bóng "Bắt đầu" (đặt ở -top-9 so với
-// node + chiều cao bong bóng). Cần >= R + ~50 để bong bóng không tràn lên banner.
-const TOP = 88;
-const BOTTOM = 44;
-const ANG = 0.8; // bước pha của sóng sin
+const STEP = 126; // khoảng cách dọc giữa tâm các node
+// Chừa đủ chỗ phía trên node đầu tiên cho bong bóng "Bắt đầu" (đặt ở -top-10 so
+// với node + chiều cao bong bóng). Cần >= R + ~55 để bong bóng không tràn lên banner.
+const TOP = 96;
+const BOTTOM = 48;
+const ANG = 0.78; // bước pha của sóng sin
+
+/** Emoji cảnh vật rải hai bên đường đi cho bản đồ sinh động (thuần trang trí). */
+const SCENERY = ["🌳", "☁️", "🌼", "🦋", "🌈", "🐦", "🍄", "⭐"];
 
 interface Point {
   x: number;
@@ -39,7 +42,7 @@ function buildPath(pts: Point[]): string {
 interface ChapterPathProps {
   index: number;
   title: string;
-  /** Nhóm "Chưa phân chương" — ẩn nhãn "Chương N". */
+  /** Nhóm "Chưa phân chương" — ẩn nhãn "Chặng N". */
   unchaptered?: boolean;
   lessons: RoadmapLessonDTO[];
   statuses: LessonStatus[];
@@ -85,9 +88,35 @@ export function ChapterPath({
 
   return (
     <section className="space-y-3">
-      <ChapterBanner index={index} title={title} unchaptered={unchaptered} theme={theme} done={doneInChapter} total={lessons.length} />
+      <ChapterBanner
+        index={index}
+        title={title}
+        unchaptered={unchaptered}
+        theme={theme}
+        done={doneInChapter}
+        total={lessons.length}
+      />
 
       <div className="relative mx-auto" style={{ width: COL_W, height }}>
+        {/* Cảnh vật hai bên đường — đặt lệch khỏi node để không che vùng chạm */}
+        {pts.slice(0, -1).map((p, i) => {
+          const left = p.x < CENTER; // node lệch trái → cảnh vật bên phải
+          const emoji = SCENERY[(phaseOffset + i) % SCENERY.length];
+          return (
+            <span
+              key={`deco-${i}`}
+              aria-hidden
+              className="pointer-events-none absolute select-none text-2xl opacity-45"
+              style={{
+                left: left ? p.x + R + 26 : p.x - R - 50,
+                top: p.y - 6,
+              }}
+            >
+              {emoji}
+            </span>
+          );
+        })}
+
         <svg
           width={COL_W}
           height={height}
@@ -96,27 +125,40 @@ export function ChapterPath({
           className="absolute inset-0 text-zinc-300 dark:text-zinc-700"
           aria-hidden
         >
-          {/* Đường nền nét chấm */}
+          {/* Đường nền: nét chấm tròn như những viên đá lát */}
           <path
             d={fullD}
             stroke="currentColor"
-            strokeWidth={6}
+            strokeWidth={9}
             strokeLinecap="round"
-            strokeDasharray="1 18"
-            opacity={0.8}
+            strokeDasharray="1 22"
+            opacity={0.85}
           />
-          {/* Đường tiến độ tô màu, vẽ dần */}
+          {/* Đường tiến độ tô màu, vẽ dần khi cuộn tới */}
           {progressD && (
-            <motion.path
-              d={progressD}
-              stroke={theme.pathColor}
-              strokeWidth={6}
-              strokeLinecap="round"
-              initial={{ pathLength: 0 }}
-              whileInView={{ pathLength: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.9, ease: "easeInOut" }}
-            />
+            <>
+              <motion.path
+                d={progressD}
+                stroke={theme.pathColor}
+                strokeWidth={11}
+                strokeLinecap="round"
+                opacity={0.22}
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: "easeInOut" }}
+              />
+              <motion.path
+                d={progressD}
+                stroke={theme.pathColor}
+                strokeWidth={6}
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: "easeInOut" }}
+              />
+            </>
           )}
         </svg>
 
@@ -153,7 +195,7 @@ export function ChapterPath({
             status={chapterComplete ? "done" : "locked"}
             theme={theme}
             size={SIZE}
-            label={unchaptered ? "Phần thưởng" : `Phần thưởng chương ${index}`}
+            label={unchaptered ? "Phần thưởng" : `Phần thưởng chặng ${index}`}
             onClick={() => onTrophy(chapterComplete)}
           />
         </div>

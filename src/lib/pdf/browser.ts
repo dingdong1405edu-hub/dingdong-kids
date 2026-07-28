@@ -12,7 +12,7 @@ import puppeteer, { type Browser } from "puppeteer-core";
  *   đặt PUPPETEER_EXECUTABLE_PATH trong .env.
  *
  * Giữ MỘT instance trình duyệt dùng lại giữa các request (mỗi request mở 1 tab)
- * để nhanh & cache được font CJK trong tiến trình Chromium.
+ * để nhanh & tận dụng cache web-font trong tiến trình Chromium.
  */
 
 let browserPromise: Promise<Browser> | null = null;
@@ -118,12 +118,12 @@ async function getBrowser(): Promise<Browser> {
   return p;
 }
 
-/** Chân trang lặp ở mỗi trang in: CHỈ "dingdonghsk.com" + số trang. */
+/** Chân trang lặp ở mỗi trang in: CHỈ "dingdongkids.com" + số trang. */
 const FOOTER_TEMPLATE = `
 <div style="width:100%; font-size:8px; color:#9aa0ad; font-family: Arial, sans-serif; padding:0 13mm; display:flex; align-items:center; justify-content:space-between;">
-  <span style="display:inline-flex; align-items:center; gap:4px; font-weight:700; color:#5d7740;">
-    <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:#b8862f;"></span>
-    dingdonghsk.com
+  <span style="display:inline-flex; align-items:center; gap:4px; font-weight:700; color:#0c98e9;">
+    <span style="display:inline-block; width:5px; height:5px; border-radius:50%; background:#fbba23;"></span>
+    dingdongkids.com
   </span>
   <span style="color:#9aa0ad;">Trang <span class="pageNumber"></span> / <span class="totalPages"></span></span>
 </div>`;
@@ -134,20 +134,20 @@ export async function htmlToPdf(html: string): Promise<Uint8Array> {
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
-    // Đảm bảo web-font (Noto Sans SC / Nunito / Serif) đã tải xong trước khi in —
-    // nếu không, chữ Hán có thể ra ô vuông (tofu) trong PDF.
+    // Đảm bảo web-font (Nunito / Baloo 2 / Andika / Noto Serif) đã tải xong trước
+    // khi in — nếu không, chữ có thể rơi về phông hệ thống, sai hẳn nhận diện.
     try {
       await page.evaluate(async () => {
         const d = document as unknown as {
           fonts: { ready: Promise<unknown>; load: (font: string, text?: string) => Promise<unknown> };
           body: { innerText: string };
         };
-        // Google Fonts phục vụ Noto Sans SC theo NHIỀU subset unicode-range; load
-        // kèm CHÍNH văn bản của trang để buộc nạp đúng subset chứa chữ Hán đang
-        // dùng (nếu không, fonts.ready có thể xong trước khi subset chữ Hán tải).
+        // Google Fonts phục vụ mỗi phông theo NHIỀU subset unicode-range; load kèm
+        // CHÍNH văn bản của trang để buộc nạp đúng subset đang dùng (tiếng Việt có
+        // dấu nằm ở subset riêng — thiếu nó là chữ vỡ dấu).
         const text = d.body?.innerText || "";
         const jobs: Promise<unknown>[] = [];
-        for (const f of ["Noto Sans SC", "Noto Serif", "Nunito"]) {
+        for (const f of ["Nunito", "Baloo 2", "Andika", "Noto Serif"]) {
           jobs.push(d.fonts.load(`400 16px '${f}'`, text));
           jobs.push(d.fonts.load(`700 16px '${f}'`, text));
         }

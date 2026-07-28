@@ -91,15 +91,15 @@ export function GrammarTestRunner({ test, closeHref, onReviewTheory, onDone }: P
     <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
       <FlowHeader progress={progress} closeHref={closeHref} onReviewTheory={onReviewTheory} />
 
-      <div className="flex items-center justify-between pb-2 text-sm text-muted-foreground">
+      <div className="flex items-center justify-between pb-2 text-sm font-semibold text-muted-foreground">
         <span>
-          Bài kiểm tra · Câu {index + 1}/{total}
+          Thử tài · Câu {index + 1}/{total}
         </span>
         {remaining !== null && (
           <span
             className={cn(
-              "inline-flex items-center gap-1 font-medium tabular-nums",
-              remaining <= 10 && "text-red-600"
+              "inline-flex items-center gap-1 font-bold tabular-nums",
+              remaining <= 10 && "text-orange-600"
             )}
           >
             <Clock className="h-4 w-4" /> {formatDuration(Math.max(0, remaining))}

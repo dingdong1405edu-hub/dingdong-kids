@@ -16,11 +16,12 @@ import {
 import { submitFeedbackAction } from "@/server/actions/feedback";
 
 // Khớp với enum FeedbackCategory ở prisma/schema.prisma.
+// Người viết form này là PHỤ HUYNH, nên nhãn viết cho người lớn, không cho trẻ.
 const CATEGORIES = [
   { value: "SUGGESTION", label: "Góp ý / đề xuất tính năng" },
   { value: "BUG", label: "Báo lỗi kỹ thuật" },
   { value: "QUESTION", label: "Câu hỏi / cần hỗ trợ" },
-  { value: "CONTENT", label: "Góp ý nội dung bài học" },
+  { value: "CONTENT", label: "Góp ý nội dung bài học của bé" },
   { value: "OTHER", label: "Khác" },
 ] as const;
 type Category = (typeof CATEGORIES)[number]["value"];
@@ -40,7 +41,7 @@ export function FeedbackForm({ defaultEmail = "" }: { defaultEmail?: string }) {
 
     const trimmed = message.trim();
     if (trimmed.length < 5) {
-      toast.error("Nội dung quá ngắn — bạn viết chi tiết hơn một chút nhé.");
+      toast.error("Nội dung hơi ngắn — ba mẹ viết chi tiết hơn một chút nhé.");
       return;
     }
 
@@ -53,15 +54,15 @@ export function FeedbackForm({ defaultEmail = "" }: { defaultEmail?: string }) {
         contactEmail: email.trim() || undefined,
       });
       if (res.ok) {
-        toast.success("Đã gửi! Cảm ơn bạn đã góp ý cho DingDong 🥟");
+        toast.success("Đã gửi! Cảm ơn ba mẹ đã góp ý cho DingDong Kids 🐻");
         setSubject("");
         setMessage("");
         setCategory("SUGGESTION");
       } else {
-        toast.error(res.error ?? "Không gửi được, bạn thử lại nhé.");
+        toast.error(res.error ?? "Chưa gửi được, ba mẹ thử lại nhé.");
       }
     } catch {
-      toast.error("Có lỗi xảy ra, bạn thử lại sau nhé.");
+      toast.error("Có lỗi xảy ra, ba mẹ thử lại sau nhé.");
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +95,7 @@ export function FeedbackForm({ defaultEmail = "" }: { defaultEmail?: string }) {
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           maxLength={150}
-          placeholder="Tóm tắt ngắn gọn điều bạn muốn nói"
+          placeholder="Tóm tắt ngắn gọn điều ba mẹ muốn nói"
         />
       </div>
 
@@ -105,7 +106,7 @@ export function FeedbackForm({ defaultEmail = "" }: { defaultEmail?: string }) {
           value={message}
           onChange={(e) => setMessage(e.target.value.slice(0, MAX))}
           rows={6}
-          placeholder="Bạn gặp lỗi gì, muốn góp ý điều gì, hay cần hỗ trợ ra sao? Mô tả càng cụ thể càng tốt nhé."
+          placeholder="Bé gặp khó ở đâu, ba mẹ muốn góp ý điều gì, hay cần hỗ trợ ra sao? Mô tả càng cụ thể càng tốt nhé."
           className="resize-y"
         />
         <p className="text-right text-xs text-muted-foreground">
@@ -127,7 +128,7 @@ export function FeedbackForm({ defaultEmail = "" }: { defaultEmail?: string }) {
         />
       </div>
 
-      <Button type="submit" disabled={submitting} className="w-full gap-2 sm:w-auto">
+      <Button type="submit" disabled={submitting} className="btn-chunky w-full gap-2 font-extrabold sm:w-auto">
         {submitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" /> Đang gửi…

@@ -4,10 +4,15 @@ import type { TranscriptSegment } from "@/lib/transcript";
 
 // One audio controller for the whole listening test. It owns BOTH playback
 // engines so there's never overlapping sound:
-//   • mode "mp3" — a real <audio> element (uploaded / Google-TTS-generated file).
-//   • mode "tts" — the browser Web Speech engine reads the transcript sentence
-//     by sentence (used when a test has no MP3, so listening is never dead).
-//   • mode "none" — no MP3 and no usable speech engine; the caller reveals the
+//   • mode "mp3" — a real <audio> element. THIS IS THE NORMAL PATH: every
+//     listening test now ships a real English audio file (uploaded by admin or
+//     generated server-side by TTS, see src/lib/tts.ts).
+//   • mode "tts" — LAST-RESORT fallback: the browser Web Speech engine (en-US)
+//     reads the transcript sentence by sentence. Only used when the test has no
+//     audio file or the file fails to load, so a listening test is never dead.
+//     (The Chinese version had to lean on this because no Chinese TTS existed;
+//     for English it should almost never trigger.)
+//   • mode "none" — no file and no usable speech engine; the caller reveals the
 //     transcript (reading fallback) or an empty-state.
 //
 // Pre-submit, a full play-through is rate-limited like a real exam; in review
@@ -15,35 +20,37 @@ import type { TranscriptSegment } from "@/lib/transcript";
 // single sentence (evidence box + tapescript) and stops the transport first.
 
 type Status = "idle" | "playing" | "paused";
-const SENTENCE_GAP_MS = 180;
+// Nghỉ giữa hai câu dài hơn bản người lớn — trẻ cần thời gian "kịp hiểu".
+const SENTENCE_GAP_MS = 300;
 
 function listVoices(): SpeechSynthesisVoice[] {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
   return window.speechSynthesis.getVoices();
 }
 
-function chineseVoices(): SpeechSynthesisVoice[] {
+function englishVoices(): SpeechSynthesisVoice[] {
   const voices = listVoices();
-  const cn = voices.filter((v) => v.lang?.toLowerCase().startsWith("zh-cn"));
-  const zh = voices.filter((v) => v.lang?.toLowerCase().startsWith("zh"));
-  return cn.length ? cn : zh;
+  const us = voices.filter((v) => v.lang?.toLowerCase().startsWith("en-us"));
+  const en = voices.filter((v) => v.lang?.toLowerCase().startsWith("en"));
+  return us.length ? us : en;
 }
 
-// Gender is taken ONLY from an explicit 男/女 label — never inferred from A/B
-// turn order (which has no relation to who is male/female). Unknown speakers get
-// a neutral pitch so we don't fabricate a misleading gender cue.
+// Giới tính chỉ lấy từ NHÃN người nói ghi rõ trong lời thoại (Girl/Boy/Mum/Dad…),
+// không bao giờ suy từ thứ tự lượt A/B — thứ tự chẳng nói lên ai là nam hay nữ.
+// Nhãn không rõ thì giọng để trung tính, không bịa manh mối sai cho bé.
 function speakerGender(speaker: string | null): "male" | "female" | null {
   if (!speaker) return null;
-  if (/女/.test(speaker)) return "female";
-  if (/男/.test(speaker)) return "male";
+  const s = speaker.toLowerCase();
+  if (/\b(girl|woman|mum|mom|mother|sister|grandma|miss|mrs|ms|aunt|she)\b/.test(s)) return "female";
+  if (/\b(boy|man|dad|father|brother|grandpa|mr|uncle|he)\b/.test(s)) return "male";
   return null;
 }
 
 function pitchForSpeaker(speaker: string | null): number {
   const g = speakerGender(speaker);
-  if (g === "female") return 1.15;
-  if (g === "male") return 0.85;
-  return 1; // A / B / 甲 / 乙 / letters — neutral
+  if (g === "female") return 1.2;
+  if (g === "male") return 0.9;
+  return 1.05; // A / B / tên riêng — hơi sáng một chút cho hợp tai trẻ em
 }
 
 // Give each distinct speaker a stable voice so turns are distinguishable,
@@ -65,7 +72,7 @@ function clampRate(r: number): number {
 export interface ListeningAudio {
   mode: "mp3" | "tts" | "none";
   available: boolean;
-  /** Can the per-sentence replay (browser TTS) actually produce Chinese sound? */
+  /** Can the per-sentence replay (browser TTS) actually produce English sound? */
   canSpeakSegments: boolean;
   status: Status;
   playing: boolean;
@@ -92,17 +99,17 @@ export function useListeningAudio(opts: {
   reviewMode: boolean;
 }): ListeningAudio {
   const { audioUrl, segments, maxPlays, reviewMode } = opts;
-  const hasMp3 = !!(audioUrl && audioUrl.trim());
+  const hasFile = !!(audioUrl && audioUrl.trim());
 
   const [ttsSupported, setTtsSupported] = useState(false);
-  const [hasZhVoice, setHasZhVoice] = useState(false);
+  const [hasEnVoice, setHasEnVoice] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [rate, setRateState] = useState(1);
   const [plays, setPlays] = useState(0);
   const [currentSegment, setCurrentSegment] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [mp3Failed, setMp3Failed] = useState(false);
+  const [fileFailed, setFileFailed] = useState(false);
 
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const rateRef = useRef(1);
@@ -114,7 +121,7 @@ export function useListeningAudio(opts: {
   const ttsTimer = useRef<number | null>(null); // pending inter-sentence timer
   const ttsResumeIndex = useRef(0);
   // A fresh play-through whose play-count charge is still pending (charged only
-  // once audio actually starts, so a broken MP3 never burns a play).
+  // once audio actually starts, so a broken file never burns a play).
   const freshPending = useRef(false);
 
   useEffect(() => {
@@ -124,17 +131,18 @@ export function useListeningAudio(opts: {
     reviewModeRef.current = reviewMode;
   }, [reviewMode]);
 
-  const speechReady = ttsSupported && hasZhVoice;
+  const speechReady = ttsSupported && hasEnVoice;
   const canTts = speechReady && segments.length > 0;
-  const mode: ListeningAudio["mode"] = hasMp3 && !mp3Failed ? "mp3" : canTts ? "tts" : "none";
+  // File thật luôn được ưu tiên; Web Speech chỉ nhảy vào khi không có file hoặc file hỏng.
+  const mode: ListeningAudio["mode"] = hasFile && !fileFailed ? "mp3" : canTts ? "tts" : "none";
 
-  // Detect speech support + a Chinese voice (some browsers populate voices async).
+  // Detect speech support + an English voice (some browsers populate voices async).
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     setTtsSupported(true);
     const warm = () => {
       const vs = listVoices();
-      setHasZhVoice(vs.some((v) => v.lang?.toLowerCase().startsWith("zh")));
+      setHasEnVoice(vs.some((v) => v.lang?.toLowerCase().startsWith("en")));
     };
     warm();
     window.speechSynthesis.onvoiceschanged = warm;
@@ -158,10 +166,10 @@ export function useListeningAudio(opts: {
     }
   }, []);
 
-  // MP3 element lifecycle.
+  // Audio element lifecycle.
   useEffect(() => {
-    if (!hasMp3 || typeof window === "undefined") return;
-    setMp3Failed(false);
+    if (!hasFile || typeof window === "undefined") return;
+    setFileFailed(false);
     const a = new Audio(audioUrl!);
     a.preload = "metadata";
     a.playbackRate = rateRef.current;
@@ -176,7 +184,7 @@ export function useListeningAudio(opts: {
     // A 404 / decode error flips to the browser-TTS fallback so a bad URL never
     // leaves the test silent. The failed attempt was never charged a play.
     const onErr = () => {
-      setMp3Failed(true);
+      setFileFailed(true);
       setStatus("idle");
     };
     a.addEventListener("timeupdate", onTime);
@@ -193,7 +201,7 @@ export function useListeningAudio(opts: {
       a.removeEventListener("error", onErr);
       audioElRef.current = null;
     };
-  }, [hasMp3, audioUrl, chargePlay]);
+  }, [hasFile, audioUrl, chargePlay]);
 
   useEffect(() => {
     if (audioElRef.current) audioElRef.current.playbackRate = rate;
@@ -224,7 +232,7 @@ export function useListeningAudio(opts: {
       ttsCancelled.current = false;
       ttsPaused.current = false;
       ttsActive.current = false;
-      const voices = chineseVoices();
+      const voices = englishVoices();
       let i = fromIndex;
       ttsResumeIndex.current = i;
 
@@ -248,7 +256,7 @@ export function useListeningAudio(opts: {
         const seg = segments[i];
         setCurrentSegment(i);
         const u = new SpeechSynthesisUtterance(seg.text);
-        u.lang = "zh-CN";
+        u.lang = "en-US";
         u.rate = clampRate(rateRef.current * 0.95);
         u.pitch = pitchForSpeaker(seg.speaker);
         const v = voiceForSpeaker(seg.speaker, voices);
@@ -376,9 +384,9 @@ export function useListeningAudio(opts: {
       audioElRef.current?.pause();
       setStatus("idle");
 
-      const voices = chineseVoices();
+      const voices = englishVoices();
       const u = new SpeechSynthesisUtterance(seg.text);
-      u.lang = "zh-CN";
+      u.lang = "en-US";
       u.rate = clampRate(rateRef.current * 0.95);
       u.pitch = pitchForSpeaker(seg.speaker);
       const v = voiceForSpeaker(seg.speaker, voices);

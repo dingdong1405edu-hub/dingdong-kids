@@ -4,7 +4,8 @@ import { db } from "@/lib/db";
 export const runtime = "nodejs";
 
 /**
- * Phục vụ tệp lưu trong DB (model Upload): ảnh minh hoạ & audio bài nghe.
+ * Phục vụ tệp lưu trong DB (model Upload): ảnh minh hoạ, audio admin tải lên và
+ * audio sinh bằng TTS (src/lib/tts.ts trả về chính đường dẫn này).
  * Trả về đúng Content-Type đã lưu, cache vĩnh viễn (id là cuid bất biến nên nội
  * dung không đổi), và `nosniff` để trình duyệt không tự suy diễn kiểu tệp.
  * Đây là thay thế cho việc serve file tĩnh từ public/ (ephemeral trên Railway).

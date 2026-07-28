@@ -4,8 +4,10 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { Skill, Prisma, QuestionType } from "@prisma/client";
 import { gradeWriting, isGradingConfigured, type WritingGradeResult } from "@/lib/groq";
+import { isAnswerAcceptable } from "@/lib/english";
 
-// Ngưỡng đạt: 60% — tương đương 180/300 (HSK3–6) và 120/200 (HSK1–2) của đề thật.
+// Ngưỡng đạt: 60% — tương đương mức "đủ khiên" (shields) của đề Cambridge Young
+// Learners thật, và mức đỗ thông thường của Key/Preliminary for Schools.
 const PASS_THRESHOLD = 60;
 
 const schema = z.object({
@@ -14,15 +16,6 @@ const schema = z.object({
   essays: z.record(z.string()).optional(), // { partId: bài viết tự luận }
   durationSec: z.number().int().nonnegative().optional(),
 });
-
-// Chuẩn hoá để so khớp đáp án điền — bỏ khoảng trắng, NFKC, thường hoá. (Giống
-// logic trong src/server/actions/reading.ts để hành vi chấm nhất quán.)
-function normalize(v: unknown): string {
-  return String(v ?? "")
-    .normalize("NFKC")
-    .replace(/\s+/g, "")
-    .toLowerCase();
-}
 
 function gradeQuestion(
   type: QuestionType,
@@ -41,9 +34,10 @@ function gradeQuestion(
     const accepted = [
       ...(ca.text ? [ca.text] : []),
       ...(Array.isArray(ca.accepted) ? ca.accepted : []),
-    ].map(normalize);
-    const ua = normalize(userAnswer);
-    return ua.length > 0 && accepted.includes(ua);
+    ];
+    // `strict = true`: đây là BÀI THI THỬ, chấm sát như đề thật — khác với bài
+    // luyện hằng ngày (reading.ts/listening.ts) vốn tha lỗi chính tả nhỏ.
+    return isAnswerAcceptable(String(userAnswer ?? ""), accepted, true);
   }
   return false; // MATCHING chưa hỗ trợ → tính sai/0 điểm
 }
@@ -107,9 +101,9 @@ export async function submitMockExamAction(
           partId: part.id,
           promise: gradeWriting({
             submission,
-            hskLevel: exam.hskLevel,
+            level: exam.level,
             taskPrompt: part.writingPrompt,
-            minChars: part.writingMinChars ?? 0,
+            minWords: part.writingMinWords ?? 0,
             outline: part.instructions,
           }),
         });

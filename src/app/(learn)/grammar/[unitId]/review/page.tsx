@@ -24,6 +24,6 @@ export default async function GrammarUnitReviewPage({ params }: Props) {
   const exercises: Exercise[] = unit.lessons.flatMap((l) => grammarReviewExercises(l.exercises));
 
   return (
-    <GrammarReview title={`Cả unit · ${unit.title}`} exercises={exercises} closeHref={`/grammar/${unitId}`} />
+    <GrammarReview title={`Ôn cả chủ đề · ${unit.title}`} exercises={exercises} closeHref={`/grammar/${unitId}`} />
   );
 }

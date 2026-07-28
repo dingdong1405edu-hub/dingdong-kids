@@ -5,10 +5,10 @@
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { HSKLevel, Prisma, Skill } from "@prisma/client";
+import { EnglishLevel, Prisma, Skill } from "@prisma/client";
 import { requireAdmin, requireAdminActor } from "@/lib/admin-guard";
 import { logAudit } from "@/lib/audit";
-import { LEVELS, UNCHAPTERED_ORDER, type SkillKey } from "@/lib/roadmap";
+import { LEVELS, UNCHAPTERED_ORDER, levelLabel, levelToSlug, type SkillKey } from "@/lib/roadmap";
 import { validateSectionContent } from "@/lib/roadmap-content";
 import { parseLessonsBundle, buildSectionContent } from "@/lib/roadmap-authoring";
 import {
@@ -24,7 +24,7 @@ type Result<T = unknown> = { ok: true; data?: T } | { ok: false; error: string }
 const SKILL_ORDER: Record<SkillKey, number> = {
   VOCAB: 1,
   GRAMMAR: 2,
-  HANZI: 3,
+  PHONICS: 3,
   READING: 4,
   LISTENING: 5,
   WRITING: 6,
@@ -32,10 +32,10 @@ const SKILL_ORDER: Record<SkillKey, number> = {
 };
 const SKILL_KEYS = Object.keys(SKILL_ORDER) as SkillKey[];
 
-function revalidateRoadmap(level?: HSKLevel | null) {
+function revalidateRoadmap(level?: EnglishLevel | null) {
   revalidatePath("/admin/roadmap");
   revalidatePath("/roadmap");
-  if (level) revalidatePath(`/roadmap/${level.toLowerCase()}`);
+  if (level) revalidatePath(`/roadmap/${levelToSlug(level)}`);
   revalidatePath("/dashboard");
 }
 
@@ -46,25 +46,25 @@ function optStr(fd: FormData, key: string): string | null {
   return t.length ? t : null;
 }
 
-// ───────────────────────── Course (Khóa HSK) ─────────────────────────
+// ───────────────────────── Course (Khóa theo cấp độ) ─────────────────────────
 
-/** Tạo khóa cho một cấp HSK nếu chưa có (Course.hskLevel là @unique → 1 khóa/cấp). */
+/** Tạo khóa cho một cấp độ nếu chưa có (Course.level là @unique → 1 khóa/cấp). */
 export async function createCourseForLevelAction(level: string): Promise<Result<{ id: string }>> {
   try {
     const { actor } = await requireAdminActor();
     if (!(LEVELS as readonly string[]).includes(level)) {
-      return { ok: false, error: "Cấp HSK không hợp lệ." };
+      return { ok: false, error: "Cấp độ không hợp lệ." };
     }
-    const hskLevel = level as HSKLevel;
-    const existing = await db.course.findUnique({ where: { hskLevel }, select: { id: true } });
+    const lvl = level as EnglishLevel;
+    const existing = await db.course.findUnique({ where: { level: lvl }, select: { id: true } });
     if (existing) return { ok: true, data: { id: existing.id } };
 
-    const n = LEVELS.indexOf(hskLevel as (typeof LEVELS)[number]) + 1;
+    const n = LEVELS.indexOf(lvl as (typeof LEVELS)[number]) + 1;
     const created = await db.course.create({
       data: {
-        hskLevel,
-        title: `Lộ trình HSK ${n}`,
-        titleZh: "",
+        level: lvl,
+        title: `Lộ trình ${levelLabel(lvl)}`,
+        subtitle: "",
         order: n,
         published: true,
       },
@@ -78,7 +78,7 @@ export async function createCourseForLevelAction(level: string): Promise<Result<
       summary: `Tạo khóa «${created.title}»`,
       after: created,
     });
-    revalidateRoadmap(hskLevel);
+    revalidateRoadmap(lvl);
     return { ok: true, data: { id: created.id } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi tạo khóa." };
@@ -96,7 +96,7 @@ export async function updateCourseAction(fd: FormData): Promise<Result> {
       where: { id },
       data: {
         title,
-        titleZh: optStr(fd, "titleZh") ?? "",
+        subtitle: optStr(fd, "subtitle") ?? "",
         description: optStr(fd, "description"),
         imageUrl: optStr(fd, "imageUrl"),
       },
@@ -110,7 +110,7 @@ export async function updateCourseAction(fd: FormData): Promise<Result> {
       before,
       after: course,
     });
-    revalidateRoadmap(course.hskLevel);
+    revalidateRoadmap(course.level);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi cập nhật khóa." };
@@ -121,7 +121,8 @@ export async function updateCourseAction(fd: FormData): Promise<Result> {
 
 const lessonSchema = z.object({
   topic: z.string().trim().min(1, "Thiếu tên bài."),
-  topicZh: z.string().trim().default(""),
+  // Nhãn phụ TIẾNG VIỆT của chủ đề, vd "Động vật" cho topic "Animals".
+  topicVi: z.string().trim().default(""),
   icon: z.string().trim().optional(),
   description: z.string().trim().optional(),
   // Bài thuộc chương nào (RoadmapChapter.id). Rỗng = chưa phân chương.
@@ -132,7 +133,7 @@ const lessonSchema = z.object({
 function lessonDataFromForm(fd: FormData) {
   return lessonSchema.safeParse({
     topic: fd.get("topic") ?? "",
-    topicZh: fd.get("topicZh") ?? "",
+    topicVi: fd.get("topicVi") ?? "",
     icon: fd.get("icon") ?? undefined,
     description: fd.get("description") ?? undefined,
     chapterId: fd.get("chapterId") ?? undefined,
@@ -169,7 +170,7 @@ export async function createRoadmapLessonAction(fd: FormData): Promise<Result<{ 
     const parsed = lessonDataFromForm(fd);
     if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
 
-    const course = await db.course.findUnique({ where: { id: courseId }, select: { hskLevel: true } });
+    const course = await db.course.findUnique({ where: { id: courseId }, select: { level: true } });
     if (!course) return { ok: false, error: "Không tìm thấy khóa." };
 
     const chapterFields = await resolveChapterFields(courseId, parsed.data.chapterId);
@@ -183,7 +184,7 @@ export async function createRoadmapLessonAction(fd: FormData): Promise<Result<{ 
         courseId,
         order,
         topic: parsed.data.topic,
-        topicZh: parsed.data.topicZh,
+        topicVi: parsed.data.topicVi,
         icon: parsed.data.icon ?? null,
         description: parsed.data.description ?? null,
         ...chapterFields,
@@ -198,7 +199,7 @@ export async function createRoadmapLessonAction(fd: FormData): Promise<Result<{ 
       summary: `Tạo bài «${created.topic}»`,
       after: created,
     });
-    revalidateRoadmap(course.hskLevel);
+    revalidateRoadmap(course.level);
     return { ok: true, data: { id: created.id } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi tạo bài." };
@@ -223,13 +224,13 @@ export async function updateRoadmapLessonAction(fd: FormData): Promise<Result> {
       where: { id },
       data: {
         topic: parsed.data.topic,
-        topicZh: parsed.data.topicZh,
+        topicVi: parsed.data.topicVi,
         icon: parsed.data.icon ?? null,
         description: parsed.data.description ?? null,
         ...chapterFields,
         xpReward: parsed.data.xpReward,
       },
-      include: { course: { select: { hskLevel: true } } },
+      include: { course: { select: { level: true } } },
     });
     await logAudit({
       actor,
@@ -240,7 +241,7 @@ export async function updateRoadmapLessonAction(fd: FormData): Promise<Result> {
       before: existing,
       after: lesson,
     });
-    revalidateRoadmap(lesson.course.hskLevel);
+    revalidateRoadmap(lesson.course.level);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi cập nhật bài." };
@@ -252,7 +253,7 @@ export async function deleteRoadmapLessonAction(id: string): Promise<Result> {
     const { actor } = await requireAdminActor();
     const lesson = await db.roadmapLesson.findUnique({
       where: { id },
-      select: { course: { select: { hskLevel: true } } },
+      select: { course: { select: { level: true } } },
     });
     const deleted = await db.roadmapLesson.delete({ where: { id } });
     await logAudit({
@@ -263,7 +264,7 @@ export async function deleteRoadmapLessonAction(id: string): Promise<Result> {
       summary: `Xóa bài «${deleted.topic}»`,
       before: deleted,
     });
-    revalidateRoadmap(lesson?.course.hskLevel ?? null);
+    revalidateRoadmap(lesson?.course.level ?? null);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi xoá bài." };
@@ -321,12 +322,13 @@ export async function reorderRoadmapLessonsAction(
 
 const chapterSchema = z.object({
   title: z.string().trim().min(1, "Thiếu tên chương."),
-  titleZh: z.string().trim().default(""),
+  // Dòng phụ hiển thị dưới tên chương trên bản đồ lộ trình.
+  subtitle: z.string().trim().default(""),
 });
 
-async function courseLevel(courseId: string): Promise<HSKLevel | null> {
-  const c = await db.course.findUnique({ where: { id: courseId }, select: { hskLevel: true } });
-  return c?.hskLevel ?? null;
+async function courseLevel(courseId: string): Promise<EnglishLevel | null> {
+  const c = await db.course.findUnique({ where: { id: courseId }, select: { level: true } });
+  return c?.level ?? null;
 }
 
 /** Tạo chương mới cho khóa (order = chương lớn nhất + 1). */
@@ -337,7 +339,7 @@ export async function createRoadmapChapterAction(fd: FormData): Promise<Result<{
     if (!courseId) return { ok: false, error: "Thiếu khóa." };
     const parsed = chapterSchema.safeParse({
       title: fd.get("title") ?? "",
-      titleZh: fd.get("titleZh") ?? "",
+      subtitle: fd.get("subtitle") ?? "",
     });
     if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
 
@@ -348,7 +350,7 @@ export async function createRoadmapChapterAction(fd: FormData): Promise<Result<{
     const order = (agg._max.order ?? 0) + 1;
 
     const created = await db.roadmapChapter.create({
-      data: { courseId, order, title: parsed.data.title, titleZh: parsed.data.titleZh },
+      data: { courseId, order, title: parsed.data.title, subtitle: parsed.data.subtitle },
     });
     await logAudit({
       actor,
@@ -373,7 +375,7 @@ export async function updateRoadmapChapterAction(fd: FormData): Promise<Result> 
     if (!id) return { ok: false, error: "Thiếu chương." };
     const parsed = chapterSchema.safeParse({
       title: fd.get("title") ?? "",
-      titleZh: fd.get("titleZh") ?? "",
+      subtitle: fd.get("subtitle") ?? "",
     });
     if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ." };
 
@@ -383,7 +385,7 @@ export async function updateRoadmapChapterAction(fd: FormData): Promise<Result> 
     await db.$transaction([
       db.roadmapChapter.update({
         where: { id },
-        data: { title: parsed.data.title, titleZh: parsed.data.titleZh },
+        data: { title: parsed.data.title, subtitle: parsed.data.subtitle },
       }),
       db.roadmapLesson.updateMany({ where: { chapterId: id }, data: { chapter: parsed.data.title } }),
     ]);
@@ -394,7 +396,7 @@ export async function updateRoadmapChapterAction(fd: FormData): Promise<Result> 
       entityId: id,
       summary: `Sửa chương «${parsed.data.title}»`,
       before: chapter,
-      after: { ...chapter, title: parsed.data.title, titleZh: parsed.data.titleZh },
+      after: { ...chapter, title: parsed.data.title, subtitle: parsed.data.subtitle },
     });
     revalidateRoadmap(await courseLevel(chapter.courseId));
     return { ok: true };
@@ -503,7 +505,7 @@ export async function saveRoadmapSectionAction(
 
     const lesson = await db.roadmapLesson.findUnique({
       where: { id: lessonId },
-      select: { topic: true, course: { select: { hskLevel: true } } },
+      select: { topic: true, course: { select: { level: true } } },
     });
     if (!lesson) return { ok: false, error: "Không tìm thấy bài." };
 
@@ -538,7 +540,7 @@ export async function saveRoadmapSectionAction(
       before: before ?? undefined,
       after: section,
     });
-    revalidateRoadmap(lesson.course.hskLevel);
+    revalidateRoadmap(lesson.course.level);
     return { ok: true, data: { sectionId: section.id } };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi lưu nội dung." };
@@ -586,8 +588,8 @@ export interface BulkLessonsResult {
 /**
  * Tạo HÀNG LOẠT bài trong một khóa từ một mảng JSON. Mỗi phần tử có metadata bài
  * + content thô của các kỹ năng (reading/listening/speaking/vocab/…). Nội dung
- * Đọc/Nghe/Nói được chuẩn hoá + tự sinh pinyin trước khi validate & lưu. Section
- * không hợp lệ sẽ bị bỏ qua kèm cảnh báo (bài vẫn được tạo để admin sửa sau).
+ * Đọc/Nghe/Nói được chuẩn hoá trước khi validate & lưu. Section không hợp lệ sẽ
+ * bị bỏ qua kèm cảnh báo (bài vẫn được tạo để admin sửa sau).
  */
 export async function bulkImportRoadmapLessonsAction(input: {
   courseId: string;
@@ -598,7 +600,7 @@ export async function bulkImportRoadmapLessonsAction(input: {
     const { actor } = await requireAdminActor();
     const course = await db.course.findUnique({
       where: { id: input.courseId },
-      select: { id: true, hskLevel: true, chapters: { select: { id: true, title: true, order: true } } },
+      select: { id: true, level: true, chapters: { select: { id: true, title: true, order: true } } },
     });
     if (!course) return { ok: false, error: "Không tìm thấy khóa." };
 
@@ -634,7 +636,7 @@ export async function bulkImportRoadmapLessonsAction(input: {
             courseId: course.id,
             order: nextOrder++,
             topic: item.topic,
-            topicZh: item.topicZh,
+            topicVi: item.topicVi,
             icon: item.icon ?? null,
             description: item.description ?? null,
             ...chapterFields,
@@ -685,7 +687,7 @@ export async function bulkImportRoadmapLessonsAction(input: {
       summary: `Nhập hàng loạt ${lessonsCreated} bài (${sectionsCreated} phần) vào khóa`,
       after: { lessonsCreated, sectionsCreated, warnings: warnings.slice(0, 20) },
     });
-    revalidateRoadmap(course.hskLevel);
+    revalidateRoadmap(course.level);
     return { ok: true, lessonsCreated, sectionsCreated, warnings };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Lỗi nhập hàng loạt." };
@@ -693,7 +695,7 @@ export async function bulkImportRoadmapLessonsAction(input: {
 }
 
 // ───────────── AI hỗ trợ soạn Đọc / Nghe (sinh câu hỏi, dịch lời thoại) ─────────────
-// Khác phiên bản ở admin.ts: nhận NỘI DUNG trực tiếp (đoạn văn / lời thoại / cấp HSK)
+// Khác phiên bản ở admin.ts: nhận NỘI DUNG trực tiếp (đoạn văn / lời thoại / cấp độ)
 // thay vì id bản ghi DB, vì nội dung lộ trình nằm trong RoadmapSection.content.
 
 function clampCount(n: number): number {
@@ -702,7 +704,7 @@ function clampCount(n: number): number {
 
 export async function generateRoadmapReadingQuestionsAction(input: {
   passage: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   count: number;
 }): Promise<Result<{ json: string }>> {
   try {
@@ -712,7 +714,7 @@ export async function generateRoadmapReadingQuestionsAction(input: {
     if (!passage) return { ok: false, error: "Chưa có đoạn văn để AI tạo câu hỏi." };
     const questions = await generateReadingQuestions({
       passage,
-      hskLevel: input.hskLevel,
+      level: input.level,
       count: clampCount(input.count),
     });
     if (!questions.length) return { ok: false, error: "AI chưa tạo được câu hỏi nào — thử lại." };
@@ -724,7 +726,7 @@ export async function generateRoadmapReadingQuestionsAction(input: {
 
 export async function generateRoadmapListeningQuestionsAction(input: {
   transcript: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   count: number;
 }): Promise<Result<{ json: string }>> {
   try {
@@ -734,7 +736,7 @@ export async function generateRoadmapListeningQuestionsAction(input: {
     if (!transcript) return { ok: false, error: "Chưa có lời thoại để AI tạo câu hỏi." };
     const questions = await generateListeningQuestions({
       transcript,
-      hskLevel: input.hskLevel,
+      level: input.level,
       count: clampCount(input.count),
     });
     if (!questions.length) return { ok: false, error: "AI chưa tạo được câu hỏi nào — thử lại." };
@@ -746,21 +748,21 @@ export async function generateRoadmapListeningQuestionsAction(input: {
 
 export async function generateRoadmapTranscriptExplanationAction(input: {
   transcript: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
 }): Promise<Result<{ text: string }>> {
   try {
     await requireAdmin();
     if (!isGradingConfigured()) return { ok: false, error: "Máy chủ chưa cấu hình GROQ_API_KEY." };
     const transcript = (input.transcript || "").trim();
     if (!transcript) return { ok: false, error: "Chưa có lời thoại để AI dịch." };
-    const ex = await generateTranscriptExplanation({ transcript, hskLevel: input.hskLevel });
+    const ex = await generateTranscriptExplanation({ transcript, level: input.level });
     if (!ex.translation && ex.vocab.length === 0) return { ok: false, error: "AI chưa dịch được — thử lại." };
     const parts: string[] = [];
     if (ex.summary) parts.push(ex.summary);
     if (ex.translation) parts.push(`— Dịch lời thoại —\n${ex.translation}`);
     if (ex.vocab.length) {
       const lines = ex.vocab
-        .map((v) => `• ${v.zh}${v.pinyin ? ` (${v.pinyin})` : ""} — ${v.vi}`)
+        .map((v) => `• ${v.en}${v.ipa ? ` (${v.ipa})` : ""} — ${v.vi}`)
         .join("\n");
       parts.push(`— Từ vựng —\n${lines}`);
     }

@@ -1,14 +1,14 @@
 // Suy ra QUYỀN LỢI (entitlements) của người học từ vai trò + các Subscription
 // còn hạn, và cấp Subscription khi thanh toán thành công.
 //
-// Quy tắc (theo chính sách giá — xem CLAUDE.md mục "Chính sách giá & Phân quyền"):
+// Quy tắc (xem CLAUDE.md mục "Chính sách giá & Phân quyền"):
 //  • ADMIN  → mở hết tất cả (mọi cấp lộ trình + tim không giới hạn).
 //  • Mọi gói trả phí còn hạn → TIM KHÔNG GIỚI HẠN.
 //  • Gói ROADMAP cấp X       → mở khoá toàn bộ lộ trình cấp X.
 //  • Gói FREESTYLE           → quyền "tự do" (mọi tính năng ngoài lộ trình).
 //  • Người miễn phí          → xem trước FREE_ROADMAP_LESSONS bài đầu mỗi cấp,
 //                              các tính năng tự do giới hạn theo tim.
-import { HSKLevel, SubscriptionType } from "@prisma/client";
+import { EnglishLevel, SubscriptionType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getPlan } from "@/lib/payment-plans";
 
@@ -21,11 +21,11 @@ export interface Entitlements {
   unlimitedHearts: boolean;
   /** Quyền "tự do": mọi tính năng ngoài lộ trình. */
   freestyle: boolean;
-  /** Các cấp HSK đã mở khoá lộ trình đầy đủ. */
-  roadmapLevels: Set<HSKLevel>;
+  /** Các cấp độ đã mở khoá lộ trình đầy đủ. */
+  roadmapLevels: Set<EnglishLevel>;
 }
 
-const ALL_LEVELS = Object.values(HSKLevel);
+const ALL_LEVELS = Object.values(EnglishLevel);
 
 export async function getEntitlements(
   userId: string | null | undefined,
@@ -44,19 +44,19 @@ export async function getEntitlements(
     isAdmin: false,
     unlimitedHearts: false,
     freestyle: false,
-    roadmapLevels: new Set<HSKLevel>(),
+    roadmapLevels: new Set<EnglishLevel>(),
   };
   if (!userId) return empty;
 
   const subs = await db.subscription.findMany({
     where: { userId, expiresAt: { gt: new Date() } },
-    select: { type: true, hskLevel: true },
+    select: { type: true, level: true },
   });
 
-  const roadmapLevels = new Set<HSKLevel>();
+  const roadmapLevels = new Set<EnglishLevel>();
   let freestyle = false;
   for (const s of subs) {
-    if (s.type === SubscriptionType.ROADMAP && s.hskLevel) roadmapLevels.add(s.hskLevel);
+    if (s.type === SubscriptionType.ROADMAP && s.level) roadmapLevels.add(s.level);
     if (s.type === SubscriptionType.FREESTYLE) freestyle = true;
   }
 
@@ -68,8 +68,8 @@ export async function getEntitlements(
   };
 }
 
-/** Người dùng có quyền học đầy đủ lộ trình của một cấp HSK không? */
-export function hasRoadmapLevel(ent: Entitlements, level: HSKLevel): boolean {
+/** Người dùng có quyền học đầy đủ lộ trình của một cấp không? */
+export function hasRoadmapLevel(ent: Entitlements, level: EnglishLevel): boolean {
   return ent.isAdmin || ent.roadmapLevels.has(level);
 }
 
@@ -79,7 +79,7 @@ export function hasRoadmapLevel(ent: Entitlements, level: HSKLevel): boolean {
  */
 export function isRoadmapLessonLocked(
   ent: Entitlements,
-  level: HSKLevel,
+  level: EnglishLevel,
   lessonIndex: number
 ): boolean {
   if (hasRoadmapLevel(ent, level)) return false;
@@ -113,7 +113,7 @@ export async function grantSubscriptionsForPayment(payment: {
         data: {
           userId: payment.userId!,
           type: g.type as SubscriptionType,
-          hskLevel: g.hskLevel ? (g.hskLevel as HSKLevel) : null,
+          level: g.level ? (g.level as EnglishLevel) : null,
           startedAt: start,
           expiresAt,
           paymentId: payment.id,

@@ -7,17 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { gradeSpeakingAction } from "@/server/actions/speaking";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { PassStatus } from "@/components/learn/roadmap/pass-status";
-import { Mic, Square, Loader2, CheckCircle2 } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import { playEnglish } from "@/components/learn/reading/speak-en";
+import { Mic, Square, Loader2, CheckCircle2, Volume2 } from "lucide-react";
+import type { EnglishLevel } from "@prisma/client";
 
 interface SpeakingSetData {
   id: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   title: string;
   part1Sentences: unknown;
   part2Passage: unknown;
@@ -28,16 +29,18 @@ interface GradeResult {
   score: number;
   criteria: {
     pronunciation: { score: number; errors: Array<{ word: string; issue: string; correct: string }> };
-    tones: { score: number; errors: Array<{ word: string; expected: string; detected: string }> };
+    /** Trọng âm & ngữ điệu — thay cho "thanh điệu" của bản tiếng Trung. */
+    intonation: { score: number; errors: Array<{ word: string; expected: string; detected: string }> };
     fluency: { score: number; wordsPerMinute: number; feedback: string };
   };
   transcript: string;
   overallFeedback: string;
 }
 
-interface Sentence { text: string; pinyin: string }
-interface Passage { text: string; pinyin: string }
-interface QuestionItem { question: string; pinyin: string }
+/** Nội dung JSON của một bộ nói. `meaning` là nghĩa tiếng Việt hiện dưới câu. */
+interface Sentence { text: string; meaning?: string; audioUrl?: string }
+interface Passage { text: string; meaning?: string; audioUrl?: string }
+interface QuestionItem { question: string; meaning?: string; audioUrl?: string }
 
 /** Hàm chấm một đoạn ghi âm — mặc định gọi gradeSpeakingAction; lộ trình truyền bản riêng. */
 type GradeFn = (args: {
@@ -48,6 +51,26 @@ type GradeFn = (args: {
   index: number;
   durationSec: number;
 }) => Promise<{ ok: boolean; result?: unknown; error?: string }>;
+
+/** Nút loa: phát audio thật nếu có, thiếu thì dùng giọng en-US của trình duyệt. */
+function ListenButton({ text, audioUrl, label = "Nghe" }: { text: string; audioUrl?: string; label?: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => () => audioRef.current?.pause(), []);
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      className="gap-1.5 rounded-xl"
+      onClick={() => {
+        audioRef.current?.pause();
+        audioRef.current = playEnglish({ text, audioUrl, rate: 0.85 });
+      }}
+    >
+      <Volume2 className="h-4 w-4" /> {label}
+    </Button>
+  );
+}
 
 function AudioRecorder({
   onRecorded,
@@ -67,7 +90,7 @@ function AudioRecorder({
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      toast.error("Không thể truy cập microphone");
+      toast.error("Máy chưa cho phép dùng micro");
       return;
     }
     try {
@@ -92,7 +115,7 @@ function AudioRecorder({
     } catch {
       stream.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
-      toast.error("Trình duyệt không hỗ trợ ghi âm. Hãy thử Chrome hoặc Safari mới.");
+      toast.error("Trình duyệt này chưa ghi âm được. Bé thử Chrome hoặc Safari mới nhé.");
     }
   }
 
@@ -113,7 +136,7 @@ function AudioRecorder({
     <div className="relative inline-flex">
       {recording && (
         <motion.span
-          className="absolute inset-0 rounded-md bg-rose-500/30"
+          className="absolute inset-0 rounded-2xl bg-rose-500/30"
           animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -123,7 +146,7 @@ function AudioRecorder({
         disabled={disabled}
         variant={recording ? "destructive" : "default"}
         size="sm"
-        className="relative"
+        className="btn-chunky relative rounded-xl"
       >
         {recording ? (
           <><Square className="h-4 w-4 mr-2" /> Dừng</>
@@ -152,31 +175,31 @@ async function transcribeAndGrade(params: {
   const transcribeRes = await fetch("/api/transcribe", { method: "POST", body: fd });
   if (!transcribeRes.ok) {
     const err = (await transcribeRes.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error || "Không thể chuyển giọng nói thành văn bản");
+    throw new Error(err.error || "Chưa nghe được giọng của bé");
   }
   const { transcript } = (await transcribeRes.json()) as { transcript: string };
   if (!transcript.trim()) {
-    throw new Error("Không nghe rõ giọng nói, hãy thử ghi âm lại.");
+    throw new Error("Chưa nghe rõ, bé nói to hơn một chút rồi ghi âm lại nhé.");
   }
 
   // 2) Transcript → score via Groq, persisted as an Attempt (server action).
-  emitBao("thinking");
+  emitDing("thinking");
   const res = await grade({ transcript, referenceText, part, question, index, durationSec });
   if (!res.ok || !res.result) {
-    throw new Error(res.error || "Chấm điểm thất bại");
+    throw new Error(res.error || "Chưa chấm được, bé thử lại nhé");
   }
   return res.result as GradeResult;
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "text-green-700 dark:text-green-300" : score >= 60 ? "text-yellow-700 dark:text-yellow-300" : "text-red-600 dark:text-red-400";
+  const color = score >= 80 ? "text-green-700 dark:text-green-300" : score >= 60 ? "text-yellow-700 dark:text-yellow-300" : "text-orange-600 dark:text-orange-400";
   return (
     <motion.span
       key={score}
       initial={{ scale: 0.4, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", stiffness: 260, damping: 14 }}
-      className={`font-bold text-2xl ${color}`}
+      className={`font-display font-bold text-2xl ${color}`}
     >
       {score}
     </motion.span>
@@ -195,12 +218,12 @@ export function SpeakingClient({
   gradeAction?: GradeFn;
   /** Nút "Hoàn thành phần Nói" (lộ trình). Nhận điểm trung bình các đoạn đã chấm. */
   onFinish?: (score: number) => Promise<void> | void;
-  /** Lộ trình: ngưỡng "qua môn" → hiện kết quả % + nhãn Đạt/Chưa đạt sau khi hoàn thành. */
+  /** Lộ trình: ngưỡng "qua bài" → hiện kết quả % + nhãn Đạt/Chưa đạt sau khi hoàn thành. */
   passThreshold?: number;
 }) {
-  const sentences = set.part1Sentences as Sentence[];
-  const passage = set.part2Passage as Passage;
-  const questions = set.part3Questions as QuestionItem[];
+  const sentences = (Array.isArray(set.part1Sentences) ? set.part1Sentences : []) as Sentence[];
+  const passage = (set.part2Passage ?? { text: "" }) as Passage;
+  const questions = (Array.isArray(set.part3Questions) ? set.part3Questions : []) as QuestionItem[];
 
   const grade: GradeFn = gradeAction ?? ((args) => gradeSpeakingAction({ setId: set.id, ...args }));
   const [finishing, setFinishing] = useState(false);
@@ -213,7 +236,7 @@ export function SpeakingClient({
   const [part2Loading, setPart2Loading] = useState(false);
   const [part3Results, setPart3Results] = useState<(GradeResult | null)[]>(Array(questions.length).fill(null));
   const [part3Loading, setPart3Loading] = useState<boolean[]>(Array(questions.length).fill(false));
-  const [showPinyin, setShowPinyin] = useState(false);
+  const [showMeaning, setShowMeaning] = useState(false);
 
   const gradedScores = [...part1Results, part2Result, ...part3Results]
     .filter((r): r is GradeResult => r != null)
@@ -231,10 +254,10 @@ export function SpeakingClient({
       await onFinish(overallScore);
       setFinalScore(overallScore);
       setFinished(true);
-      emitBao(overallScore >= (passThreshold ?? 80) ? "celebrate" : "complete");
-      toast.success("Đã hoàn thành phần Nói!");
+      emitDing(overallScore >= (passThreshold ?? 80) ? "celebrate" : "complete");
+      toast.success("Bé đã xong phần Nói!");
     } catch {
-      toast.error("Không ghi nhận được, thử lại sau.");
+      toast.error("Chưa ghi nhận được, bé thử lại sau nhé.");
     } finally {
       setFinishing(false);
     }
@@ -249,7 +272,7 @@ export function SpeakingClient({
       });
       setPart1Results((r) => { const n = [...r]; n[idx] = res; return n; });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi chấm điểm");
+      toast.error(e instanceof Error ? e.message : "Chưa chấm được, bé thử lại nhé");
     } finally {
       setPart1Loading((l) => { const n = [...l]; n[idx] = false; return n; });
     }
@@ -264,7 +287,7 @@ export function SpeakingClient({
       });
       setPart2Result(res);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi chấm điểm");
+      toast.error(e instanceof Error ? e.message : "Chưa chấm được, bé thử lại nhé");
     } finally {
       setPart2Loading(false);
     }
@@ -279,7 +302,7 @@ export function SpeakingClient({
       });
       setPart3Results((r) => { const n = [...r]; n[idx] = res; return n; });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Lỗi chấm điểm");
+      toast.error(e instanceof Error ? e.message : "Chưa chấm được, bé thử lại nhé");
     } finally {
       setPart3Loading((l) => { const n = [...l]; n[idx] = false; return n; });
     }
@@ -287,45 +310,46 @@ export function SpeakingClient({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-500/10 dark:to-transparent p-5">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-500/10 dark:to-transparent p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <BaoBuddy size={60} pose={anyHigh ? "cheer" : "idle"} className="shrink-0" />
             <div>
-              <h1 className="text-xl font-extrabold">Luyện nói HSKK</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">Ghi âm · AI chấm phát âm, thanh điệu, lưu loát</p>
+              <h1 className="font-display text-xl font-extrabold">Luyện nói</h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">Ghi âm · máy nghe rồi khen và chỉ chỗ cần sửa</p>
             </div>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <Badge variant="outline">{hskLevelLabel(set.hskLevel)}</Badge>
-            <Button size="sm" variant="outline" onClick={() => setShowPinyin(!showPinyin)}>
-              {showPinyin ? "Ẩn" : "Hiện"} pinyin
+            <Badge variant="outline">{levelLabel(set.level)}</Badge>
+            <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setShowMeaning(!showMeaning)}>
+              {showMeaning ? "Ẩn" : "Hiện"} nghĩa
             </Button>
           </div>
         </div>
-        <div className="pointer-events-none absolute -right-4 -top-6 select-none font-chinese text-[110px] leading-none text-black/[0.04] dark:text-white/[0.04]">
-          说
+        <div className="pointer-events-none absolute -right-2 -top-4 select-none text-[100px] leading-none opacity-15">
+          🎤
         </div>
       </div>
 
       <Tabs defaultValue="part1">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="part1">Phần 1: Lặp câu</TabsTrigger>
-          <TabsTrigger value="part2">Phần 2: Đọc</TabsTrigger>
-          <TabsTrigger value="part3">Phần 3: Trả lời</TabsTrigger>
+          <TabsTrigger value="part1">Nhắc lại câu</TabsTrigger>
+          <TabsTrigger value="part2">Đọc to đoạn văn</TabsTrigger>
+          <TabsTrigger value="part3">Trả lời câu hỏi</TabsTrigger>
         </TabsList>
 
-        {/* Part 1 */}
+        {/* Phần 1 — Nhắc lại câu */}
         <TabsContent value="part1" className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Nghe câu mẫu và lặp lại chính xác nhất có thể.
+            Bé bấm loa để nghe câu mẫu, rồi ghi âm nhắc lại thật giống nhé.
           </p>
           {sentences.map((s, idx) => (
-            <Card key={idx}>
+            <Card key={idx} className="sticker">
               <CardContent className="p-4 space-y-3">
-                <div className="font-chinese text-xl font-semibold">{s.text}</div>
-                {showPinyin && <div className="font-pinyin text-muted-foreground">{s.pinyin}</div>}
-                <div className="flex items-center gap-3">
+                <div className="font-primer text-2xl font-semibold">{s.text}</div>
+                {showMeaning && s.meaning && <div className="text-sm text-muted-foreground">{s.meaning}</div>}
+                <div className="flex flex-wrap items-center gap-3">
+                  <ListenButton text={s.text} audioUrl={s.audioUrl} label="Nghe câu mẫu" />
                   <AudioRecorder
                     onRecorded={(blob, durationSec) => gradePart1(idx, blob, durationSec)}
                     disabled={part1Loading[idx]}
@@ -339,7 +363,7 @@ export function SpeakingClient({
                   )}
                 </div>
                 {part1Results[idx] && (
-                  <div className="text-sm text-muted-foreground bg-muted rounded p-2">
+                  <div className="text-sm text-muted-foreground bg-muted rounded-2xl p-3">
                     {part1Results[idx]!.overallFeedback}
                   </div>
                 )}
@@ -348,20 +372,21 @@ export function SpeakingClient({
           ))}
         </TabsContent>
 
-        {/* Part 2 */}
+        {/* Phần 2 — Đọc to đoạn văn */}
         <TabsContent value="part2">
-          <Card>
+          <Card className="sticker">
             <CardHeader>
-              <CardTitle className="text-base">Đọc đoạn văn sau</CardTitle>
+              <CardTitle className="font-display text-base">Bé đọc to đoạn này nhé</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-muted/50 rounded-lg p-4">
-                <div className="font-chinese text-lg leading-loose">{passage.text}</div>
-                {showPinyin && (
-                  <div className="font-pinyin text-sm text-muted-foreground mt-2">{passage.pinyin}</div>
+              <div className="bg-muted/50 rounded-2xl p-4">
+                <div className="font-primer text-xl leading-loose">{passage.text}</div>
+                {showMeaning && passage.meaning && (
+                  <div className="text-sm text-muted-foreground mt-2">{passage.meaning}</div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <ListenButton text={passage.text} audioUrl={passage.audioUrl} label="Nghe cô đọc" />
                 <AudioRecorder
                   onRecorded={(blob, durationSec) => gradePart2(blob, durationSec)}
                   disabled={part2Loading}
@@ -378,12 +403,12 @@ export function SpeakingClient({
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { label: "Phát âm", score: part2Result.criteria.pronunciation.score },
-                    { label: "Thanh điệu", score: part2Result.criteria.tones.score },
-                    { label: "Lưu loát", score: part2Result.criteria.fluency.score },
+                    { label: "Ngữ điệu", score: part2Result.criteria.intonation.score },
+                    { label: "Trôi chảy", score: part2Result.criteria.fluency.score },
                   ].map(({ label, score }) => (
-                    <div key={label} className="text-center border rounded-lg p-3">
+                    <div key={label} className="text-center rounded-2xl border p-3">
                       <div className="text-xs text-muted-foreground">{label}</div>
-                      <div className="text-xl font-bold">{score}</div>
+                      <div className="font-display text-xl font-bold">{score}</div>
                       <Progress value={score} className="h-1 mt-1" />
                     </div>
                   ))}
@@ -393,17 +418,18 @@ export function SpeakingClient({
           </Card>
         </TabsContent>
 
-        {/* Part 3 */}
+        {/* Phần 3 — Trả lời câu hỏi */}
         <TabsContent value="part3" className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Nghe câu hỏi, suy nghĩ 10 giây, rồi trả lời tự do.
+            Bé nghe câu hỏi, nghĩ một chút rồi trả lời theo ý mình nhé.
           </p>
           {questions.map((q, idx) => (
-            <Card key={idx}>
+            <Card key={idx} className="sticker">
               <CardContent className="p-4 space-y-3">
-                <div className="font-chinese text-lg font-semibold">{q.question}</div>
-                {showPinyin && <div className="font-pinyin text-muted-foreground text-sm">{q.pinyin}</div>}
-                <div className="flex items-center gap-3">
+                <div className="font-primer text-xl font-semibold">{q.question}</div>
+                {showMeaning && q.meaning && <div className="text-sm text-muted-foreground">{q.meaning}</div>}
+                <div className="flex flex-wrap items-center gap-3">
+                  <ListenButton text={q.question} audioUrl={q.audioUrl} label="Nghe câu hỏi" />
                   <AudioRecorder
                     onRecorded={(blob, durationSec) => gradePart3(idx, blob, durationSec)}
                     disabled={part3Loading[idx]}
@@ -417,8 +443,8 @@ export function SpeakingClient({
                   )}
                 </div>
                 {part3Results[idx] && (
-                  <div className="text-sm text-muted-foreground bg-muted rounded p-2">
-                    <strong>Transcript:</strong> {part3Results[idx]!.transcript}
+                  <div className="text-sm text-muted-foreground bg-muted rounded-2xl p-3">
+                    <strong>Bé đã nói:</strong> {part3Results[idx]!.transcript}
                     <br />
                     {part3Results[idx]!.overallFeedback}
                   </div>
@@ -430,25 +456,25 @@ export function SpeakingClient({
       </Tabs>
 
       {onFinish && (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border bg-muted/30 p-4 text-center">
+        <div className="sticker flex flex-col items-center gap-2 rounded-3xl bg-muted/30 p-4 text-center">
           {finished && finalScore != null ? (
             <>
-              <div className="text-3xl font-extrabold text-primary">Kết quả: {finalScore}%</div>
-              <p className="text-xs text-muted-foreground">Điểm trung bình các đoạn đã ghi âm.</p>
+              <div className="font-display text-3xl font-extrabold text-primary">Kết quả: {finalScore}%</div>
+              <p className="text-xs text-muted-foreground">Điểm trung bình các đoạn bé đã ghi âm.</p>
               {passThreshold != null && <PassStatus score={finalScore} threshold={passThreshold} />}
             </>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Luyện đủ 3 phần rồi bấm hoàn thành để ghi nhận phần Nói cho bài lộ trình.
+              Bé luyện đủ 3 phần rồi bấm hoàn thành để ghi nhận phần Nói nhé.
             </p>
           )}
-          <Button onClick={handleFinish} disabled={finishing || finished} className="gap-1.5">
+          <Button onClick={handleFinish} disabled={finishing || finished} className="btn-chunky gap-1.5">
             {finishing ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <CheckCircle2 className="h-4 w-4" />
             )}
-            {finished ? "Đã hoàn thành" : "Hoàn thành phần Nói"}
+            {finished ? "Đã xong" : "Hoàn thành phần Nói"}
           </Button>
         </div>
       )}

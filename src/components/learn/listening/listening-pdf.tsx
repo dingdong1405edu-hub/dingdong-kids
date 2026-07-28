@@ -6,21 +6,21 @@ import { PDF, PDF_FONT } from "@/lib/pdf/theme";
 
 interface Props {
   title: string;
-  hskLevel: string;
+  level: string;
   transcript?: string | null;
   questions: PdfQuestion[];
   scope?: PassageScope;
 }
 
-/** PDF nghe hiểu: ghi chú nghe online + lời thoại (transcript) + câu hỏi & đáp án. */
-export function ListeningPdf({ title, hskLevel, transcript, questions, scope = "both" }: Props) {
+/** PDF nghe hiểu: ghi chú nghe online + lời thoại + câu hỏi & đáp án. */
+export function ListeningPdf({ title, level, transcript, questions, scope = "both" }: Props) {
   return (
-    <PdfDocument kicker="Nghe hiểu · 听力" title={title} hskLevel={hskLevel}>
+    <PdfDocument kicker="Nghe hiểu" title={title} level={level}>
       <PdfNotice>
-        🎧 Nghe phần âm thanh trực tiếp tại <b>dingdonghsk.com</b> — bản PDF chỉ gồm lời thoại &amp; đáp án.
+        🎧 Phần âm thanh nghe trực tiếp trên <b>DingDong Kids</b> — bản in này chỉ gồm lời thoại &amp; đáp án.
       </PdfNotice>
       {scope !== "questions" && transcript && (
-        <PdfSection title="Lời thoại" titleZh="听力原文">
+        <PdfSection title="Lời thoại">
           <div
             style={{
               borderRadius: 10,
@@ -30,14 +30,23 @@ export function ListeningPdf({ title, hskLevel, transcript, questions, scope = "
               padding: "12px 14px",
             }}
           >
-            <p style={{ whiteSpace: "pre-line", fontFamily: PDF_FONT.chinese, fontSize: 15, lineHeight: 1.9, color: PDF.ink }}>
+            <p
+              style={{
+                whiteSpace: "pre-line",
+                fontFamily: PDF_FONT.sans,
+                fontSize: 16,
+                lineHeight: 2,
+                color: PDF.ink,
+                margin: 0,
+              }}
+            >
               {transcript}
             </p>
           </div>
         </PdfSection>
       )}
       {scope !== "passage" && (
-        <PdfSection title="Câu hỏi & đáp án" titleZh="问题与答案">
+        <PdfSection title="Câu hỏi & đáp án">
           <PdfQuestionList questions={questions} />
         </PdfSection>
       )}

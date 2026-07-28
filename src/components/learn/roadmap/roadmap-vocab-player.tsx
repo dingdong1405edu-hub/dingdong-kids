@@ -1,11 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
-import { BookOpen, Sparkles, RotateCcw, Play, ArrowLeft } from "lucide-react";
+import { BookOpen, Sparkles, Play, ArrowLeft, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isDue } from "@/lib/srs";
+import { playWord } from "@/lib/speech";
 import { WordFlow } from "@/components/learn/vocab/word-flow";
 import { ReviewFlow } from "@/components/learn/vocab/review/review-flow";
 import { persistRoadmapReview } from "@/lib/roadmap-review-persist";
@@ -31,11 +32,14 @@ interface Props {
 
 type View = "menu" | "learn" | "review";
 
+/** Số thẻ từ hiện trong ô "xem trước" — đủ để bé tò mò, không rối mắt. */
+const PREVIEW_LIMIT = 6;
+
 /**
  * Trình chơi phần Từ vựng của một bài LỘ TRÌNH — bản sao cấu trúc của LessonHub ở
  * Luyện kỹ năng: 2 chế độ dạng tab "Học từ" (WordFlow) và "Ôn từ" (flashcard lặp
  * lại ngắt quãng + mini-game). Khác biệt: Học từ ghi hoàn thành phần lộ trình
- * (onComplete), còn Ôn từ ghi lịch SRS vào RoadmapWordReview (theo hanzi).
+ * (onComplete), còn Ôn từ ghi lịch SRS vào RoadmapWordReview (khoá theo `word`).
  */
 export function RoadmapVocabPlayer({
   sectionId,
@@ -82,50 +86,101 @@ export function RoadmapVocabPlayer({
     );
   }
 
+  const preview = words.slice(0, PREVIEW_LIMIT);
+  const hidden = words.length - preview.length;
+
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <Link
         href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại bài học
       </Link>
 
-      <h1 className="text-2xl font-bold">{title || "Từ vựng"}</h1>
+      <div className="flex items-center gap-3">
+        <span className="text-4xl" aria-hidden>
+          🧺
+        </span>
+        <div>
+          <h1 className="font-display text-2xl font-extrabold leading-tight">{title || "Từ vựng"}</h1>
+          <p className="text-sm font-semibold text-muted-foreground">
+            {words.length} từ mới đang chờ bé khám phá
+          </p>
+        </div>
+      </div>
+
+      {/* Xem trước các từ — bấm vào để nghe ngay, chưa cần vào bài */}
+      {preview.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {preview.map((w) => (
+            <button
+              key={w.id}
+              type="button"
+              onClick={() => playWord({ word: w.word, audioUrl: w.audioUrl })}
+              aria-label={`Nghe từ ${w.word}`}
+              className="sticker flex items-center gap-2 bg-card px-3 py-2 transition-transform hover:-translate-y-0.5"
+            >
+              {w.imageUrl ? (
+                // Ảnh admin tải lên. Dùng <img> thường (không next/image) để mọi URL
+                // admin nhập đều hiện được mà không phải khai báo remotePatterns.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={w.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-8 w-8 rounded-lg object-cover"
+                />
+              ) : (
+                <Volume2 className="h-5 w-5 text-primary" />
+              )}
+              <span className="font-primer text-lg font-bold">{w.word}</span>
+            </button>
+          ))}
+          {hidden > 0 && (
+            <span className="flex items-center px-2 text-sm font-bold text-muted-foreground">
+              +{hidden} từ nữa
+            </span>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue={completed ? "review" : "learn"} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="learn">
+        <TabsList className="grid w-full grid-cols-2 rounded-2xl">
+          <TabsTrigger value="learn" className="rounded-xl font-display font-extrabold">
             <BookOpen className="mr-1.5 h-4 w-4" /> Học từ
           </TabsTrigger>
-          <TabsTrigger value="review">
+          <TabsTrigger value="review" className="rounded-xl font-display font-extrabold">
             <Sparkles className="mr-1.5 h-4 w-4" /> Ôn từ
           </TabsTrigger>
         </TabsList>
 
         {/* HỌC TỪ */}
         <TabsContent value="learn">
-          <Card>
-            <CardContent className="space-y-4 p-6">
+          <Card className="rounded-3xl">
+            <CardContent className="space-y-4 p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <BookOpen className="h-5 w-5" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl">
+                  <span aria-hidden>🖼️</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Học {words.length} từ</div>
-                  <p className="text-sm text-muted-foreground">
-                    Xem nghĩa &amp; nghe → tập viết từng nét → ôn nhanh bằng flashcard.
+                  <div className="font-display text-lg font-extrabold">Học {words.length} từ mới</div>
+                  <p className="text-[15px] text-muted-foreground">
+                    Nhìn ảnh &amp; nghe từ → ghép chữ cái thành từ → ôn nhanh bằng thẻ từ.
                   </p>
                 </div>
               </div>
 
               {words.length === 0 ? (
-                <p className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
-                  Phần này chưa có từ vựng.
+                <p className="rounded-2xl border-2 border-dashed py-6 text-center text-[15px] text-muted-foreground">
+                  Phần này cô đang soạn từ vựng — bé quay lại sau nhé ✨
                 </p>
               ) : (
-                <Button className="w-full" onClick={() => setView("learn")}>
-                  <Play className="mr-1.5 h-4 w-4" /> {completed ? "Học lại" : "Bắt đầu học"}
+                <Button
+                  className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                  onClick={() => setView("learn")}
+                >
+                  <Play className="mr-1.5 h-5 w-5" /> {completed ? "Học lại" : "Bắt đầu học"}
                 </Button>
               )}
             </CardContent>
@@ -134,40 +189,43 @@ export function RoadmapVocabPlayer({
 
         {/* ÔN TỪ */}
         <TabsContent value="review">
-          <Card>
-            <CardContent className="space-y-4 p-6">
+          <Card className="rounded-3xl">
+            <CardContent className="space-y-4 p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-                  <Sparkles className="h-5 w-5" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl dark:bg-amber-500/15">
+                  <span aria-hidden>🔁</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Ôn từ bằng flashcard &amp; mini-game</div>
-                  <p className="text-sm text-muted-foreground">
-                    Lặp lại ngắt quãng (SRS): hệ thống tự xếp lịch ôn theo trí nhớ của bạn.
+                  <div className="font-display text-lg font-extrabold">Ôn từ bằng thẻ &amp; trò chơi</div>
+                  <p className="text-[15px] text-muted-foreground">
+                    Hệ thống nhớ giúp bé: từ nào sắp quên sẽ tự hiện lên để bé ôn đúng lúc.
                   </p>
                 </div>
               </div>
 
               {words.length === 0 ? (
-                <p className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
-                  Phần này chưa có từ để ôn.
+                <p className="rounded-2xl border-2 border-dashed py-6 text-center text-[15px] text-muted-foreground">
+                  Chưa có từ nào để ôn. Bé học phần Từ vựng trước nhé!
                 </p>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                     {dueCount > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                        {dueCount} từ đến hạn ôn
+                      <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 font-extrabold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                        {dueCount} từ đang chờ bé ôn
                       </span>
                     ) : (
                       <span className="text-muted-foreground">
-                        Không có từ đến hạn — có thể ôn sớm để nhớ lâu hơn.
+                        Chưa tới hạn ôn — bé vẫn ôn sớm được để nhớ lâu hơn.
                       </span>
                     )}
                     <span className="text-muted-foreground">/ {words.length} từ</span>
                   </div>
-                  <Button className="w-full" onClick={() => setView("review")}>
-                    <Sparkles className="mr-1.5 h-4 w-4" />
+                  <Button
+                    className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                    onClick={() => setView("review")}
+                  >
+                    <Sparkles className="mr-1.5 h-5 w-5" />
                     {dueCount > 0 ? "Bắt đầu ôn" : "Ôn sớm"}
                   </Button>
                 </>

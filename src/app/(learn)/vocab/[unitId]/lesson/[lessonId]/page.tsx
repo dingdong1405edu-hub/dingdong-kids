@@ -24,10 +24,12 @@ export default async function VocabLessonPage({ params }: Props) {
     id: w.id,
     lessonId: w.lessonId,
     order: w.order,
-    hanzi: w.hanzi,
-    pinyin: w.pinyin,
+    word: w.word,
+    ipa: w.ipa,
     meaning: w.meaning,
+    partOfSpeech: w.partOfSpeech,
     examples: Array.isArray(w.examples) ? (w.examples as unknown as WordExample[]) : [],
+    imageUrl: w.imageUrl,
     audioUrl: w.audioUrl,
   }));
 

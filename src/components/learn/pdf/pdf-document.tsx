@@ -1,9 +1,9 @@
 import * as React from "react";
 import { PDF, PDF_FONT } from "@/lib/pdf/theme";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 
 /* Logo dùng đường dẫn tĩnh để component render được cả trên TRÌNH DUYỆT (trang xem
- * trước) lẫn server. Khi tạo PDF, src/lib/pdf/render.tsx thay "/logo-hsk.png" bằng
+ * trước) lẫn server. Khi tạo PDF, src/lib/pdf/render.tsx thay đường dẫn này bằng
  * data-URI (vì page.setContent không có base URL). */
 const LOGO_SRC = "/logo-hsk.png";
 
@@ -15,15 +15,15 @@ interface DocProps {
   /** Loại tài liệu, in nhỏ phía trên tiêu đề (vd "Đọc hiểu", "Luyện nói"). */
   kicker: string;
   title: string;
-  titleZh?: string | null;
-  /** Dòng phụ dưới tiêu đề (vd tên unit / loại bài). */
+  /** Dòng phụ dưới tiêu đề (vd tên chủ đề / loại bài). */
   subtitle?: string | null;
-  hskLevel: string;
+  /** Cấp Cambridge của bài (PRE_STARTERS, STARTERS, MOVERS…). */
+  level: string;
   children: React.ReactNode;
 }
 
 /** Tài liệu PDF: dải header thương hiệu + khối tiêu đề + nội dung. */
-export function PdfDocument({ kicker, title, titleZh, subtitle, hskLevel, children }: DocProps) {
+export function PdfDocument({ kicker, title, subtitle, level, children }: DocProps) {
   return (
     <div style={{ fontFamily: PDF_FONT.sans, color: PDF.ink, fontSize: 13, lineHeight: 1.55 }}>
       {/* Dải header thương hiệu */}
@@ -54,12 +54,14 @@ export function PdfDocument({ kicker, title, titleZh, subtitle, hskLevel, childr
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- data-URI nhúng trong PDF / ảnh tĩnh khi xem trước */}
-            <img src={LOGO_SRC} alt="DingDong HSK" style={{ width: 34, height: 34, objectFit: "contain" }} />
+            <img src={LOGO_SRC} alt="DingDong Kids" style={{ width: 34, height: 34, objectFit: "contain" }} />
           </div>
           <div style={{ lineHeight: 1.15 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em" }}>DingDong HSK</div>
+            <div style={{ fontFamily: PDF_FONT.display, fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em" }}>
+              DingDong Kids
+            </div>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.78)" }}>
-              Học tiếng Trung · HSK 1–6
+              Tiếng Anh cho bé · Cambridge Young Learners
             </div>
           </div>
         </div>
@@ -77,7 +79,7 @@ export function PdfDocument({ kicker, title, titleZh, subtitle, hskLevel, childr
               fontWeight: 800,
             }}
           >
-            {hskLevelLabel(hskLevel)}
+            {levelLabel(level)}
           </span>
         </div>
       </div>
@@ -89,12 +91,19 @@ export function PdfDocument({ kicker, title, titleZh, subtitle, hskLevel, childr
             {subtitle}
           </div>
         )}
-        <h1 style={{ margin: "2px 0 0", fontSize: 23, fontWeight: 800, letterSpacing: "-0.02em", color: PDF.ink, lineHeight: 1.2 }}>
+        <h1
+          style={{
+            margin: "2px 0 0",
+            fontFamily: PDF_FONT.display,
+            fontSize: 23,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            color: PDF.ink,
+            lineHeight: 1.2,
+          }}
+        >
           {title}
         </h1>
-        {titleZh && (
-          <p style={{ margin: "3px 0 0", fontFamily: PDF_FONT.chinese, fontSize: 14, color: PDF.muted }}>{titleZh}</p>
-        )}
         <div style={{ marginTop: 10, width: 44, height: 3, borderRadius: 2, background: PDF.gold }} />
       </div>
 
@@ -106,12 +115,13 @@ export function PdfDocument({ kicker, title, titleZh, subtitle, hskLevel, childr
 /** Tiêu đề một phần (có thanh nhấn xanh bên trái). */
 export function PdfSection({
   title,
-  titleZh,
+  hint,
   children,
   style,
 }: {
   title: string;
-  titleZh?: string | null;
+  /** Ghi chú ngắn bên cạnh tiêu đề (vd "Bé đọc to nhé"). */
+  hint?: string | null;
   children: React.ReactNode;
   style?: React.CSSProperties;
 }) {
@@ -119,15 +129,17 @@ export function PdfSection({
     <section style={{ marginBottom: 18, ...style }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9, breakAfter: "avoid" }}>
         <span style={{ width: 4, height: 16, borderRadius: 2, background: PDF.brand, flexShrink: 0 }} />
-        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: PDF.brandDark }}>{title}</h2>
-        {titleZh && <span style={{ fontFamily: PDF_FONT.chinese, fontSize: 12, color: PDF.faint }}>{titleZh}</span>}
+        <h2 style={{ margin: 0, fontFamily: PDF_FONT.display, fontSize: 14, fontWeight: 800, color: PDF.brandDark }}>
+          {title}
+        </h2>
+        {hint && <span style={{ fontSize: 12, color: PDF.faint }}>{hint}</span>}
       </div>
       {children}
     </section>
   );
 }
 
-/** Thẻ nội dung bo góc (câu hỏi, từ vựng, chữ Hán…). */
+/** Thẻ nội dung bo góc (câu hỏi, từ vựng…). */
 export function PdfCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div
@@ -236,7 +248,7 @@ export function PdfAnswerLine({ children }: { children: React.ReactNode }) {
       >
         ✓ Đáp án:
       </span>
-      <span style={{ fontFamily: PDF_FONT.chinese, color: PDF.ink, fontWeight: 600 }}>{children}</span>
+      <span style={{ fontFamily: PDF_FONT.word, color: PDF.ink, fontWeight: 600 }}>{children}</span>
     </div>
   );
 }

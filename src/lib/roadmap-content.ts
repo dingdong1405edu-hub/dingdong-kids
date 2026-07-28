@@ -10,10 +10,12 @@ import type { VocabWordCard } from "@/types";
 
 // ───────────────────────── Shared ─────────────────────────
 
+// Câu ví dụ gắn với một từ vựng: câu tiếng Anh + nghĩa tiếng Việt (+ audio nếu
+// đã sinh sẵn bằng TTS).
 const exampleSchema = z.object({
-  hanzi: z.string().trim().min(1, "Ví dụ thiếu chữ Hán"),
-  pinyin: z.string().trim().default(""),
+  sentence: z.string().trim().min(1, "Ví dụ thiếu câu tiếng Anh"),
   meaning: z.string().trim().default(""),
+  audioUrl: z.string().trim().nullish(),
 });
 export type WordExample = z.infer<typeof exampleSchema>;
 
@@ -25,9 +27,11 @@ const questionTypeSchema = z.enum([
   "MATCHING",
 ]);
 
+// Một lựa chọn: chữ + (tuỳ chọn) ảnh minh hoạ. Trẻ nhỏ chọn bằng HÌNH nhanh và
+// vui hơn chọn bằng chữ, nên mọi lựa chọn nên có ảnh khi có thể.
 const optionSchema = z.object({
   text: z.string(),
-  pinyin: z.string().optional(),
+  imageUrl: z.string().trim().nullish(),
   translation: z.string().optional(),
 });
 
@@ -42,8 +46,11 @@ const correctAnswerSchema = z.object({
 const questionSchema = z.object({
   type: questionTypeSchema,
   prompt: z.string().trim().min(1, "Câu hỏi thiếu đề"),
-  promptPinyin: z.string().nullish(),
   promptTranslation: z.string().nullish(),
+  /** Ảnh của riêng câu hỏi (vd "Which one is the cat?"). */
+  imageUrl: z.string().trim().nullish(),
+  /** Audio đọc đề — để bé chưa đọc thạo vẫn làm được. */
+  audioUrl: z.string().trim().nullish(),
   options: z.array(optionSchema).optional(),
   correctAnswer: correctAnswerSchema,
   explanation: z.string().nullish(),
@@ -74,21 +81,38 @@ export function authoringToRoadmapQuestions(arr: unknown): RoadmapQuestion[] {
     if (!prompt) continue;
     const base = {
       prompt,
-      promptPinyin: typeof r.promptPinyin === "string" ? r.promptPinyin : undefined,
       promptTranslation: typeof r.promptTranslation === "string" ? r.promptTranslation : undefined,
+      imageUrl: typeof r.imageUrl === "string" ? r.imageUrl : undefined,
+      audioUrl: typeof r.audioUrl === "string" ? r.audioUrl : undefined,
       explanation: typeof r.explanation === "string" ? r.explanation : undefined,
       supportingQuote: typeof r.supportingQuote === "string" ? r.supportingQuote : undefined,
       quoteTranslation: typeof r.quoteTranslation === "string" ? r.quoteTranslation : undefined,
     };
     if (type === "MCQ") {
-      const opts = Array.isArray(r.options) ? r.options.map((o) => String(o)) : [];
+      // Lựa chọn có thể là chuỗi ("cat") hoặc object ({ text, imageUrl }).
+      const rawOpts = Array.isArray(r.options) ? r.options : [];
+      const opts = rawOpts.map((o) =>
+        o && typeof o === "object"
+          ? {
+              text: String((o as Record<string, unknown>).text ?? ""),
+              imageUrl:
+                typeof (o as Record<string, unknown>).imageUrl === "string"
+                  ? ((o as Record<string, unknown>).imageUrl as string)
+                  : undefined,
+            }
+          : { text: String(o), imageUrl: undefined },
+      );
       if (opts.length < 2) continue;
       const tr = Array.isArray(r.optionsTranslation) ? r.optionsTranslation.map((o) => String(o)) : [];
       const answer = typeof r.answer === "number" ? r.answer : 0;
       out.push({
         ...base,
         type: "MCQ",
-        options: opts.map((t, i) => ({ text: t, ...(tr[i] ? { translation: tr[i] } : {}) })),
+        options: opts.map((o, i) => ({
+          text: o.text,
+          ...(o.imageUrl ? { imageUrl: o.imageUrl } : {}),
+          ...(tr[i] ? { translation: tr[i] } : {}),
+        })),
         correctAnswer: { index: Math.max(0, Math.min(opts.length - 1, answer)) },
       });
     } else if (type === "TRUE_FALSE") {
@@ -107,12 +131,16 @@ export function authoringToRoadmapQuestions(arr: unknown): RoadmapQuestion[] {
   return out;
 }
 
-// ───────────────────────── VOCAB (词汇) ─────────────────────────
+// ───────────────────────── VOCAB (Vocabulary) ─────────────────────────
 
 const vocabWordSchema = z.object({
-  hanzi: z.string().trim().min(1, "Thiếu chữ Hán"),
-  pinyin: z.string().trim().min(1, "Thiếu pinyin"),
+  word: z.string().trim().min(1, "Thiếu từ tiếng Anh"),
+  ipa: z.string().trim().default(""),
   meaning: z.string().trim().min(1, "Thiếu nghĩa tiếng Việt"),
+  /** Từ loại viết ngắn, dễ hiểu với trẻ: "danh từ", "động từ", "tính từ"… */
+  partOfSpeech: z.string().trim().default(""),
+  /** Ảnh minh hoạ — với trẻ nhỏ, ẢNH quan trọng hơn cả nghĩa tiếng Việt. */
+  imageUrl: z.string().trim().nullish(),
   audioUrl: z.string().trim().nullish(),
   examples: z.array(exampleSchema).default([]),
 });
@@ -134,40 +162,59 @@ export function buildRoadmapVocabCards(sectionId: string, content: unknown): Voc
     id: `${sectionId}-w${i}`,
     lessonId: `roadmap:${sectionId}`,
     order: i + 1,
-    hanzi: w.hanzi,
-    pinyin: w.pinyin,
+    word: w.word,
+    ipa: w.ipa ?? "",
     meaning: w.meaning,
-    examples: w.examples ?? [],
+    partOfSpeech: w.partOfSpeech ?? "",
+    examples: (w.examples ?? []).map((e) => ({
+      sentence: e.sentence,
+      meaning: e.meaning ?? "",
+      ...(e.audioUrl ? { audioUrl: e.audioUrl } : {}),
+    })),
+    imageUrl: w.imageUrl ?? null,
     audioUrl: w.audioUrl ?? null,
   }));
 }
 
-// ───────────────────────── HANZI (汉字) ─────────────────────────
+// ───────────────────────── PHONICS (Ghép vần) ─────────────────────────
+// Nền tảng đọc cho trẻ nhỏ: mỗi mục là MỘT âm (chữ cái đơn "s", phụ âm ghép
+// "sh", hay nguyên âm ghép "ai") kèm vài từ mẫu có ảnh/emoji để bé liên tưởng.
 
-const hanziCharSchema = z.object({
-  character: z.string().trim().min(1, "Thiếu chữ Hán"),
-  pinyin: z.string().trim().min(1, "Thiếu pinyin"),
-  tone: z.coerce.number().int().min(0).max(4).default(0),
-  meaning: z.string().trim().min(1, "Thiếu nghĩa tiếng Việt"),
-  strokeCount: z.coerce.number().int().min(0).default(0),
-  examples: z.array(exampleSchema).default([]),
+const phonicsWordSchema = z.object({
+  word: z.string().trim().min(1, "Thiếu từ mẫu"),
+  meaning: z.string().trim().default(""),
+  emoji: z.string().trim().optional(),
+  imageUrl: z.string().trim().nullish(),
+  audioUrl: z.string().trim().nullish(),
 });
-export const hanziContentSchema = z.object({
-  characters: z.array(hanziCharSchema).min(1, "Cần ít nhất 1 chữ Hán"),
-});
-export type HanziSectionContent = z.infer<typeof hanziContentSchema>;
 
-// ───────────────────────── READING (阅读) ─────────────────────────
-// hskLevel KHÔNG lưu ở đây — lấy từ Course cha khi dựng props cho player.
+const phonicsSoundSchema = z.object({
+  /** Chữ cái hoặc cụm chữ cái: "s", "sh", "ai". */
+  letters: z.string().trim().min(1, "Thiếu chữ cái / cụm chữ"),
+  /** Cách đọc ghi giữa hai gạch chéo: "/s/", "/ʃ/". */
+  sound: z.string().trim().default(""),
+  /** Mẹo nhớ ngắn cho bé, vd "Rắn kêu sss…". */
+  hint: z.string().trim().optional(),
+  words: z.array(phonicsWordSchema).min(1, "Mỗi âm cần ít nhất 1 từ mẫu"),
+});
+
+export const phonicsContentSchema = z.object({
+  title: z.string().trim().optional(),
+  sounds: z.array(phonicsSoundSchema).min(1, "Cần ít nhất 1 âm"),
+});
+export type PhonicsSectionContent = z.infer<typeof phonicsContentSchema>;
+
+// ───────────────────────── READING ─────────────────────────
+// level KHÔNG lưu ở đây — lấy từ Course cha khi dựng props cho player.
 //
-// MỚI: một phần Đọc có thể chứa NHIỀU đoạn văn (passages), mỗi đoạn có câu hỏi
-// riêng. Học viên làm lần lượt từng đoạn rồi chấm chung. Shape cũ một-đoạn
+// Một phần Đọc có thể chứa NHIỀU đoạn văn (passages), mỗi đoạn có câu hỏi riêng.
+// Học viên làm lần lượt từng đoạn rồi chấm chung. Shape cũ một-đoạn
 // ({ passage, questions }) vẫn đọc được nhờ `normalizeReadingContent` gói lại
 // thành `passages: [ … ]` trước khi validate (tương thích ngược 100%).
 
 // Một câu trong phần "phân tích từng câu" của đoạn đọc (dịch + giải thích).
 const passageAnalysisSentenceSchema = z.object({
-  zh: z.string().trim().min(1, "Câu phân tích thiếu chữ Hán"),
+  en: z.string().trim().min(1, "Câu phân tích thiếu câu tiếng Anh"),
   vi: z.string().trim().default(""),
   note: z.string().trim().optional(),
 });
@@ -175,12 +222,14 @@ export type PassageAnalysisSentenceContent = z.infer<typeof passageAnalysisSente
 
 const readingPassageSchema = z.object({
   passage: z.string().trim().min(1, "Thiếu đoạn văn"),
-  passagePinyin: z.string().nullish(),
+  /** Bản đọc mẫu (TTS) của cả đoạn — bé vừa nghe vừa dò theo chữ. */
+  audioUrl: z.string().trim().nullish(),
   // Dịch toàn bộ đoạn + phân tích từng câu (hiện khi chữa bài) — đều tuỳ chọn.
   passageTranslation: z.string().nullish(),
   passageAnalysis: z.array(passageAnalysisSentenceSchema).nullish(),
   imageUrl: z.string().nullish(),
-  titleZh: z.string().trim().optional(),
+  /** Tên riêng của đoạn này (vd "My pet dog"). */
+  title: z.string().trim().optional(),
   questions: z.array(questionSchema).min(1, "Cần ít nhất 1 câu hỏi"),
 });
 export type ReadingPassageContent = z.infer<typeof readingPassageSchema>;
@@ -188,15 +237,14 @@ export type ReadingPassageContent = z.infer<typeof readingPassageSchema>;
 /** Gói nội dung Đọc (cũ một-đoạn hoặc mới nhiều-đoạn) về dạng chuẩn `passages[]`. */
 export function normalizeReadingContent(raw: unknown): {
   title: string;
-  titleZh: string;
   timeLimit: number;
   passages: Array<{
     passage: string;
-    passagePinyin?: string | null;
+    audioUrl?: string | null;
     passageTranslation?: string | null;
     passageAnalysis?: PassageAnalysisSentenceContent[] | null;
     imageUrl?: string | null;
-    titleZh?: string;
+    title?: string;
     questions: RoadmapQuestion[];
   }>;
 } {
@@ -205,13 +253,13 @@ export function normalizeReadingContent(raw: unknown): {
     const p = r && typeof r === "object" ? (r as Record<string, unknown>) : {};
     return {
       passage: typeof p.passage === "string" ? p.passage : "",
-      passagePinyin: typeof p.passagePinyin === "string" ? p.passagePinyin : null,
+      audioUrl: typeof p.audioUrl === "string" ? p.audioUrl : null,
       passageTranslation: typeof p.passageTranslation === "string" ? p.passageTranslation : null,
       passageAnalysis: Array.isArray(p.passageAnalysis)
         ? (p.passageAnalysis as PassageAnalysisSentenceContent[])
         : null,
       imageUrl: typeof p.imageUrl === "string" ? p.imageUrl : null,
-      titleZh: typeof p.titleZh === "string" ? p.titleZh : undefined,
+      title: typeof p.title === "string" ? p.title : undefined,
       questions: Array.isArray(p.questions) ? (p.questions as RoadmapQuestion[]) : [],
     };
   };
@@ -225,7 +273,6 @@ export function normalizeReadingContent(raw: unknown): {
   }
   return {
     title: typeof o.title === "string" ? o.title : "",
-    titleZh: typeof o.titleZh === "string" ? o.titleZh : "",
     timeLimit:
       typeof o.timeLimit === "number" ? o.timeLimit : Number(o.timeLimit) || 600,
     passages,
@@ -236,16 +283,15 @@ export const readingContentSchema = z.preprocess(
   (raw) => normalizeReadingContent(raw),
   z.object({
     title: z.string().trim().min(1, "Thiếu tiêu đề"),
-    titleZh: z.string().trim().default(""),
     timeLimit: z.coerce.number().int().min(0).default(600),
     passages: z.array(readingPassageSchema).min(1, "Cần ít nhất 1 đoạn đọc"),
   })
 );
 export type ReadingSectionContent = z.infer<typeof readingContentSchema>;
 
-// ───────────────────────── LISTENING (听力) ─────────────────────────
-// MỚI: một phần Nghe có thể chứa NHIỀU đoạn nghe (clips), mỗi đoạn có audio +
-// lời thoại + câu hỏi riêng. Shape cũ một-đoạn vẫn đọc được nhờ
+// ───────────────────────── LISTENING ─────────────────────────
+// Một phần Nghe có thể chứa NHIỀU đoạn nghe (clips), mỗi đoạn có audio + lời
+// thoại + câu hỏi riêng. Shape cũ một-đoạn vẫn đọc được nhờ
 // `normalizeListeningContent`.
 
 const listeningClipSchema = z.object({
@@ -314,27 +360,30 @@ export const listeningContentSchema = z.preprocess(
 );
 export type ListeningSectionContent = z.infer<typeof listeningContentSchema>;
 
-// ───────────────────────── WRITING (写作) ─────────────────────────
+// ───────────────────────── WRITING ─────────────────────────
 
 export const writingContentSchema = z.object({
   taskType: z.enum(["FREE", "GUIDED", "PICTURE_DESCRIPTION"]).default("FREE"),
   prompt: z.string().trim().min(1, "Thiếu đề bài"),
-  promptZh: z.string().nullish(),
+  /** Gợi ý dàn ý / các từ nên dùng — bé nhìn vào là biết viết gì. */
   outline: z.string().nullish(),
   imageUrl: z.string().nullish(),
-  minChars: z.coerce.number().int().min(0).default(50),
+  /** Số TỪ tối thiểu bé cần viết (đếm bằng countWords — src/lib/utils.ts). */
+  minWords: z.coerce.number().int().min(0).default(20),
   timeLimit: z.coerce.number().int().min(0).default(900),
 });
 export type WritingSectionContent = z.infer<typeof writingContentSchema>;
 
-// Dạng "连词成句" (sắp xếp từ thành câu) — chính là format thi VIẾT HSK2. Mỗi câu có
-// ngân hàng thẻ từ (words), câu đúng (answer, có dấu câu) và bản dịch tiếng Việt.
-// Chấm tự động (giống bài tập sentence_order của Ngữ pháp), KHÔNG dùng AI.
+// Dạng "sắp xếp từ thành câu" — đúng format bài viết của đề Cambridge cho trẻ.
+// Mỗi câu có ngân hàng thẻ từ (words), câu đúng (answer, có dấu câu và viết hoa)
+// và bản dịch tiếng Việt. Chấm tự động (giống bài tập sentence_order của Ngữ
+// pháp), KHÔNG dùng AI.
 const writingReorderSentenceSchema = z.object({
   words: z.array(z.string().trim().min(1)).min(2, "Cần ít nhất 2 thẻ từ"),
   answer: z.string().trim().min(1, "Thiếu câu đúng"),
   translation: z.string().trim().default(""),
-  pinyin: z.string().trim().optional(),
+  imageUrl: z.string().trim().nullish(),
+  audioUrl: z.string().trim().nullish(),
   explanation: z.string().trim().optional(),
 });
 export type WritingReorderSentence = z.infer<typeof writingReorderSentenceSchema>;
@@ -346,7 +395,7 @@ export const writingReorderContentSchema = z.object({
 });
 export type WritingReorderSectionContent = z.infer<typeof writingReorderContentSchema>;
 
-/** Phần Viết kiểu "连词成句" (sắp xếp câu) thay vì viết luận chấm AI. */
+/** Phần Viết kiểu "sắp xếp câu" thay vì viết đoạn chấm bằng AI. */
 export function isReorderWriting(content: unknown): content is WritingReorderSectionContent {
   return (
     !!content &&
@@ -355,19 +404,27 @@ export function isReorderWriting(content: unknown): content is WritingReorderSec
   );
 }
 
-// ───────────────────────── SPEAKING (口语 — HSKK) ─────────────────────────
+// ───────────────────────── SPEAKING (Cambridge Speaking) ─────────────────────────
+// Phần 1: nghe rồi nhắc lại câu · Phần 2: đọc to đoạn văn ·
+// Phần 3: trả lời câu hỏi về bản thân.
 
 const sentenceSchema = z.object({
   text: z.string().trim().min(1),
-  pinyin: z.string().trim().default(""),
+  /** Audio đọc mẫu để bé nghe trước khi nhắc lại. */
+  audioUrl: z.string().trim().nullish(),
+  imageUrl: z.string().trim().nullish(),
 });
 const passageSchema = z.object({
   text: z.string().trim().min(1),
-  pinyin: z.string().trim().default(""),
+  audioUrl: z.string().trim().nullish(),
+  imageUrl: z.string().trim().nullish(),
 });
 const questionItemSchema = z.object({
   question: z.string().trim().min(1),
-  pinyin: z.string().trim().default(""),
+  audioUrl: z.string().trim().nullish(),
+  imageUrl: z.string().trim().nullish(),
+  /** Câu trả lời mẫu để bé tham khảo khi bí. */
+  sampleAnswer: z.string().trim().optional(),
 });
 export const speakingContentSchema = z
   .object({
@@ -380,11 +437,11 @@ export const speakingContentSchema = z
       (c.part1Sentences?.length ?? 0) > 0 ||
       (c.part3Questions?.length ?? 0) > 0 ||
       !!c.part2Passage?.text,
-    "Cần ít nhất một phần nội dung (lặp câu / đoạn văn / câu hỏi)"
+    "Cần ít nhất một phần nội dung (nhắc lại câu / đọc to đoạn văn / trả lời câu hỏi)"
   );
 export type SpeakingSectionContent = z.infer<typeof speakingContentSchema>;
 
-// ───────────────────────── GRAMMAR (语法) ─────────────────────────
+// ───────────────────────── GRAMMAR ─────────────────────────
 // Shape v3 phức tạp (Exercise union) được parseGrammarContent() chuẩn hoá khi
 // chơi; ở đây chỉ kiểm tra cấu trúc tối thiểu.
 
@@ -411,10 +468,10 @@ export type GrammarSectionContent = z.infer<typeof grammarContentSchema>;
 const SCHEMA_BY_SKILL: Record<SkillKey, z.ZodTypeAny> = {
   VOCAB: vocabContentSchema,
   GRAMMAR: grammarContentSchema,
-  HANZI: hanziContentSchema,
+  PHONICS: phonicsContentSchema,
   READING: readingContentSchema,
   LISTENING: listeningContentSchema,
-  // Viết: chấp nhận cả viết luận (AI) lẫn "连词成句" (sắp xếp câu, chấm tự động).
+  // Viết: chấp nhận cả viết đoạn (chấm AI) lẫn sắp xếp câu (chấm tự động).
   WRITING: z.union([writingReorderContentSchema, writingContentSchema]),
   SPEAKING: speakingContentSchema,
 };
@@ -447,14 +504,13 @@ export function emptyContentFor(skill: SkillKey): unknown {
   switch (skill) {
     case "VOCAB":
       return { words: [] };
-    case "HANZI":
-      return { characters: [] };
+    case "PHONICS":
+      return { sounds: [] };
     case "GRAMMAR":
       return { version: 3, sections: [], test: { questions: [] } };
     case "READING":
       return {
         title: "",
-        titleZh: "",
         timeLimit: 600,
         passages: [{ passage: "", questions: [] }],
       };
@@ -465,9 +521,9 @@ export function emptyContentFor(skill: SkillKey): unknown {
         clips: [{ audioUrl: "", transcript: "", questions: [] }],
       };
     case "WRITING":
-      return { taskType: "FREE", prompt: "", minChars: 50, timeLimit: 900 };
+      return { taskType: "FREE", prompt: "", minWords: 20, timeLimit: 900 };
     case "SPEAKING":
-      return { part1Sentences: [], part2Passage: { text: "", pinyin: "" }, part3Questions: [] };
+      return { part1Sentences: [], part2Passage: { text: "" }, part3Questions: [] };
     default:
       return {};
   }

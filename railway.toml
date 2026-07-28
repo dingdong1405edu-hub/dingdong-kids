@@ -6,8 +6,8 @@
 # Build: Nixpacks builds Next.js (`npm run build`); `postinstall` runs
 #   `prisma generate` during install.
 # Deploy: push the Prisma schema to the DB (adds new columns to existing rows),
-#   seed idempotently (best-effort), then start Next.js. The app is served under
-#   basePath "/zh", so the healthcheck is /zh/api/health.
+#   seed idempotently (best-effort), then start Next.js. App is served at the
+#   domain root (không có basePath), nên healthcheck là /api/health.
 
 [build]
 builder = "NIXPACKS"

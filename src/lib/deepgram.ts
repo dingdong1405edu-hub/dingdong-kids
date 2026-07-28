@@ -1,19 +1,16 @@
-// Speech-to-text for Mandarin Chinese via **Deepgram Nova-3**.
-// Deepgram has best-in-class Chinese (Mandarin Simplified) transcription — we
-// call the prerecorded REST endpoint directly over fetch (no SDK) to keep the
-// dependency surface minimal. The key is checked lazily so a missing key never
-// breaks `next build` or a module import — callers fail gracefully with a clear
-// error instead.
+// Chuyển giọng nói → văn bản (STT) tiếng Anh bằng **Deepgram Nova-3**.
+// Gọi thẳng REST endpoint qua fetch (không thêm SDK) để giữ số phụ thuộc tối
+// thiểu. Key được kiểm tra lười (lazy) nên thiếu key không bao giờ làm vỡ
+// `next build` hay việc import module — nơi gọi nhận lỗi rõ ràng thay vì crash.
 //
-// NOTE: Deepgram does NOT offer Mandarin text-to-speech (Aura-2 covers only
-// EN/ES/DE/FR/NL/IT/JA), so generating listening audio lives in
-// src/lib/google-tts.ts. Deepgram here is audio → text ONLY.
+// KHÁC BẢN TIẾNG TRUNG: Deepgram CÓ giọng đọc (TTS) tiếng Anh — xem src/lib/tts.ts.
+// Nhờ vậy toàn bộ audio bài nghe / từ vựng / câu hỏi đều sinh tự động được,
+// không phải bắt admin tự tải MP3 lên như dự án tiếng Trung trước đây.
 
 const DEEPGRAM_ENDPOINT = "https://api.deepgram.com/v1/listen";
-// Nova-3 added Mandarin Simplified with a large WER improvement over Nova-2.
 const DEEPGRAM_MODEL = process.env.DEEPGRAM_STT_MODEL || "nova-3";
-// Mandarin Simplified. Override via env for Traditional (zh-TW) / Cantonese (zh-HK).
-const DEEPGRAM_LANGUAGE = process.env.DEEPGRAM_STT_LANGUAGE || "zh-CN";
+// Anh–Mỹ. Đổi sang "en-GB" qua env nếu muốn giọng Anh–Anh (chuẩn Cambridge).
+const DEEPGRAM_LANGUAGE = process.env.DEEPGRAM_STT_LANGUAGE || "en-US";
 
 export function isDeepgramConfigured(): boolean {
   return Boolean(process.env.DEEPGRAM_API_KEY);
@@ -28,11 +25,15 @@ interface DeepgramResponse {
 }
 
 /**
- * Transcribe an audio buffer to Mandarin text. Sends the raw bytes with the
- * source Content-Type — Deepgram sniffs the container itself. Returns "" when no
- * speech was detected (a valid result, not an error). Throws a descriptive Error
- * on a missing key or an API failure so the caller (src/lib/stt.ts) can decide
- * whether to fall back to Groq Whisper.
+ * Chuyển một buffer audio thành văn bản tiếng Anh. Gửi bytes thô kèm
+ * Content-Type gốc — Deepgram tự nhận diện container. Trả "" khi không phát hiện
+ * giọng nói (đây là kết quả hợp lệ, không phải lỗi). Ném Error có mô tả khi
+ * thiếu key hoặc API lỗi, để nơi gọi (src/lib/stt.ts) quyết định có rơi sang
+ * Groq Whisper hay không.
+ *
+ * LƯU Ý VỀ GIỌNG TRẺ EM: độ chính xác STT trên giọng trẻ nhỏ thấp hơn giọng
+ * người lớn đáng kể. Phần chấm nói vì thế nới ngưỡng và thiên về khuyến khích —
+ * xem gradeSpeaking trong src/lib/groq.ts.
  */
 export async function transcribeWithDeepgram(audioBuffer: Buffer, mimeType: string): Promise<string> {
   const apiKey = process.env.DEEPGRAM_API_KEY;

@@ -28,7 +28,7 @@ export type AuditInput = {
   entity: string;
   /** id bản ghi bị tác động (nếu có). */
   entityId?: string | null;
-  /** Mô tả tiếng Việt ngắn gọn, VD: `Xóa bài đọc «Chào hỏi»`. */
+  /** Mô tả tiếng Việt ngắn gọn, VD: `Xóa bài đọc «My pet dog»`. */
   summary: string;
   /** Nội dung TRƯỚC khi sửa/xóa (bỏ qua với CREATE). */
   before?: unknown;
@@ -107,7 +107,6 @@ export const ENTITY_LABELS: Record<string, string> = {
   VocabWord: "từ vựng",
   GrammarUnit: "đơn vị ngữ pháp",
   GrammarLesson: "bài ngữ pháp",
-  HanziCharacter: "chữ Hán",
   MockExam: "đề thi thử",
   MockExamSection: "phần thi",
   MockExamPart: "tiểu phần thi",

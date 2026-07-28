@@ -6,10 +6,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
-import { emitBao } from "@/lib/bao-bus";
-import { hskLevelLabel } from "@/lib/utils";
+import { emitDing } from "@/lib/ding-bus";
+import { levelLabel } from "@/lib/utils";
 import { gradeSpeakingTopicAction } from "@/server/actions/speaking";
-import type { TopicHint } from "@/components/admin/speaking-topic-fields";
 import type { SpeakingTopicGradeResult } from "@/lib/groq";
 import {
   Mic,
@@ -28,23 +27,27 @@ import {
   Gauge,
   ListTree,
 } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
+
+/** Một gợi ý cho bài nói: cụm tiếng Anh nên dùng + nghĩa tiếng Việt. */
+export interface TopicHint {
+  text?: string;
+  vi?: string;
+}
 
 export interface TopicData {
   id: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   title: string;
   topic: string;
-  questionZh: string;
-  questionPinyin: string | null;
+  question: string;
   questionVi: string | null;
   outline: string | null;
   audioUrl: string | null;
   transcript: string | null;
   hints: TopicHint[];
   sampleAnswer: string | null;
-  sampleAnswerPinyin: string | null;
-  minChars: number;
+  minWords: number;
   prepSeconds: number;
 }
 
@@ -95,8 +98,8 @@ function pickRecorderMime(): string | undefined {
   return undefined;
 }
 
-/** Phát câu hỏi: ưu tiên MP3 admin tải lên; thiếu thì đọc bằng giọng zh-CN trình duyệt. */
-function useQuestionAudio(audioUrl: string | null, questionZh: string) {
+/** Phát câu hỏi: ưu tiên MP3 (TTS hoặc admin tải lên); thiếu thì đọc bằng giọng en-US trình duyệt. */
+function useQuestionAudio(audioUrl: string | null, question: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -112,18 +115,18 @@ function useQuestionAudio(audioUrl: string | null, questionZh: string) {
       audioRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
       return;
     }
-    // Web Speech fallback (zh-CN)
+    // Web Speech dự phòng (en-US) — đọc chậm hơn một chút cho trẻ dễ nghe.
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(questionZh);
-      u.lang = "zh-CN";
-      u.rate = 0.95;
+      const u = new SpeechSynthesisUtterance(question);
+      u.lang = "en-US";
+      u.rate = 0.9;
       u.onend = () => setPlaying(false);
       u.onerror = () => setPlaying(false); // tránh kẹt trạng thái khi TTS lỗi
       setPlaying(true);
       window.speechSynthesis.speak(u);
     } else {
-      toast.error("Trình duyệt không hỗ trợ đọc giọng tiếng Trung.");
+      toast.error("Trình duyệt của bé chưa đọc được tiếng Anh.");
     }
   }
 
@@ -257,7 +260,7 @@ function TopicRecorder({
           </div>
         ) : (
           <div className="text-sm font-medium text-muted-foreground">
-            {phase === "grading" ? "Đang chấm bài…" : "Bấm để ghi âm trả lời"}
+            {phase === "grading" ? "Đang nghe bài của bé…" : "Bấm để ghi âm câu trả lời"}
           </div>
         )}
       </div>
@@ -280,7 +283,7 @@ function Collapsible({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border bg-card">
+    <div className="rounded-2xl border-2 bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -311,21 +314,21 @@ function Collapsible({
 
 // ----- result axes -----
 
-const AXES: { key: keyof SpeakingTopicGradeResult["criteria"]; label: string; zh: string }[] = [
-  { key: "content", label: "Nội dung", zh: "内容" },
-  { key: "grammar", label: "Ngữ pháp", zh: "语法" },
-  { key: "vocabulary", label: "Từ vựng", zh: "词汇" },
-  { key: "coherence", label: "Mạch lạc", zh: "连贯" },
-  { key: "delivery", label: "Lưu loát", zh: "流利度" },
+const AXES: { key: keyof SpeakingTopicGradeResult["criteria"]; label: string; en: string }[] = [
+  { key: "content", label: "Nội dung", en: "Content" },
+  { key: "grammar", label: "Ngữ pháp", en: "Grammar" },
+  { key: "vocabulary", label: "Từ vựng", en: "Vocabulary" },
+  { key: "coherence", label: "Mạch lạc", en: "Coherence" },
+  { key: "delivery", label: "Trôi chảy", en: "Fluency" },
 ];
 
-function AxisBar({ label, zh, score, index }: { label: string; zh: string; score: number; index: number }) {
+function AxisBar({ label, en, score, index }: { label: string; en: string; score: number; index: number }) {
   const c = scoreColor(score);
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">
-          {label} <span className="font-chinese text-xs text-muted-foreground">{zh}</span>
+          {label} <span className="font-primer text-xs text-muted-foreground">{en}</span>
         </span>
         <span className={`font-bold ${c.text}`}>{score}</span>
       </div>
@@ -348,18 +351,17 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
   const [result, setResult] = useState<SpeakingTopicGradeResult | null>(null);
   const [showHints, setShowHints] = useState(false);
   const [showOutline, setShowOutline] = useState(false);
-  const [showPinyin, setShowPinyin] = useState(false);
   const [showVi, setShowVi] = useState(false);
   const [prepLeft, setPrepLeft] = useState(0);
-  const { play, playing } = useQuestionAudio(topic.audioUrl, topic.questionZh);
+  const { play, playing } = useQuestionAudio(topic.audioUrl, topic.question);
 
-  // Prep countdown — báo khi hết giờ chuẩn bị để học viên bắt đầu ghi âm.
+  // Đếm ngược chuẩn bị — báo khi hết giờ để bé bắt đầu ghi âm.
   useEffect(() => {
     if (prepLeft <= 0) return;
     const id = setInterval(() => {
       setPrepLeft((p) => {
         if (p <= 1) {
-          toast.info("Hết giờ chuẩn bị — hãy bấm ghi âm và trả lời nhé!");
+          toast.info("Hết giờ chuẩn bị rồi — bé bấm ghi âm và nói nhé! 🎤");
           return 0;
         }
         return p - 1;
@@ -370,24 +372,25 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
   async function handleRecorded(blob: Blob, durationSec: number) {
     setPhase("grading");
-    emitBao("thinking");
+    emitDing("thinking");
     try {
       const fd = new FormData();
       fd.append("audio", blob, "answer.webm");
       const tRes = await fetch("/api/transcribe", { method: "POST", body: fd });
       if (!tRes.ok) {
         const err = (await tRes.json().catch(() => ({}))) as { error?: string };
-        throw new Error(err.error || "Không thể chuyển giọng nói thành văn bản");
+        throw new Error(err.error || "Chưa nghe được giọng của bé, thử lại nhé");
       }
       const { transcript } = (await tRes.json()) as { transcript: string };
-      if (!transcript.trim()) throw new Error("Không nghe rõ giọng nói, hãy thử ghi âm lại.");
+      if (!transcript.trim())
+        throw new Error("Máy chưa nghe rõ. Bé nói to hơn một chút rồi thử lại nhé 🌟");
 
       const res = await gradeSpeakingTopicAction({ topicId: topic.id, transcript, durationSec });
       if (!res.ok || !res.result) throw new Error(res.error || "Chấm điểm thất bại");
       const graded = res.result as SpeakingTopicGradeResult;
       setResult(graded);
       setPhase("done");
-      emitBao(graded.score >= 80 ? "celebrate" : "complete");
+      emitDing(graded.score >= 80 ? "celebrate" : "complete");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Lỗi chấm điểm");
       setPhase("idle");
@@ -409,48 +412,47 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
         <Link href="/speaking" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Luyện nói
         </Link>
-        <Badge variant="outline">{hskLevelLabel(topic.hskLevel)}</Badge>
+        <Badge variant="outline">{levelLabel(topic.level)}</Badge>
       </div>
 
       {/* Topic banner */}
-      <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-indigo-50 to-white p-5 dark:from-indigo-500/10 dark:to-transparent">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white p-5 dark:from-indigo-500/10 dark:to-transparent">
         <div className="flex items-start gap-4">
           <BaoBuddy size={70} pose={good ? "cheer" : "idle"} className="shrink-0" />
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold uppercase tracking-wide text-indigo-500">Nói theo chủ đề · HSKK</div>
-            <h1 className="mt-0.5 text-lg font-extrabold">{topic.topic || topic.title || "Trả lời theo chủ đề"}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Nghe câu hỏi của giám khảo, rồi ghi âm trả lời thành một đoạn dài. AI sẽ chấm chi tiết và sửa lỗi.
+            <div className="text-xs font-bold uppercase tracking-wide text-indigo-500">
+              Trả lời câu hỏi · Cambridge Speaking
+            </div>
+            <h1 className="font-display mt-0.5 text-lg font-extrabold">
+              {topic.topic || topic.title || "Trả lời theo chủ đề"}
+            </h1>
+            <p className="mt-1 text-[15px] text-muted-foreground">
+              Bé nghe câu hỏi rồi ghi âm trả lời. Nói được bao nhiêu cũng tốt — máy sẽ khen bé trước,
+              rồi chỉ cho bé cách nói hay hơn.
             </p>
           </div>
         </div>
-        <div className="pointer-events-none absolute -right-4 -top-6 select-none font-chinese text-[110px] leading-none text-black/[0.04] dark:text-white/[0.04]">
-          说
+        <div className="pointer-events-none absolute -right-4 -top-6 select-none text-[110px] leading-none opacity-15">
+          🎤
         </div>
       </div>
 
       {/* Question card */}
-      <div className="rounded-2xl border bg-card p-5 shadow-soft">
+      <div className="sticker p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Button onClick={play} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700">
             <Volume2 className={`h-4 w-4 ${playing ? "animate-pulse" : ""}`} /> Nghe câu hỏi
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowPinyin((v) => !v)}>
-            {showPinyin ? "Ẩn" : "Hiện"} pinyin
-          </Button>
           {topic.questionVi && (
             <Button variant="outline" size="sm" onClick={() => setShowVi((v) => !v)}>
-              {showVi ? "Ẩn" : "Hiện"} dịch
+              {showVi ? "Ẩn" : "Hiện"} nghĩa
             </Button>
           )}
           {!topic.audioUrl && (
-            <span className="text-xs text-muted-foreground">(Giọng đọc trình duyệt — chưa có MP3)</span>
+            <span className="text-xs text-muted-foreground">(Giọng đọc của trình duyệt)</span>
           )}
         </div>
-        <div className="font-chinese text-2xl font-semibold leading-relaxed">{topic.questionZh}</div>
-        {showPinyin && topic.questionPinyin && (
-          <div className="font-pinyin mt-1 text-muted-foreground">{topic.questionPinyin}</div>
-        )}
+        <div className="font-primer text-2xl font-semibold leading-relaxed">{topic.question}</div>
         {showVi && topic.questionVi && <div className="mt-2 text-sm text-muted-foreground">{topic.questionVi}</div>}
 
         {/* Outline (gợi ý dàn ý bài nói) */}
@@ -509,8 +511,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
                         transition={{ delay: i * 0.05 }}
                         className="rounded-xl border bg-muted/40 px-3 py-2"
                       >
-                        {h.text && <span className="font-chinese font-medium">{h.text}</span>}
-                        {h.pinyin && <span className="font-pinyin ml-1 text-xs text-muted-foreground">{h.pinyin}</span>}
+                        {h.text && <span className="font-primer font-medium">{h.text}</span>}
                         {h.vi && <div className="text-xs text-muted-foreground">{h.vi}</div>}
                       </motion.div>
                     ))}
@@ -521,11 +522,11 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
           </div>
         )}
 
-        {(topic.minChars > 0 || topic.prepSeconds > 0) && (
+        {(topic.minWords > 0 || topic.prepSeconds > 0) && (
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            {topic.minChars > 0 && (
+            {topic.minWords > 0 && (
               <span className="inline-flex items-center gap-1">
-                <Gauge className="h-3.5 w-3.5" /> Nên nói ≥ {topic.minChars} chữ
+                <Gauge className="h-3.5 w-3.5" /> Bé thử nói khoảng {topic.minWords} từ nhé
               </span>
             )}
             {topic.prepSeconds > 0 && (
@@ -545,7 +546,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
       {/* Recorder / loading */}
       {phase !== "done" && (
-        <div className="rounded-2xl border bg-card p-6 shadow-soft">
+        <div className="sticker p-6">
           <TopicRecorder
             phase={phase}
             onRecorded={handleRecorded}
@@ -553,7 +554,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
           />
           {phase === "grading" && (
             <div className="mt-4 flex flex-col items-center gap-2">
-              <BaoBuddy size={64} pose="idle" message="Để Bao chấm nhé…" />
+              <BaoBuddy size={64} pose="idle" message="Để Ding nghe bé nói nhé…" />
             </div>
           )}
         </div>
@@ -569,15 +570,19 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             className="space-y-4"
           >
             {/* Score header */}
-            <div className="relative overflow-hidden rounded-2xl border bg-card p-6 text-center shadow-soft">
+            <div className="sticker relative overflow-hidden p-6 text-center">
               <motion.div
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 14 }}
                 className="flex flex-col items-center"
               >
-                <BaoBuddy size={84} pose={good ? "cheer" : "idle"} message={good ? "Tuyệt vời!" : "Cố lên nhé!"} />
-                <div className={`mt-2 text-6xl font-extrabold ${c.text}`}>
+                <BaoBuddy
+                  size={84}
+                  pose={good ? "cheer" : "idle"}
+                  message={good ? "Bé nói hay quá!" : "Bé làm tốt lắm, thử lần nữa nhé!"}
+                />
+                <div className={`font-display mt-2 text-6xl font-extrabold ${c.text}`}>
                   <CountUp to={result.score} />
                   <span className="text-2xl text-muted-foreground">/100</span>
                 </div>
@@ -586,14 +591,14 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             </div>
 
             {/* Axes */}
-            <div className="grid gap-3 rounded-2xl border bg-card p-5 shadow-soft sm:grid-cols-2">
+            <div className="sticker grid gap-3 p-5 sm:grid-cols-2">
               {AXES.map((a, i) => (
-                <AxisBar key={a.key} label={a.label} zh={a.zh} score={result.criteria[a.key].score} index={i} />
+                <AxisBar key={a.key} label={a.label} en={a.en} score={result.criteria[a.key].score} index={i} />
               ))}
               <div className="flex items-center gap-1 text-xs text-muted-foreground sm:col-span-2">
-                <Gauge className="h-3.5 w-3.5" /> Đã nói {result.charCount} chữ
+                <Gauge className="h-3.5 w-3.5" /> Bé đã nói {result.wordCount} từ
                 {result.criteria.delivery.wordsPerMinute > 0 &&
-                  ` · ~${result.criteria.delivery.wordsPerMinute} chữ/phút`}
+                  ` · ~${result.criteria.delivery.wordsPerMinute} từ/phút`}
               </div>
             </div>
 
@@ -601,7 +606,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             {result.overallFeedback && (
               <div className="rounded-2xl border bg-indigo-50/60 p-4 text-sm dark:bg-indigo-500/10">
                 <div className="mb-1 flex items-center gap-1.5 font-semibold text-indigo-700 dark:text-indigo-300">
-                  <Sparkles className="h-4 w-4" /> Nhận xét của AI
+                  <Sparkles className="h-4 w-4" /> Lời nhắn cho bé
                 </div>
                 <p className="text-muted-foreground">{result.overallFeedback}</p>
               </div>
@@ -628,7 +633,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
                 {result.improvements.length > 0 && (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-400/25 dark:bg-amber-500/10">
                     <div className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-300">
-                      <AlertCircle className="h-4 w-4" /> Cần cải thiện
+                      <AlertCircle className="h-4 w-4" /> Lần sau bé thử nhé
                     </div>
                     <ul className="space-y-1 text-sm text-muted-foreground">
                       {result.improvements.map((s, i) => (
@@ -645,30 +650,30 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
             {/* Recognized transcript */}
             <Collapsible
-              title="Lời bạn đã nói (máy nhận dạng)"
+              title="Bé đã nói (máy nghe được)"
               icon={<Quote className="h-4 w-4 text-muted-foreground" />}
               defaultOpen
             >
-              <p className="font-chinese leading-relaxed">{result.transcript}</p>
+              <p className="font-primer leading-relaxed">{result.transcript}</p>
             </Collapsible>
 
             {/* Detailed corrections */}
             {result.annotations.length > 0 && (
               <Collapsible
-                title={`Sửa lỗi chi tiết (${result.annotations.length})`}
+                title={`Chỗ bé có thể nói hay hơn (${result.annotations.length})`}
                 icon={<AlertCircle className="h-4 w-4 text-rose-500" />}
                 defaultOpen
               >
                 <div className="space-y-3">
                   {result.annotations.map((a, i) => (
                     <div key={i} className="rounded-lg border bg-muted/30 p-3">
-                      <div className="flex flex-wrap items-center gap-2 font-chinese">
+                      <div className="flex flex-wrap items-center gap-2 font-primer">
                         <span className="rounded bg-rose-100 px-1.5 py-0.5 text-rose-700 line-through dark:bg-rose-500/15 dark:text-rose-300">{a.original}</span>
                         <span className="text-muted-foreground">→</span>
                         <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                           {a.correction}
                         </span>
-                        {a.type && <Badge variant="outline" className="font-chinese text-[11px]">{a.type}</Badge>}
+                        {a.type && <Badge variant="outline" className="text-[11px]">{a.type}</Badge>}
                       </div>
                       {a.explanation && <p className="mt-1.5 text-sm text-muted-foreground">{a.explanation}</p>}
                     </div>
@@ -679,37 +684,34 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
             {/* Corrected version */}
             {result.correctedVersion && result.correctedVersion !== result.transcript && (
-              <Collapsible title="Bản sửa hoàn chỉnh" icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}>
-                <p className="font-chinese leading-relaxed">{result.correctedVersion}</p>
+              <Collapsible title="Cả câu nói hay hơn" icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}>
+                <p className="font-primer leading-relaxed">{result.correctedVersion}</p>
               </Collapsible>
             )}
 
             {/* Sample answers */}
             {topic.sampleAnswer && (
-              <Collapsible title="Bài trả lời mẫu (tham khảo)" icon={<Sparkles className="h-4 w-4 text-indigo-500" />}>
-                <p className="font-chinese leading-relaxed">{topic.sampleAnswer}</p>
-                {topic.sampleAnswerPinyin && (
-                  <p className="font-pinyin mt-2 text-sm text-muted-foreground">{topic.sampleAnswerPinyin}</p>
-                )}
+              <Collapsible title="Câu trả lời mẫu" icon={<Sparkles className="h-4 w-4 text-indigo-500" />}>
+                <p className="font-primer leading-relaxed">{topic.sampleAnswer}</p>
               </Collapsible>
             )}
             {result.sampleAnswer && (
-              <Collapsible title="AI gợi ý cách nói hay hơn" icon={<Sparkles className="h-4 w-4 text-violet-500" />}>
-                <p className="font-chinese leading-relaxed">{result.sampleAnswer}</p>
+              <Collapsible title="Một cách nói khác cho bé" icon={<Sparkles className="h-4 w-4 text-violet-500" />}>
+                <p className="font-primer leading-relaxed">{result.sampleAnswer}</p>
               </Collapsible>
             )}
 
             {/* Examiner transcript reveal */}
             {topic.transcript && (
-              <Collapsible title="Lời giám khảo (transcript)" icon={<Quote className="h-4 w-4 text-muted-foreground" />}>
-                <p className="font-chinese leading-relaxed">{topic.transcript}</p>
+              <Collapsible title="Lời câu hỏi (bản chữ)" icon={<Quote className="h-4 w-4 text-muted-foreground" />}>
+                <p className="font-primer leading-relaxed">{topic.transcript}</p>
               </Collapsible>
             )}
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              <Button onClick={reset} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
-                <RotateCcw className="h-4 w-4" /> Thử lại
+              <Button onClick={reset} className="btn-chunky gap-2 bg-indigo-600 hover:bg-indigo-700">
+                <RotateCcw className="h-4 w-4" /> Nói lại lần nữa
               </Button>
               <Link href="/speaking">
                 <Button variant="outline">Về danh sách</Button>

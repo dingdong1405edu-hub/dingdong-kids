@@ -58,7 +58,9 @@ export function ReadingAnalysisEditor({
     const res = await saveReadingAnalysisAction(readingId, json);
     setSaving(false);
     if (res.ok) {
-      toast.success(res.sentences > 0 ? `Đã lưu dịch + ${res.sentences} câu phân tích.` : "Đã lưu (đã xoá dịch & phân tích).");
+      if (res.cleared) toast.success("Đã xoá dịch & phân tích.");
+      else if (res.sentences != null) toast.success(`Đã lưu dịch + ${res.sentences} câu phân tích.`);
+      else toast.success("Đã lưu bản dịch bài đọc.");
       router.refresh();
     } else {
       toast.error(res.error);

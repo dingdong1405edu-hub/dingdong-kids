@@ -1,9 +1,9 @@
 "use client";
 import { CheckCircle2, XCircle, Flag } from "lucide-react";
-import { PinyinText } from "@/components/learn/pinyin-text";
 import { Input } from "@/components/ui/input";
 import { AnswerExplanation } from "@/components/learn/answer-explanation";
 import { cn } from "@/lib/utils";
+import { SpeakButton } from "./word-lookup";
 import type { ReadingOption, ReadingQuestion } from "./types";
 
 interface QuestionCardProps {
@@ -15,12 +15,30 @@ interface QuestionCardProps {
   isCorrect?: boolean;
   flagged: boolean;
   onToggleFlag: () => void;
-  showPinyin: boolean;
   isCurrent: boolean;
   onActivate: () => void;
   /** Tô sáng + cuộn tới chỗ chứa đáp án trong đoạn văn (chỉ dùng khi đã nộp). */
   onShowEvidence?: () => void;
   cardRef: (el: HTMLDivElement | null) => void;
+}
+
+/** Ép `options` (JsonValue) về mảng lựa chọn; dữ liệu hỏng → mảng rỗng. */
+function toOptions(raw: unknown): ReadingOption[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o) => {
+      if (typeof o === "string") return { text: o };
+      if (o && typeof o === "object") {
+        const r = o as Record<string, unknown>;
+        return {
+          text: typeof r.text === "string" ? r.text : "",
+          imageUrl: typeof r.imageUrl === "string" && r.imageUrl ? r.imageUrl : undefined,
+          translation: typeof r.translation === "string" ? r.translation : undefined,
+        };
+      }
+      return { text: "" };
+    })
+    .filter((o) => o.text || o.imageUrl);
 }
 
 export function QuestionCard({
@@ -32,7 +50,6 @@ export function QuestionCard({
   isCorrect,
   flagged,
   onToggleFlag,
-  showPinyin,
   isCurrent,
   onActivate,
   onShowEvidence,
@@ -40,13 +57,16 @@ export function QuestionCard({
 }: QuestionCardProps) {
   const ca = q.correctAnswer as { index?: number; value?: boolean; text?: string; accepted?: string[] };
   const correctText = ca.text ?? ca.accepted?.[0];
+  const options = toOptions(q.options);
+  // Có ảnh cho lựa chọn → xếp lưới 2 cột để bé chọn bằng hình.
+  const pictureOptions = options.some((o) => o.imageUrl);
 
   return (
     <div
       ref={cardRef}
       onMouseDown={onActivate}
       className={cn(
-        "relative rounded-2xl border bg-card p-4 pl-5 transition-colors",
+        "relative rounded-3xl border-2 bg-card p-4 pl-5 transition-colors",
         submitted
           ? isCorrect
             ? "border-emerald-300 dark:border-emerald-500/40"
@@ -56,16 +76,16 @@ export function QuestionCard({
             : "border-border",
       )}
     >
-      {/* current/flagged accent bar */}
+      {/* vạch nhấn câu hiện tại / đã gắn cờ */}
       <span
         className={cn(
-          "absolute inset-y-3 left-0 w-1 rounded-full transition-colors",
+          "absolute inset-y-4 left-0 w-1.5 rounded-full transition-colors",
           submitted
             ? isCorrect
               ? "bg-emerald-400"
               : "bg-rose-400"
             : flagged
-              ? "bg-amber-400"
+              ? "bg-sunny"
               : isCurrent
                 ? "bg-primary"
                 : "bg-transparent",
@@ -73,48 +93,59 @@ export function QuestionCard({
       />
 
       <div className="flex items-start gap-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
           {index + 1}
         </span>
         {submitted &&
           (isCorrect ? (
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500" />
           ) : (
-            <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-500" />
+            <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-rose-500" />
           ))}
-        <div className="min-w-0 flex-1 font-chinese text-sm font-semibold leading-snug">
-          <PinyinText text={q.prompt} showPinyin={showPinyin} />
-        </div>
+        <div className="font-primer min-w-0 flex-1 text-[17px] font-semibold leading-snug">{q.prompt}</div>
+        <SpeakButton text={q.prompt} audioUrl={q.audioUrl} className="h-10 w-10" label="Nghe đọc câu hỏi" />
         <button
           type="button"
           onClick={onToggleFlag}
-          aria-label={flagged ? "Bỏ gắn cờ" : "Gắn cờ xem lại"}
+          aria-label={flagged ? "Bỏ đánh dấu" : "Đánh dấu để xem lại"}
           className={cn(
-            "shrink-0 rounded-lg border p-1.5 transition-colors",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 transition-colors",
             flagged
-              ? "border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300"
+              ? "border-sunny bg-sunny/20 text-amber-600 dark:text-amber-300"
               : "border-transparent text-muted-foreground hover:bg-muted",
           )}
+          style={{ minHeight: 40 }}
         >
-          <Flag className={cn("h-4 w-4", flagged && "fill-amber-400")} />
+          <Flag className={cn("h-4 w-4", flagged && "fill-current")} />
         </button>
       </div>
 
+      {/* Ảnh minh hoạ của riêng câu hỏi */}
+      {q.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={q.imageUrl}
+          alt=""
+          className="mt-3 h-40 w-full rounded-2xl object-cover sm:h-48"
+        />
+      )}
+
       {/* Câu hỏi dịch (khi chữa bài) */}
       {submitted && q.promptTranslation && (
-        <p className="mt-1.5 pl-8 text-xs italic text-muted-foreground">{q.promptTranslation}</p>
+        <p className="mt-1.5 pl-9 text-sm italic text-muted-foreground">{q.promptTranslation}</p>
       )}
 
       {/* MCQ */}
       {q.type === "MCQ" && (
-        <div className="mt-3 space-y-2">
-          {(q.options as ReadingOption[])?.map((opt, oi) => (
+        <div className={cn("mt-3", pictureOptions ? "grid grid-cols-2 gap-2.5" : "space-y-2.5")}>
+          {options.map((opt, oi) => (
             <button
               key={oi}
               onClick={() => onAnswer(oi)}
               disabled={submitted}
               className={cn(
-                "flex w-full items-start gap-2 rounded-xl border p-2.5 text-left font-chinese text-sm transition-colors",
+                "flex w-full gap-2 rounded-2xl border-2 p-3 text-left text-[15px] transition-colors",
+                pictureOptions ? "flex-col items-stretch" : "items-start",
                 userAnswer === oi
                   ? submitted
                     ? oi === ca.index
@@ -123,43 +154,49 @@ export function QuestionCard({
                     : "border-primary bg-primary/10"
                   : submitted && oi === ca.index
                     ? "border-emerald-300 bg-emerald-50/50 dark:border-emerald-500/40 dark:bg-emerald-500/10"
-                    : "hover:border-primary/50",
+                    : "border-input hover:border-primary/50",
               )}
             >
-              <span
-                className={cn(
-                  "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold",
-                  submitted && oi === ca.index && "border-emerald-500 bg-emerald-500 text-white",
-                )}
-              >
-                {String.fromCharCode(65 + oi)}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block leading-snug">{opt.text}</span>
-                {submitted && opt.translation && (
-                  <span className="mt-0.5 block font-sans text-xs font-normal not-italic text-muted-foreground">
-                    {opt.translation}
-                  </span>
-                )}
-              </span>
-              {submitted && oi === ca.index && (
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+              {opt.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={opt.imageUrl} alt="" className="h-24 w-full rounded-xl object-cover" />
               )}
+              <span className={cn("flex gap-2", pictureOptions ? "items-center" : "min-w-0 flex-1 items-start")}>
+                <span
+                  className={cn(
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold",
+                    submitted && oi === ca.index && "border-emerald-500 bg-emerald-500 text-white",
+                  )}
+                >
+                  {String.fromCharCode(65 + oi)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="font-primer block font-semibold leading-snug">{opt.text}</span>
+                  {submitted && opt.translation && (
+                    <span className="mt-0.5 block font-sans text-xs font-normal not-italic text-muted-foreground">
+                      {opt.translation}
+                    </span>
+                  )}
+                </span>
+                {submitted && oi === ca.index && (
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                )}
+              </span>
             </button>
           ))}
         </div>
       )}
 
-      {/* True / False */}
+      {/* Đúng / Sai */}
       {q.type === "TRUE_FALSE" && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-2.5">
           {[true, false].map((val) => (
             <button
               key={String(val)}
               onClick={() => onAnswer(val)}
               disabled={submitted}
               className={cn(
-                "flex-1 rounded-xl border p-2.5 text-sm font-semibold transition-colors",
+                "flex-1 rounded-2xl border-2 p-3 text-base font-bold transition-colors",
                 userAnswer === val
                   ? submitted
                     ? val === ca.value
@@ -168,40 +205,47 @@ export function QuestionCard({
                     : "border-primary bg-primary/10"
                   : submitted && val === ca.value
                     ? "border-emerald-300 bg-emerald-50/50 dark:border-emerald-500/40 dark:bg-emerald-500/10"
-                    : "hover:border-primary/50",
+                    : "border-input hover:border-primary/50",
               )}
             >
-              {val ? "Đúng ✓" : "Sai ✗"}
+              {val ? "Đúng 👍" : "Sai 👎"}
             </button>
           ))}
         </div>
       )}
 
-      {/* Fill-in / short answer */}
+      {/* Điền từ / trả lời ngắn */}
       {(q.type === "FILL_BLANK" || q.type === "SHORT_ANSWER") && (
         <div className="mt-3 space-y-2">
           <Input
             value={(userAnswer as string) ?? ""}
             onChange={(e) => onAnswer(e.target.value)}
             disabled={submitted}
-            placeholder="Nhập câu trả lời…"
+            placeholder="Bé viết câu trả lời ở đây…"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
             className={cn(
-              "font-chinese",
-              submitted && (isCorrect ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15" : "border-rose-300 bg-rose-50 dark:bg-rose-500/15"),
+              "font-primer h-12 rounded-2xl text-base",
+              submitted &&
+                (isCorrect
+                  ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15"
+                  : "border-rose-300 bg-rose-50 dark:bg-rose-500/15"),
             )}
           />
           {submitted && !isCorrect && correctText && (
-            <p className="text-xs text-emerald-700 dark:text-emerald-300">
-              Đáp án đúng: <span className="font-chinese font-semibold">{correctText}</span>
+            <p className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-300">
+              Đáp án đúng là <span className="font-primer font-bold">{correctText}</span>
+              <SpeakButton text={correctText} className="h-9 w-9" />
             </p>
           )}
         </div>
       )}
 
-      {/* Unsupported types degrade gracefully instead of blocking */}
+      {/* Loại câu hỏi chưa hỗ trợ thì báo nhẹ nhàng thay vì chặn cả bài */}
       {q.type === "MATCHING" && (
-        <p className="mt-3 rounded-lg bg-muted p-2.5 text-xs text-muted-foreground">
-          Loại câu hỏi nối chưa được hỗ trợ trong phiên bản này.
+        <p className="mt-3 rounded-2xl bg-muted p-3 text-sm text-muted-foreground">
+          Dạng bài nối chưa có ở phiên bản này.
         </p>
       )}
 
@@ -211,23 +255,27 @@ export function QuestionCard({
           <button
             type="button"
             onClick={onShowEvidence}
-            className="mt-3 block w-full rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-left text-xs text-emerald-800 transition-colors hover:border-emerald-400 hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25"
+            className="mt-3 block w-full rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-3 text-left text-sm text-emerald-800 transition-colors hover:border-emerald-400 hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25"
           >
-            <span className="font-semibold">📍 Đáp án nằm ở đoạn:</span>{" "}
-            <span className="font-chinese">{q.supportingQuote}</span>
+            <span className="font-semibold">📍 Câu trả lời nằm ở đây:</span>{" "}
+            <span className="font-primer font-semibold">{q.supportingQuote}</span>
             {q.quoteTranslation && (
-              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">“{q.quoteTranslation}”</span>
+              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">
+                “{q.quoteTranslation}”
+              </span>
             )}
-            <span className="mt-1 block text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-              Bấm để xem &amp; tô sáng trong đoạn văn →
+            <span className="mt-1 block text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              Bấm để xem chỗ đó trong bài đọc →
             </span>
           </button>
         ) : (
-          <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-xs text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200">
-            <span className="font-semibold">📍 Đáp án nằm ở đoạn:</span>{" "}
-            <span className="font-chinese">{q.supportingQuote}</span>
+          <div className="mt-3 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200">
+            <span className="font-semibold">📍 Câu trả lời nằm ở đây:</span>{" "}
+            <span className="font-primer font-semibold">{q.supportingQuote}</span>
             {q.quoteTranslation && (
-              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">“{q.quoteTranslation}”</span>
+              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">
+                “{q.quoteTranslation}”
+              </span>
             )}
           </div>
         ))}

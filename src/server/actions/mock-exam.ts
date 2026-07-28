@@ -3,10 +3,12 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { HSKLevel, Skill, QuestionType, Prisma } from "@prisma/client";
+import { EnglishLevel, Skill, QuestionType, Prisma } from "@prisma/client";
 import { requireAdminActor } from "@/lib/admin-guard";
 import { logAudit } from "@/lib/audit";
 import { generateReadingExplanation, isGradingConfigured } from "@/lib/groq";
+import { ensureAudio } from "@/lib/tts";
+import { levelLabel } from "@/lib/utils";
 
 // Chỉ 3 kỹ năng xuất hiện trong đề thi thật.
 const EXAM_SKILLS = [Skill.LISTENING, Skill.READING, Skill.WRITING] as const;
@@ -25,8 +27,7 @@ function optStr(fd: FormData, key: string): string | null {
 // ===================== Đề (MockExam) =====================
 const examSchema = z.object({
   title: z.string().trim().min(1, "Thiếu tiêu đề đề thi."),
-  titleZh: z.string().trim().optional(),
-  hskLevel: z.nativeEnum(HSKLevel),
+  level: z.nativeEnum(EnglishLevel),
   description: z.string().trim().optional(),
   totalTime: z.coerce.number().int().min(0).optional(),
 });
@@ -37,8 +38,7 @@ export async function createMockExamAction(fd: FormData): Promise<void> {
   const created = await db.mockExam.create({
     data: {
       title: data.title,
-      titleZh: data.titleZh || null,
-      hskLevel: data.hskLevel,
+      level: data.level,
       description: data.description || null,
       // Form nhập PHÚT, lưu GIÂY (đồng bộ timeLimit các model khác).
       totalTime: data.totalTime && data.totalTime > 0 ? data.totalTime * 60 : null,
@@ -68,8 +68,7 @@ export async function updateMockExamAction(fd: FormData): Promise<{ ok: boolean;
       where: { id },
       data: {
         title: data.title,
-        titleZh: data.titleZh || null,
-        hskLevel: data.hskLevel,
+        level: data.level,
         description: data.description || null,
         totalTime: data.totalTime && data.totalTime > 0 ? data.totalTime * 60 : null,
       },
@@ -190,25 +189,32 @@ const partSchema = z.object({
   instructions: z.string().trim().optional(),
   imageUrl: z.string().trim().optional(),
   passage: z.string().trim().optional(),
-  passagePinyin: z.string().trim().optional(),
   audioUrl: z.string().trim().optional(),
   transcript: z.string().trim().optional(),
   writingPrompt: z.string().trim().optional(),
-  writingMinChars: z.coerce.number().int().min(0).optional(),
+  writingMinWords: z.coerce.number().int().min(0).optional(),
 });
 
-function partData(input: z.infer<typeof partSchema>) {
+/**
+ * Dựng dữ liệu lưu cho một tiểu phần. Tiểu phần NGHE chưa có MP3 nhưng đã có lời
+ * thoại thì tự sinh audio bằng TTS — đề thi thử luôn nghe được mà admin không
+ * phải tự thu âm. Lỗi TTS không chặn việc lưu (ensureAudio tự nuốt lỗi).
+ */
+async function partData(input: z.infer<typeof partSchema>) {
+  const transcript = input.transcript?.trim() || null;
+  let audioUrl = input.audioUrl?.trim() || null;
+  if (!audioUrl && transcript) audioUrl = await ensureAudio(null, transcript);
+
   return {
     title: input.title?.trim() || "",
     instructions: input.instructions?.trim() || null,
     imageUrl: input.imageUrl?.trim() || null,
     passage: input.passage?.trim() || null,
-    passagePinyin: input.passagePinyin?.trim() || null,
-    audioUrl: input.audioUrl?.trim() || null,
-    transcript: input.transcript?.trim() || null,
+    audioUrl,
+    transcript,
     writingPrompt: input.writingPrompt?.trim() || null,
-    writingMinChars:
-      input.writingMinChars && input.writingMinChars > 0 ? input.writingMinChars : null,
+    writingMinWords:
+      input.writingMinWords && input.writingMinWords > 0 ? input.writingMinWords : null,
   };
 }
 
@@ -220,7 +226,7 @@ export async function createPartAction(fd: FormData): Promise<{ ok: boolean; err
     const data = partSchema.parse(Object.fromEntries(fd));
     const count = await db.mockExamPart.count({ where: { sectionId: data.sectionId } });
     const created = await db.mockExamPart.create({
-      data: { sectionId: data.sectionId, order: count + 1, ...partData(data) },
+      data: { sectionId: data.sectionId, order: count + 1, ...(await partData(data)) },
     });
     await logAudit({
       actor,
@@ -245,7 +251,7 @@ export async function updatePartAction(fd: FormData): Promise<{ ok: boolean; err
     if (!id) return { ok: false, error: "Thiếu id tiểu phần." };
     const data = partSchema.parse(Object.fromEntries(fd));
     const before = await db.mockExamPart.findUnique({ where: { id } });
-    const updated = await db.mockExamPart.update({ where: { id }, data: partData(data) });
+    const updated = await db.mockExamPart.update({ where: { id }, data: await partData(data) });
     await logAudit({
       actor,
       action: "UPDATE",
@@ -327,14 +333,14 @@ export async function createExamQuestionAction(
       try {
         const part = await db.mockExamPart.findUnique({
           where: { id: examPartId },
-          select: { passage: true, section: { select: { exam: { select: { hskLevel: true } } } } },
+          select: { passage: true, section: { select: { exam: { select: { level: true } } } } },
         });
         if (part?.passage) {
           const r = await generateReadingExplanation({
             passage: part.passage,
             prompt,
             correctAnswer: correctAnswerText,
-            hskLevel: part.section.exam.hskLevel,
+            level: part.section.exam.level,
           });
           explanation = r.explanation || undefined;
           supportingQuote = r.supportingQuote || undefined;
@@ -344,12 +350,18 @@ export async function createExamQuestionAction(
       }
     }
 
+    // Audio đọc đề: trẻ chưa đọc thạo vẫn làm được bài. Admin có thể tự dán MP3;
+    // nếu không thì sinh bằng TTS. Lỗi TTS không chặn việc lưu câu hỏi.
+    const audioUrl = await ensureAudio(optStr(fd, "audioUrl"), prompt);
+
     const count = await db.question.count({ where: { examPartId } });
     const created = await db.question.create({
       data: {
         type,
         prompt,
-        promptPinyin: optStr(fd, "promptPinyin"),
+        promptTranslation: optStr(fd, "promptTranslation"),
+        imageUrl: optStr(fd, "imageUrl"),
+        audioUrl,
         options: options ?? Prisma.JsonNull,
         correctAnswer,
         explanation,
@@ -388,9 +400,9 @@ export async function deleteExamQuestionAction(questionId: string, examId: strin
   return { ok: true };
 }
 
-// ===================== Đổi thứ tự đề trong một cấp HSK =====================
+// ===================== Đổi thứ tự đề trong một cấp độ =====================
 export async function reorderMockExamsAction(
-  hskLevel: HSKLevel,
+  level: EnglishLevel,
   orderedIds: string[],
 ): Promise<{ ok: boolean; error?: string }> {
   try {
@@ -398,9 +410,9 @@ export async function reorderMockExamsAction(
     if (orderedIds.length === 0) return { ok: true };
     const rows = await db.mockExam.findMany({
       where: { id: { in: orderedIds } },
-      select: { id: true, hskLevel: true, order: true },
+      select: { id: true, level: true, order: true },
     });
-    if (rows.length !== orderedIds.length || rows.some((r) => r.hskLevel !== hskLevel)) {
+    if (rows.length !== orderedIds.length || rows.some((r) => r.level !== level)) {
       return { ok: false, error: "Danh sách sắp xếp không hợp lệ." };
     }
     const before = [...rows].sort((a, b) => a.order - b.order).map((r) => r.id);
@@ -411,7 +423,7 @@ export async function reorderMockExamsAction(
       actor,
       action: "UPDATE",
       entity: "MockExam",
-      summary: `Sắp xếp lại thứ tự đề thi ${hskLevel}`,
+      summary: `Sắp xếp lại thứ tự đề thi ${levelLabel(level)}`,
       before,
       after: orderedIds,
     });

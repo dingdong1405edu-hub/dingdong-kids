@@ -2,9 +2,9 @@ import {
   BookOpen,
   SpellCheck,
   PenTool,
-  Volume2,
+  AudioLines,
   GraduationCap,
-  Landmark,
+  Globe2,
   MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
@@ -16,29 +16,31 @@ import type { MaterialCategory } from "@prisma/client";
  * and the bulk seed (prisma/seed-data/*.json) both speak this shape.
  */
 export type MaterialBlock =
-  | { type: "heading"; text: string; zh?: string }
+  | { type: "heading"; text: string; en?: string }
   | { type: "paragraph"; text: string }
   | { type: "list"; ordered?: boolean; items: string[] }
-  | { type: "example"; zh: string; pinyin?: string; vi?: string }
-  | { type: "vocab"; items: Array<{ zh: string; pinyin: string; vi: string }> }
+  /** Một câu mẫu tiếng Anh + nghĩa tiếng Việt. */
+  | { type: "example"; en: string; vi?: string }
+  /** Bảng từ mới: từ tiếng Anh + phiên âm IPA + nghĩa tiếng Việt. */
+  | { type: "vocab"; items: Array<{ word: string; ipa: string; vi: string }> }
   | { type: "note"; text: string };
 
 export interface CategoryMeta {
   value: MaterialCategory;
-  label: string; // Vietnamese
-  labelZh: string; // Chinese
+  label: string; // nhãn tiếng Việt (giao diện)
+  labelEn: string; // tên tiếng Anh của chuyên mục
   icon: LucideIcon;
   color: string; // tailwind classes for the icon chip / badge
 }
 
 export const MATERIAL_CATEGORIES: CategoryMeta[] = [
-  { value: "GRAMMAR", label: "Ngữ pháp", labelZh: "语法", icon: SpellCheck, color: "bg-violet-100 text-violet-600" },
-  { value: "VOCABULARY", label: "Từ vựng", labelZh: "词汇", icon: BookOpen, color: "bg-blue-100 text-blue-600" },
-  { value: "HANZI", label: "Chữ Hán", labelZh: "汉字", icon: PenTool, color: "bg-amber-100 text-amber-600" },
-  { value: "PRONUNCIATION", label: "Phát âm", labelZh: "发音", icon: Volume2, color: "bg-teal-100 text-teal-600" },
-  { value: "EXAM_TIPS", label: "Mẹo thi HSK", labelZh: "考试技巧", icon: GraduationCap, color: "bg-rose-100 text-rose-600" },
-  { value: "CULTURE", label: "Văn hóa", labelZh: "文化", icon: Landmark, color: "bg-orange-100 text-orange-600" },
-  { value: "CONVERSATION", label: "Giao tiếp", labelZh: "会话", icon: MessagesSquare, color: "bg-sky-100 text-sky-600" },
+  { value: "GRAMMAR", label: "Ngữ pháp", labelEn: "Grammar", icon: SpellCheck, color: "bg-violet-100 text-violet-600" },
+  { value: "VOCABULARY", label: "Từ vựng", labelEn: "Vocabulary", icon: BookOpen, color: "bg-blue-100 text-blue-600" },
+  { value: "SPELLING", label: "Chính tả", labelEn: "Spelling", icon: PenTool, color: "bg-amber-100 text-amber-600" },
+  { value: "PHONICS", label: "Ghép vần", labelEn: "Phonics", icon: AudioLines, color: "bg-teal-100 text-teal-600" },
+  { value: "EXAM_TIPS", label: "Mẹo thi Cambridge", labelEn: "Exam tips", icon: GraduationCap, color: "bg-rose-100 text-rose-600" },
+  { value: "CULTURE", label: "Khám phá thế giới", labelEn: "Culture", icon: Globe2, color: "bg-orange-100 text-orange-600" },
+  { value: "CONVERSATION", label: "Giao tiếp", labelEn: "Conversation", icon: MessagesSquare, color: "bg-sky-100 text-sky-600" },
 ];
 
 export function categoryMeta(c: string): CategoryMeta {
@@ -51,11 +53,11 @@ export function materialCategoryLabel(c: string): string {
 
 /**
  * Convert an admin textarea into structured content blocks. Lightweight markup:
- *   "# Tiêu đề"            -> heading
- *   "- mục" / "* mục"      -> bullet list (consecutive lines grouped)
- *   "> ghi chú"            -> note callout
- *   "汉字 | pīnyīn | nghĩa" -> example line
- *   (blank line separates) -> paragraph
+ *   "# Tiêu đề"                -> heading
+ *   "- mục" / "* mục"          -> bullet list (consecutive lines grouped)
+ *   "> ghi chú"                -> note callout
+ *   "I like cats. | Mình thích mèo." -> example line (câu tiếng Anh | nghĩa tiếng Việt)
+ *   (blank line separates)     -> paragraph
  */
 export function parseMaterialContent(text: string): MaterialBlock[] {
   const blocks: MaterialBlock[] = [];
@@ -97,8 +99,8 @@ export function parseMaterialContent(text: string): MaterialBlock[] {
     } else if (line.includes("|")) {
       flushPara();
       flushList();
-      const [zh, pinyin, vi] = line.split("|").map((s) => s.trim());
-      blocks.push({ type: "example", zh, pinyin: pinyin || undefined, vi: vi || undefined });
+      const [en, vi] = line.split("|").map((s) => s.trim());
+      blocks.push({ type: "example", en, vi: vi || undefined });
     } else {
       flushList();
       para.push(line);

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -7,7 +8,12 @@ import { BaoBuddy } from "@/components/marketing/bao-buddy";
 
 export const dynamic = "force-dynamic";
 
-/** "Sổ từ" — danh sách từ học viên đã lưu khi tra cứu (đọc hiểu, …). */
+export const metadata: Metadata = {
+  title: "Sổ từ",
+  description: "Những từ tiếng Anh bé đã lưu lại khi đọc truyện và làm bài.",
+};
+
+/** "Sổ từ" — danh sách từ bé đã lưu khi tra cứu (đọc hiểu, …). */
 export default async function SoTuPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -20,32 +26,32 @@ export default async function SoTuPage() {
 
   const words: SavedWordItem[] = rows.map((w) => ({
     id: w.id,
-    hanzi: w.hanzi,
-    pinyin: w.pinyin,
+    word: w.word,
+    ipa: w.ipa,
     meaning: w.meaning,
-    hskLevel: w.hskLevel,
+    level: w.level,
     createdAt: w.createdAt.toISOString(),
   }));
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <BookMarked className="h-5 w-5" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <BookMarked className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Sổ từ</h1>
-          <p className="text-sm text-muted-foreground">
-            Những từ bạn lưu lại khi tra cứu. Tổng cộng {words.length} từ.
+          <h1 className="font-display text-2xl font-bold">Sổ từ của bé 📒</h1>
+          <p className="text-[15px] text-muted-foreground">
+            Những từ bé đã cất vào sổ. Tất cả {words.length} từ.
           </p>
         </div>
       </div>
 
       {words.length === 0 ? (
-        <div className="rounded-2xl border border-dashed py-16 text-center">
+        <div className="sticker rounded-3xl border-dashed py-16 text-center">
           <BaoBuddy size={72} pose="idle" className="mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
-            Chưa có từ nào. Khi làm bài đọc hiểu, bấm vào một chữ rồi chọn “Lưu vào sổ từ”.
+          <p className="text-[15px] text-muted-foreground">
+            Sổ còn trống. Khi đọc truyện, bé bấm vào một từ rồi chọn “Lưu vào sổ từ” nhé 🌟
           </p>
         </div>
       ) : (

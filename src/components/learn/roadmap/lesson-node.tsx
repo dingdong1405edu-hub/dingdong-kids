@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Lock, Trophy } from "lucide-react";
+import { Lock, Gift, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseTheme, LessonStatus } from "@/lib/roadmap";
 
@@ -9,6 +9,7 @@ interface LessonNodeProps {
   status: LessonStatus;
   kind?: "lesson" | "trophy";
   order?: number;
+  /** Emoji trang trí của bài (RoadmapLesson.icon). */
   icon?: string | null;
   label?: string;
   theme: CourseTheme;
@@ -16,12 +17,16 @@ interface LessonNodeProps {
   onClick: () => void;
 }
 
-const LEDGE = 6;
+/** Độ dày "gờ" 3D dưới nút — nhìn như nút bấm đồ chơi bấm được. */
+const LEDGE = 8;
 
 /**
  * Một node trên bản đồ học — nút tròn kiểu 3D (có gờ bóng đổ) như Duolingo.
- * Trạng thái: done (đã xong, có dấu ✓) · current (đang học, có vòng nhịp + bong
- * bóng "Bắt đầu") · locked (khóa). `kind="trophy"` là mốc thưởng cuối chương.
+ * Trạng thái: done (đã xong, gắn ngôi sao vàng) · current (đang học: vòng nhịp +
+ * nảy nhẹ + bong bóng "Bắt đầu") · locked (khoá). `kind="trophy"` là hộp quà
+ * phần thưởng cuối chương.
+ *
+ * Vùng chạm luôn ≥ 76px để ngón tay trẻ nhỏ bấm không trượt.
  */
 export function LessonNode({
   status,
@@ -30,7 +35,7 @@ export function LessonNode({
   icon,
   label,
   theme,
-  size = 76,
+  size = 84,
   onClick,
 }: LessonNodeProps) {
   const isTrophy = kind === "trophy";
@@ -40,7 +45,7 @@ export function LessonNode({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.5, y: 10 }}
+      initial={{ opacity: 0, scale: 0.5, y: 12 }}
       whileInView={{ opacity: 1, scale: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ type: "spring", stiffness: 320, damping: 20 }}
@@ -49,32 +54,41 @@ export function LessonNode({
     >
       {/* Bong bóng "BẮT ĐẦU" cho bài hiện tại */}
       {current && !isTrophy && (
-        <motion.div
-          animate={{ y: [0, -5, 0] }}
-          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-9 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-xl bg-white px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide shadow-soft-lg dark:bg-zinc-100"
-        >
-          <span className={theme.accentText}>Bắt đầu</span>
-          <span className="absolute -bottom-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 bg-white dark:bg-zinc-100" />
-        </motion.div>
+        <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 animate-bounce-soft whitespace-nowrap rounded-2xl bg-white px-3.5 py-1.5 shadow-soft-lg dark:bg-zinc-100">
+          <span className={cn("font-display text-xs font-extrabold uppercase tracking-wide", theme.accentText)}>
+            Bắt đầu
+          </span>
+          <span className="absolute -bottom-1 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[2px] bg-white dark:bg-zinc-100" />
+        </div>
       )}
 
-      {/* Vòng nhịp quanh node hiện tại */}
+      {/* Vòng nhịp lan toả quanh node đang học */}
       {current && (
-        <motion.span
-          aria-hidden
-          animate={{ scale: [1, 1.18, 1], opacity: [0.65, 0, 0.65] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-          className={cn("absolute inset-0 rounded-full ring-4", theme.ring)}
-        />
+        <>
+          <motion.span
+            aria-hidden
+            animate={{ scale: [1, 1.28, 1], opacity: [0.7, 0, 0.7] }}
+            transition={{ duration: 1.9, repeat: Infinity, ease: "easeOut" }}
+            className={cn("absolute inset-0 rounded-full ring-4", theme.ring)}
+          />
+          <motion.span
+            aria-hidden
+            animate={{ scale: [1, 1.14, 1], opacity: [0.55, 0, 0.55] }}
+            transition={{ duration: 1.9, repeat: Infinity, ease: "easeOut", delay: 0.45 }}
+            className={cn("absolute inset-0 rounded-full ring-4", theme.ring)}
+          />
+        </>
       )}
 
       <button
         type="button"
         onClick={onClick}
-        aria-label={`${label ?? (isTrophy ? "Phần thưởng chương" : `Bài ${order}`)}${locked ? " — đã khoá" : ""}`}
+        aria-label={`${label ?? (isTrophy ? "Phần thưởng chương" : `Bài ${order}`)}${locked ? " — đang khoá" : ""}`}
         aria-disabled={locked || undefined}
-        className="group relative block h-full w-full focus:outline-none"
+        className={cn(
+          "group relative block h-full w-full rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40",
+          current && "animate-bounce-soft",
+        )}
       >
         {/* Gờ 3D phía dưới */}
         <span
@@ -87,31 +101,39 @@ export function LessonNode({
         {/* Mặt node */}
         <span
           className={cn(
-            "absolute inset-x-0 top-0 flex items-center justify-center rounded-full text-3xl leading-none transition-transform duration-100 group-active:translate-y-[3px]",
+            "absolute inset-x-0 top-0 flex items-center justify-center rounded-full text-4xl leading-none transition-transform duration-100 group-active:translate-y-[4px]",
             locked
               ? "bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
               : isTrophy
                 ? "bg-gradient-to-b from-amber-300 to-amber-500 text-white"
                 : cn(theme.nodeFace, "text-white"),
-            current && !locked && cn("shadow-lg", theme.glow),
+            !locked && "shadow-lg",
+            !locked && theme.glow,
           )}
           style={{ bottom: LEDGE }}
         >
+          {/* Ánh sáng phản chiếu ở nửa trên — làm nút trông tròn căng như kẹo */}
+          {!locked && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[14%] top-[8%] h-[34%] rounded-[999px] bg-white/35 blur-[1px]"
+            />
+          )}
           {isTrophy ? (
-            <Trophy className={cn("h-7 w-7", locked ? "" : "fill-amber-200")} />
+            <Gift className={cn("h-8 w-8", locked ? "" : "drop-shadow-sm")} strokeWidth={2.2} />
           ) : locked ? (
-            <Lock className="h-6 w-6" />
+            <Lock className="h-7 w-7" />
           ) : icon ? (
-            <span className="drop-shadow-sm">{icon}</span>
+            <span className="relative drop-shadow-sm">{icon}</span>
           ) : (
-            <span className="font-display text-xl font-extrabold">{order}</span>
+            <span className="relative font-display text-2xl font-extrabold">{order}</span>
           )}
         </span>
 
-        {/* Huy hiệu hoàn thành */}
-        {done && !isTrophy && (
-          <span className="absolute -right-0.5 -top-0.5 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow">
-            <Check className={cn("h-4 w-4", theme.accentText)} strokeWidth={3} />
+        {/* Ngôi sao "đã xong" — bật ra như dán sticker */}
+        {done && (
+          <span className="absolute -right-1 -top-1 z-10 flex h-8 w-8 animate-star-pop items-center justify-center rounded-full bg-white shadow-soft dark:bg-zinc-100">
+            <Star className="h-5 w-5 fill-sunny text-sunny" strokeWidth={2} />
           </span>
         )}
       </button>

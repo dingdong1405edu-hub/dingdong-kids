@@ -1,9 +1,15 @@
 "use client";
-import { Play, Pause, RotateCcw, Volume2, Gauge, Radio, AlertTriangle } from "lucide-react";
+import { Play, Pause, RotateCcw, Volume2, Radio, AlertTriangle } from "lucide-react";
 import { cn, formatDuration } from "@/lib/utils";
 import type { ListeningAudio } from "./use-listening-audio";
 
-const SPEEDS = [0.75, 1, 1.25, 1.5];
+// Dải tốc độ cho TRẺ EM: chỉ có chậm và bình thường. Nghe nhanh hơn giọng chuẩn
+// không giúp trẻ luyện nghe, chỉ làm các em nản — nên bỏ hẳn 1.25x/1.5x.
+const SPEEDS: { value: number; label: string; emoji: string }[] = [
+  { value: 0.5, label: "Rất chậm", emoji: "🐢" },
+  { value: 0.75, label: "Chậm", emoji: "🐰" },
+  { value: 1, label: "Thường", emoji: "⭐" },
+];
 
 function Equalizer({ active }: { active: boolean }) {
   // Five bars; in "playing" state they bounce with staggered delays.
@@ -13,7 +19,7 @@ function Equalizer({ active }: { active: boolean }) {
       {delays.map((d, i) => (
         <span
           key={i}
-          className={cn("w-[3px] rounded-full bg-teal-500", active && "animate-eq")}
+          className={cn("w-[3px] rounded-full bg-primary", active && "animate-eq")}
           style={{ height: "100%", animationDelay: d, transform: active ? undefined : "scaleY(0.35)" }}
         />
       ))}
@@ -48,7 +54,7 @@ export function AudioPlayer({
 
   const ttsProgress =
     segmentCount > 0 && currentSegment !== null ? ((currentSegment + 1) / segmentCount) * 100 : 0;
-  const mp3Progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const fileProgress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const blocked = !canStart && status === "idle";
   // Restart always begins a fresh play-through, so it's unavailable whenever a
@@ -57,22 +63,22 @@ export function AudioPlayer({
   const restartBlocked = !canStart;
 
   return (
-    <div className="rounded-2xl border bg-gradient-to-br from-teal-50/70 to-white dark:from-teal-500/10 dark:to-transparent p-4 shadow-sm">
+    <div className="rounded-3xl border-2 bg-gradient-to-br from-primary/10 to-transparent p-4 shadow-soft">
       <div className="flex items-center gap-3 sm:gap-4">
-        {/* Play / pause */}
+        {/* Nghe / Tạm dừng — nút to nhất trên màn hình, bé bấm không trượt */}
         <button
           onClick={toggle}
           disabled={mode === "none" || blocked}
-          aria-label={playing ? "Tạm dừng" : "Phát"}
+          aria-label={playing ? "Tạm dừng" : "Nghe"}
           className={cn(
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-transform active:scale-95",
-            mode === "none" || blocked ? "cursor-not-allowed bg-muted" : "bg-teal-600 hover:bg-teal-700",
+            "btn-chunky flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-white transition-transform active:scale-95",
+            mode === "none" || blocked ? "cursor-not-allowed bg-muted" : "bg-primary hover:brightness-105",
           )}
         >
-          {playing ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 translate-x-0.5" />}
+          {playing ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8 translate-x-0.5" />}
         </button>
 
-        {/* Middle: progress / status */}
+        {/* Giữa: tiến trình / trạng thái */}
         <div className="min-w-0 flex-1">
           {mode === "mp3" ? (
             <>
@@ -84,9 +90,9 @@ export function AudioPlayer({
                 value={currentTime}
                 onChange={(e) => seek(Number(e.target.value))}
                 aria-label="Tua audio"
-                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-teal-100 dark:bg-teal-500/20 accent-teal-600"
+                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-primary/15 accent-primary"
                 style={{
-                  backgroundImage: `linear-gradient(to right, rgb(13 148 136) ${mp3Progress}%, transparent ${mp3Progress}%)`,
+                  backgroundImage: `linear-gradient(to right, hsl(var(--primary)) ${fileProgress}%, transparent ${fileProgress}%)`,
                 }}
               />
               <div className="mt-1 flex items-center justify-between text-xs tabular-nums text-muted-foreground">
@@ -98,12 +104,12 @@ export function AudioPlayer({
             <div className="flex items-center gap-3">
               <Equalizer active={playing} />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 text-sm font-medium text-teal-700 dark:text-teal-300">
-                  <Radio className="h-3.5 w-3.5" /> Giọng đọc tự động
+                <div className="flex items-center gap-1.5 text-sm font-bold text-primary">
+                  <Radio className="h-4 w-4" /> Giọng đọc máy
                 </div>
-                <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-teal-100 dark:bg-teal-500/20">
+                <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-primary/15">
                   <div
-                    className="h-full rounded-full bg-teal-500 transition-all duration-300"
+                    className="h-full rounded-full bg-primary transition-all duration-300"
                     style={{ width: `${ttsProgress}%` }}
                   />
                 </div>
@@ -112,62 +118,64 @@ export function AudioPlayer({
           ) : (
             <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-300">
               <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span>Hiện không phát được audio trên thiết bị này.</span>
+              <span>Máy này chưa phát được tiếng. Bé đọc lời thoại bên dưới nhé.</span>
             </div>
           )}
         </div>
 
-        {/* Restart */}
+        {/* Nghe lại từ đầu */}
         {mode !== "none" && (
           <button
             onClick={restart}
             disabled={restartBlocked}
             aria-label="Nghe lại từ đầu"
+            title="Nghe lại từ đầu"
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors",
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
               restartBlocked
-                ? "cursor-not-allowed text-muted-foreground/50"
-                : "text-muted-foreground hover:border-teal-300 hover:text-teal-700 dark:hover:text-teal-300",
+                ? "cursor-not-allowed border-input text-muted-foreground/50"
+                : "border-primary/30 text-primary hover:bg-primary/10",
             )}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-5 w-5" />
           </button>
         )}
       </div>
 
-      {/* Controls row */}
+      {/* Hàng điều khiển */}
       {mode !== "none" && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-teal-100/70 dark:border-teal-500/20 pt-3">
-          {/* Play count */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-primary/15 pt-3">
+          {/* Số lần được nghe */}
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold",
               reviewMode
                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
                 : remainingPlays && remainingPlays > 0
-                  ? "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300"
-                  : "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+                  ? "bg-primary/10 text-primary"
+                  : "bg-sunny/25 text-amber-700 dark:text-amber-300",
             )}
           >
-            <Volume2 className="h-3.5 w-3.5" />
-            {reviewMode ? "Nghe lại không giới hạn" : `Còn ${remainingPlays} lần nghe`}
+            <Volume2 className="h-4 w-4" />
+            {reviewMode ? "Nghe lại thoải mái" : `Còn ${remainingPlays} lần nghe`}
           </span>
 
-          {/* Speed */}
-          <div className="flex items-center gap-1">
-            <Gauge className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+          {/* Tốc độ */}
+          <div className="flex items-center gap-1.5">
             {SPEEDS.map((s) => (
               <button
-                key={s}
-                onClick={() => setRate(s)}
+                key={s.value}
+                onClick={() => setRate(s.value)}
+                title={`Tốc độ ${s.value}x`}
+                aria-pressed={rate === s.value}
                 className={cn(
-                  "rounded-md px-2 py-1 text-xs font-semibold transition-colors",
-                  rate === s
-                    ? "bg-teal-600 text-white"
-                    : "border text-muted-foreground hover:border-teal-300 hover:text-teal-700 dark:hover:text-teal-300",
+                  "rounded-2xl border-2 px-3 py-1.5 text-xs font-bold transition-colors",
+                  rate === s.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input text-muted-foreground hover:border-primary/40",
                 )}
               >
-                {s}x
+                <span aria-hidden>{s.emoji}</span> {s.label}
               </button>
             ))}
           </div>

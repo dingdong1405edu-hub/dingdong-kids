@@ -1,9 +1,10 @@
 "use server";
 // Lặp lại ngắt quãng (SRS) cho từ vựng phần LỘ TRÌNH. Vì từ vựng lộ trình nằm
 // trong RoadmapSection.content (JSON) — không có bản ghi VocabWord — nên lịch ôn
-// được lưu ở RoadmapWordReview, khoá theo (userId, hanzi). Mỗi lượt ôn cập nhật
-// lịch (src/lib/srs.ts) và lưu kèm ảnh chụp từ (pinyin/nghĩa/ví dụ/audio) để màn
-// "Ôn tập tổng hợp lộ trình" dựng được thẻ mà không phải quét lại mọi section.
+// được lưu ở RoadmapWordReview, khoá theo (userId, word). Mỗi lượt ôn cập nhật
+// lịch (src/lib/srs.ts) và lưu kèm ảnh chụp từ (phiên âm/nghĩa/ví dụ/ảnh/audio)
+// để màn "Ôn tập tổng hợp lộ trình" dựng được thẻ mà không phải quét lại mọi
+// section.
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
@@ -11,16 +12,17 @@ import { z } from "zod";
 import { schedule, dueAtFromMinutes, SRS_DEFAULT } from "@/lib/srs";
 
 const exampleSchema = z.object({
-  hanzi: z.string().default(""),
-  pinyin: z.string().default(""),
+  sentence: z.string().default(""),
   meaning: z.string().default(""),
+  audioUrl: z.string().nullish(),
 });
 
 const reviewSchema = z.object({
-  hanzi: z.string().min(1),
-  pinyin: z.string().default(""),
+  word: z.string().min(1),
+  ipa: z.string().default(""),
   meaning: z.string().default(""),
   examples: z.array(exampleSchema).default([]),
+  imageUrl: z.string().nullish(),
   audioUrl: z.string().nullish(),
   quality: z.number().int().min(0).max(5),
 });
@@ -37,13 +39,13 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
   const parsed = reviewSchema.safeParse(params);
   if (!parsed.success) return { ok: false as const, error: "Invalid input" };
 
-  const { hanzi, pinyin, meaning, examples, audioUrl, quality } = parsed.data;
+  const { word, ipa, meaning, examples, imageUrl, audioUrl, quality } = parsed.data;
   const userId = session.user.id;
   const snapshot = examples as unknown as Prisma.InputJsonValue;
 
   try {
     const existing = await db.roadmapWordReview.findUnique({
-      where: { userId_hanzi: { userId, hanzi } },
+      where: { userId_word: { userId, word } },
     });
     const prev = existing
       ? { repetitions: existing.repetitions, intervalDays: existing.intervalDays, ease: existing.ease }
@@ -55,11 +57,12 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
     const dueAt = dueAtFromMinutes(next.intervalMinutes, now);
 
     await db.roadmapWordReview.upsert({
-      where: { userId_hanzi: { userId, hanzi } },
+      where: { userId_word: { userId, word } },
       update: {
-        pinyin,
+        ipa,
         meaning,
         examples: snapshot,
+        imageUrl: imageUrl ?? null,
         audioUrl: audioUrl ?? null,
         repetitions: next.repetitions,
         intervalDays: next.intervalDays,
@@ -70,10 +73,11 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
       },
       create: {
         userId,
-        hanzi,
-        pinyin,
+        word,
+        ipa,
         meaning,
         examples: snapshot,
+        imageUrl: imageUrl ?? null,
         audioUrl: audioUrl ?? null,
         repetitions: next.repetitions,
         intervalDays: next.intervalDays,

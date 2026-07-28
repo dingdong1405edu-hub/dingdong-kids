@@ -1,8 +1,8 @@
 "use client";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { Star, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Ngưỡng "qua môn" cho mọi phần trong lộ trình (chỉ thông báo Đạt/Chưa đạt, KHÔNG khoá). */
+/** Ngưỡng "qua bài" cho mọi phần trong lộ trình (chỉ khen/động viên, KHÔNG khoá). */
 export const ROADMAP_PASS_THRESHOLD = 60;
 
 interface Props {
@@ -13,23 +13,26 @@ interface Props {
   className?: string;
 }
 
-/** Nhãn "Đạt — qua môn / Chưa đạt" theo ngưỡng (mặc định 60%) cho phần lộ trình. */
+/**
+ * Nhãn kết quả một phần lộ trình. Với trẻ em: đạt ngưỡng thì KHEN, chưa đạt thì
+ * ĐỘNG VIÊN — không bao giờ dùng nhãn tiêu cực kiểu "Chưa đạt / Yếu".
+ */
 export function PassStatus({ score, threshold = ROADMAP_PASS_THRESHOLD, showScore = false, className }: Props) {
   const pct = Math.round(score);
   const passed = pct >= threshold;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold",
+        "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-display text-sm font-extrabold",
         passed
           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
           : "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
         className,
       )}
     >
-      {passed ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+      {passed ? <Star className="h-4 w-4 fill-current" /> : <Sparkles className="h-4 w-4" />}
       {showScore && <span className="tabular-nums">{pct}% ·</span>}
-      {passed ? "Đạt — qua môn" : `Chưa đạt (cần ≥${threshold}%)`}
+      {passed ? "Bé làm tốt lắm!" : `Sắp giỏi rồi — thử lại nhé (${threshold}%)`}
     </span>
   );
 }

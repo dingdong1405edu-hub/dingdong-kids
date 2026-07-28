@@ -1,12 +1,12 @@
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { hskLevelLabel, cn } from "@/lib/utils";
+import { levelLabel, cn } from "@/lib/utils";
+import { PHONICS_LESSONS } from "@/lib/phonics-lessons";
 import {
   Users,
   BookOpen,
   SpellCheck,
-  PenTool,
   BookText,
   Headphones,
   PenLine,
@@ -16,6 +16,8 @@ import {
   Activity,
   ArrowRight,
   CreditCard,
+  GraduationCap,
+  AudioLines,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,13 +26,13 @@ export default async function AdminPage() {
     userCount,
     vocabCount,
     grammarCount,
-    hanziCount,
     readingCount,
     listeningCount,
     writingCount,
     speakingCount,
     materialCount,
     roadmapLessonCount,
+    examCount,
     attemptCount,
     subscriptionCount,
     recentUsers,
@@ -38,30 +40,30 @@ export default async function AdminPage() {
     db.user.count(),
     db.vocabUnit.count(),
     db.grammarUnit.count(),
-    db.hanziCharacter.count(),
     db.readingTest.count(),
     db.listeningTest.count(),
     db.writingTask.count(),
     db.speakingSet.count(),
     db.material.count(),
     db.roadmapLesson.count(),
+    db.mockExam.count(),
     db.attempt.count(),
     db.subscription.count({ where: { expiresAt: { gt: new Date() } } }),
     db.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 6,
-      select: { id: true, name: true, email: true, role: true, hskLevel: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, level: true, createdAt: true },
     }),
   ]);
 
   const sections: { href: string; label: string; icon: LucideIcon; count: number; cls: string }[] = [
     { href: "/admin/vocab", label: "Từ vựng", icon: BookOpen, count: vocabCount, cls: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300" },
     { href: "/admin/grammar", label: "Ngữ pháp", icon: SpellCheck, count: grammarCount, cls: "bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300" },
-    { href: "/admin/hanzi", label: "Chữ Hán", icon: PenTool, count: hanziCount, cls: "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300" },
     { href: "/admin/reading", label: "Đọc hiểu", icon: BookText, count: readingCount, cls: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300" },
     { href: "/admin/listening", label: "Nghe hiểu", icon: Headphones, count: listeningCount, cls: "bg-teal-100 text-teal-600 dark:bg-teal-500/15 dark:text-teal-300" },
-    { href: "/admin/writing", label: "Viết luận", icon: PenLine, count: writingCount, cls: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300" },
+    { href: "/admin/writing", label: "Luyện viết", icon: PenLine, count: writingCount, cls: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300" },
     { href: "/admin/speaking", label: "Luyện nói", icon: Mic, count: speakingCount, cls: "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300" },
+    { href: "/admin/exam", label: "Đề thi thử", icon: GraduationCap, count: examCount, cls: "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300" },
     { href: "/admin/materials", label: "Tài liệu", icon: Library, count: materialCount, cls: "bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-500/15 dark:text-fuchsia-300" },
     { href: "/admin/roadmap", label: "Lộ trình", icon: Route, count: roadmapLessonCount, cls: "bg-lime-100 text-lime-600 dark:bg-lime-500/15 dark:text-lime-300" },
     { href: "/admin/users", label: "Người dùng", icon: Users, count: userCount, cls: "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300" },
@@ -72,7 +74,7 @@ export default async function AdminPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Tổng quan quản trị</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Quản lý nội dung bài học và người dùng của DingDong HSK.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Quản lý nội dung bài học và người dùng của DingDong Kids.</p>
       </div>
 
       {/* Top stats */}
@@ -82,7 +84,7 @@ export default async function AdminPage() {
           icon={BookOpen}
           cls="bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300"
           label="Bài học / Đơn vị"
-          value={vocabCount + grammarCount + hanziCount}
+          value={vocabCount + grammarCount + roadmapLessonCount}
         />
         <StatCard
           icon={BookText}
@@ -114,6 +116,21 @@ export default async function AdminPage() {
             </Link>
           ))}
         </div>
+
+        {/* Ghép vần (Phonics) là nội dung CỐ ĐỊNH trong mã nguồn, không có CRUD —
+            ghi rõ ở đây để admin không đi tìm trang quản lý không tồn tại. */}
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-dashed p-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
+            <AudioLines className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 text-sm">
+            <div className="font-semibold">Ghép vần (Phonics) — {PHONICS_LESSONS.length} bài</div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Nội dung ghép vần được cố định trong mã nguồn (<code>src/lib/phonics-lessons.ts</code>) nên
+              không sửa được từ trang quản trị. Muốn thêm/bớt bài, sửa trực tiếp trong mã rồi phát hành lại.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Recent users */}
@@ -140,7 +157,7 @@ export default async function AdminPage() {
                     <div className="truncate text-xs text-muted-foreground">{u.email}</div>
                   </div>
                   <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                    {hskLevelLabel(u.hskLevel)}
+                    {levelLabel(u.level)}
                   </span>
                   {u.role === "ADMIN" && (
                     <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">

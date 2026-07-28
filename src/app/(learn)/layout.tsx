@@ -21,7 +21,7 @@ export default async function LearnLayout({ children }: { children: React.ReactN
       heartsUpdatedAt: true,
       streakDays: true,
       role: true,
-      hskLevel: true,
+      level: true,
     },
   });
   if (!user) redirect("/login");
@@ -43,7 +43,7 @@ export default async function LearnLayout({ children }: { children: React.ReactN
         unlimitedHearts: ent.unlimitedHearts,
         streakDays: user.streakDays,
         role: user.role,
-        hskLevel: user.hskLevel,
+        level: user.level,
       }}
     >
       {children}
