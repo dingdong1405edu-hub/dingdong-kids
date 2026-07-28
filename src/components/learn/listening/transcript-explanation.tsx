@@ -5,7 +5,12 @@ import { SpeakButton } from "@/components/learn/reading/word-lookup";
 // Dòng từ vựng do admin lưu có dạng:  "• sunny (/ˈsʌn.i/) — trời nắng"
 // (phần IPA trong ngoặc có thể vắng). Tách ra để hiển thị từ tiếng Anh TO, có
 // nút loa — thay cho cách in cả dòng như một chuỗi trơn.
-const VOCAB_LINE = /^•\s*(.+?)\s*(?:\(([^)]*)\)\s*)?[—–-]\s*(.*)$/;
+//
+// Dấu ngăn cách: em dash / en dash dính liền cũng được, nhưng gạch nối ASCII thì
+// BẮT BUỘC có khoảng trắng hai bên — nếu không, "• ice-cream — kem" sẽ bị cắt
+// ngay tại gạch nối trong từ và hiện thành từ "ice", nghĩa "cream — kem".
+// Từ ghép kiểu ice-cream / T-shirt / twenty-one rất phổ biến ở lứa tuổi này.
+const VOCAB_LINE = /^•\s*([^(]+?)\s*(?:\(([^)]*)\))?\s*(?:[—–]|\s-\s)\s*(.*)$/;
 
 interface VocabRow {
   en: string;
@@ -68,7 +73,7 @@ export function TranscriptExplanation({ text }: { text: string }) {
                   {v.ipa && <span className="ml-1.5 text-xs text-muted-foreground">{v.ipa}</span>}
                   <span className="block text-sm">{v.vi}</span>
                 </div>
-                <SpeakButton text={v.en} className="h-10 w-10" />
+                <SpeakButton text={v.en} />
               </div>
             );
           }

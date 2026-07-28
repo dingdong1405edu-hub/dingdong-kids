@@ -1,6 +1,4 @@
 import { db } from "@/lib/db";
-import { requireAdminActor } from "@/lib/admin-guard";
-import { logAudit } from "@/lib/audit";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,76 +8,48 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList } from "@/components/admin/reorder-list";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import {
+  createWritingAction,
   deleteWritingAction,
   updateWritingAction,
   bulkImportWritingTasksAction,
 } from "@/server/actions/admin";
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
-import { revalidatePath } from "next/cache";
-import { db as prisma } from "@/lib/db";
-import { HSKLevel, WritingTaskType } from "@prisma/client";
+import { EnglishLevel } from "@prisma/client";
+import { Trash2, Plus } from "lucide-react";
 
 const WRITING_SAMPLE = `[
   {
     "taskType": "FREE",
-    "hskLevel": "HSK3",
-    "prompt": "Hãy viết về một ngày bình thường của bạn.",
-    "promptZh": "请写一写你普通的一天。",
-    "minChars": 80,
+    "level": "MOVERS",
+    "prompt": "Write about your favourite animal. What is it? What colour is it? What does it eat?",
+    "minWords": 30,
     "timeLimit": 900
   },
   {
     "taskType": "GUIDED",
-    "hskLevel": "HSK4",
-    "prompt": "Viết đoạn văn về kế hoạch cuối tuần.",
-    "outline": "- Mở bài: dự định\\n- Thân bài: làm gì, với ai\\n- Kết bài: mong đợi",
-    "minChars": 120,
+    "level": "FLYERS",
+    "prompt": "Write about your weekend with your family.",
+    "outline": "- Where did you go?\\n- Who was with you?\\n- What did you do?\\n- How did you feel?",
+    "minWords": 50,
     "timeLimit": 1200
   }
 ]`;
 
-async function createWritingAction(fd: FormData): Promise<void> {
-  "use server";
-  const { actor } = await requireAdminActor();
-  const created = await prisma.writingTask.create({
-    data: {
-      taskType: fd.get("taskType") as WritingTaskType,
-      prompt: fd.get("prompt") as string,
-      promptZh: (fd.get("promptZh") as string) || undefined,
-      outline: ((fd.get("outline") as string) || "").trim() || undefined,
-      minChars: parseInt(fd.get("minChars") as string) || 50,
-      timeLimit: parseInt(fd.get("timeLimit") as string) || 900,
-      hskLevel: fd.get("hskLevel") as HSKLevel,
-      imageUrl: (fd.get("imageUrl") as string) || undefined,
-      published: false,
-    },
-  });
-  await logAudit({
-    actor,
-    action: "CREATE",
-    entity: "WritingTask",
-    entityId: created.id,
-    summary: `Tạo bài luyện viết «${created.prompt}»`,
-    after: created,
-  });
-  revalidatePath("/admin/writing");
-}
-import { Trash2, Plus } from "lucide-react";
-
-const typeLabel: Record<string, string> = { FREE: "Tự do", GUIDED: "Hướng dẫn", PICTURE_DESCRIPTION: "Mô tả ảnh" };
+const typeLabel: Record<string, string> = { FREE: "Tự do", GUIDED: "Có gợi ý", PICTURE_DESCRIPTION: "Nhìn tranh viết" };
 
 export default async function AdminWritingPage() {
   const tasks = await db.writingTask.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
   });
 
-  // Gom theo cấp HSK — mỗi cấp một <ReorderList> riêng (đổi thứ tự theo phạm vi cấp).
-  const byLevel = new Map<HSKLevel, typeof tasks>();
+  // Gom theo cấp độ — mỗi cấp một <ReorderList> riêng (đổi thứ tự theo phạm vi cấp).
+  const byLevel = new Map<EnglishLevel, typeof tasks>();
   for (const task of tasks) {
-    if (!byLevel.has(task.hskLevel)) byLevel.set(task.hskLevel, []);
-    byLevel.get(task.hskLevel)!.push(task);
+    if (!byLevel.has(task.level)) byLevel.set(task.level, []);
+    byLevel.get(task.level)!.push(task);
   }
 
   return (
@@ -92,25 +62,31 @@ export default async function AdminWritingPage() {
           unitNoun="bài viết"
           sampleJson={WRITING_SAMPLE}
           sampleFileName="mau-bai-viet.json"
-          description="Mỗi mục = 1 bài viết: taskType (FREE | GUIDED | PICTURE_DESCRIPTION) · prompt (đề bài VI) · hskLevel; tùy chọn promptZh · outline (dàn ý) · minChars · timeLimit (giây)."
+          description="Mỗi mục = 1 bài viết: taskType (FREE | GUIDED | PICTURE_DESCRIPTION) · prompt (đề bài) · level; tùy chọn outline (dàn ý) · minWords (số từ tối thiểu) · timeLimit (giây)."
         />
       </div>
       <Card>
         <CardHeader><CardTitle className="text-base"><Plus className="h-4 w-4 inline mr-2" />Thêm bài viết</CardTitle></CardHeader>
         <CardContent>
-          <form action={createWritingAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form
+            action={async (fd: FormData) => {
+              "use server";
+              await createWritingAction(fd);
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <div className="space-y-1">
               <Label>Loại bài</Label>
               <select name="taskType" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
                 <option value="FREE">Tự do</option>
-                <option value="GUIDED">Có hướng dẫn</option>
-                <option value="PICTURE_DESCRIPTION">Mô tả ảnh</option>
+                <option value="GUIDED">Có gợi ý</option>
+                <option value="PICTURE_DESCRIPTION">Nhìn tranh viết</option>
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
-              <select name="hskLevel" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+              <Label>Cấp độ</Label>
+              <select name="level" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
               </select>
             </div>
             <div className="space-y-1 md:col-span-2">
@@ -118,21 +94,20 @@ export default async function AdminWritingPage() {
               <ImageUpload name="imageUrl" />
             </div>
             <div className="space-y-1 md:col-span-2">
-              <Label>Đề bài (VI)</Label>
-              <Textarea name="prompt" required />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <Label>Đề bài (ZH, tùy chọn)</Label>
-              <Textarea name="promptZh" className="font-chinese" />
+              <Label>Đề bài</Label>
+              <Textarea name="prompt" placeholder="Write about your favourite animal..." required />
+              <p className="text-xs text-muted-foreground">
+                Với các bé nhỏ, hãy viết đề bằng tiếng Anh thật ngắn và tách thành vài câu hỏi gợi mở.
+              </p>
             </div>
             <div className="space-y-1 md:col-span-2">
               <Label>Dàn ý gợi ý (tùy chọn — mỗi ý một dòng)</Label>
-              <Textarea name="outline" rows={4} placeholder={"VD:\n- Mở bài: giới thiệu chủ đề\n- Thân bài: 2-3 ý chính + ví dụ\n- Kết bài: cảm nghĩ / kết luận"} />
-              <p className="text-xs text-muted-foreground">Học viên phải bấm “Gợi ý dàn ý” mới thấy. Dàn ý cũng được AI dùng để chấm độ bám sát.</p>
+              <Textarea name="outline" rows={4} placeholder={"VD:\n- What is it?\n- What colour is it?\n- What does it eat?\n- Why do you like it?"} />
+              <p className="text-xs text-muted-foreground">Bé phải bấm “Gợi ý dàn ý” mới thấy. Dàn ý cũng được AI dùng để chấm độ bám sát đề.</p>
             </div>
             <div className="space-y-1">
-              <Label>Số chữ Hán tối thiểu</Label>
-              <Input name="minChars" type="number" defaultValue="50" />
+              <Label>Số từ tối thiểu</Label>
+              <Input name="minWords" type="number" defaultValue="30" />
             </div>
             <div className="space-y-1">
               <Label>Giới hạn thời gian (giây)</Label>
@@ -149,9 +124,9 @@ export default async function AdminWritingPage() {
       <div className="space-y-6">
         {[...byLevel.entries()].map(([level, group]) => (
           <div key={level} className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
             <ReorderList
-              spec={{ kind: "content", model: "writing", hskLevel: level }}
+              spec={{ kind: "content", model: "writing", level }}
               items={group.map((task) => ({
                 id: task.id,
                 content: (
@@ -166,8 +141,9 @@ export default async function AdminWritingPage() {
                         )}
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline">{hskLevelLabel(task.hskLevel)}</Badge>
+                            <Badge variant="outline">{levelLabel(task.level)}</Badge>
                             <Badge variant="secondary">{typeLabel[task.taskType]}</Badge>
+                            <span className="text-xs text-muted-foreground">≥ {task.minWords} từ</span>
                           </div>
                           <p className="text-sm">{task.prompt}</p>
                           <details>
@@ -178,14 +154,14 @@ export default async function AdminWritingPage() {
                                 <Label>Loại bài</Label>
                                 <select name="taskType" defaultValue={task.taskType} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
                                   <option value="FREE">Tự do</option>
-                                  <option value="GUIDED">Có hướng dẫn</option>
-                                  <option value="PICTURE_DESCRIPTION">Mô tả ảnh</option>
+                                  <option value="GUIDED">Có gợi ý</option>
+                                  <option value="PICTURE_DESCRIPTION">Nhìn tranh viết</option>
                                 </select>
                               </div>
                               <div className="space-y-1">
-                                <Label>Cấp độ HSK</Label>
-                                <select name="hskLevel" defaultValue={task.hskLevel} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                                  {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+                                <Label>Cấp độ</Label>
+                                <select name="level" defaultValue={task.level} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                                  {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
                                 </select>
                               </div>
                               <div className="space-y-1 md:col-span-2">
@@ -193,20 +169,16 @@ export default async function AdminWritingPage() {
                                 <ImageUpload name="imageUrl" defaultValue={task.imageUrl ?? undefined} />
                               </div>
                               <div className="space-y-1 md:col-span-2">
-                                <Label>Đề bài (VI)</Label>
+                                <Label>Đề bài</Label>
                                 <Textarea name="prompt" defaultValue={task.prompt} required />
-                              </div>
-                              <div className="space-y-1 md:col-span-2">
-                                <Label>Đề bài (ZH, tùy chọn)</Label>
-                                <Textarea name="promptZh" className="font-chinese" defaultValue={task.promptZh ?? undefined} />
                               </div>
                               <div className="space-y-1 md:col-span-2">
                                 <Label>Dàn ý gợi ý (tùy chọn — mỗi ý một dòng)</Label>
                                 <Textarea name="outline" rows={4} defaultValue={task.outline ?? undefined} />
                               </div>
                               <div className="space-y-1">
-                                <Label>Số chữ Hán tối thiểu</Label>
-                                <Input name="minChars" type="number" defaultValue={task.minChars} />
+                                <Label>Số từ tối thiểu</Label>
+                                <Input name="minWords" type="number" defaultValue={task.minWords} />
                               </div>
                               <div className="space-y-1">
                                 <Label>Giới hạn thời gian (giây)</Label>

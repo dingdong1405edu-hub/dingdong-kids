@@ -21,7 +21,7 @@ export default async function AdminWordReportsPage() {
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take: 300,
     include: {
-      word: { select: { hanzi: true, pinyin: true, meaning: true, lessonId: true } },
+      word: { select: { word: true, ipa: true, meaning: true, lessonId: true } },
       user: { select: { name: true, email: true } },
     },
   });
@@ -68,7 +68,7 @@ type ReportWithRel = Awaited<ReturnType<typeof loadReports>>[number];
 async function loadReports() {
   return db.wordReport.findMany({
     include: {
-      word: { select: { hanzi: true, pinyin: true, meaning: true, lessonId: true } },
+      word: { select: { word: true, ipa: true, meaning: true, lessonId: true } },
       user: { select: { name: true, email: true } },
     },
   });
@@ -81,8 +81,8 @@ function ReportCard({ report: r }: { report: ReportWithRel }) {
     <Card>
       <CardContent className="space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-chinese text-2xl font-bold">{r.word.hanzi}</span>
-          <span className="font-pinyin text-sm text-muted-foreground">{r.word.pinyin}</span>
+          <span className="font-primer text-2xl font-bold">{r.word.word}</span>
+          {r.word.ipa && <span className="text-sm text-muted-foreground">{r.word.ipa}</span>}
           <span className="text-sm">· {r.word.meaning}</span>
           <Badge variant="secondary" className="ml-auto gap-1 text-xs">
             {r.kind === "ERROR" ? <Flag className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}

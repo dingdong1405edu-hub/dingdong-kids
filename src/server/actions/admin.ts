@@ -216,11 +216,16 @@ export async function deleteReadingAction(id: string) {
 //   { "type":"MCQ", "prompt":"…", "options":["…"], "answer":<0-based>, "explanation"?, "supportingQuote"? }
 //   { "type":"TRUE_FALSE", "prompt":"…", "answer":<bool>, … }
 //   { "type":"FILL_BLANK", "prompt":"…", "answer":"…", "accepted"?:["…"], … }
+// `imageUrl` / `audioUrl` là tuỳ chọn ở MỌI loại câu: trẻ nhỏ làm bài bằng tranh
+// và tai nhiều hơn bằng chữ, nên câu hỏi nào cũng nên gắn được ảnh minh hoạ +
+// MP3 đọc đề. Bỏ trống thì các action đơn lẻ tự sinh audio bằng TTS.
 const bulkQuestionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("MCQ"),
     prompt: z.string().trim().min(1),
     promptTranslation: z.string().trim().optional(),
+    imageUrl: z.string().trim().optional(),
+    audioUrl: z.string().trim().optional(),
     options: z.array(z.string().trim().min(1)).min(2, "MCQ cần ≥ 2 lựa chọn."),
     optionsTranslation: z.array(z.string().trim()).optional(),
     answer: z.coerce.number().int().min(0),
@@ -232,6 +237,8 @@ const bulkQuestionSchema = z.discriminatedUnion("type", [
     type: z.literal("TRUE_FALSE"),
     prompt: z.string().trim().min(1),
     promptTranslation: z.string().trim().optional(),
+    imageUrl: z.string().trim().optional(),
+    audioUrl: z.string().trim().optional(),
     answer: z.boolean(),
     explanation: z.string().trim().optional(),
     supportingQuote: z.string().trim().optional(),
@@ -241,6 +248,8 @@ const bulkQuestionSchema = z.discriminatedUnion("type", [
     type: z.literal("FILL_BLANK"),
     prompt: z.string().trim().min(1),
     promptTranslation: z.string().trim().optional(),
+    imageUrl: z.string().trim().optional(),
+    audioUrl: z.string().trim().optional(),
     answer: z.string().trim().min(1),
     accepted: z.array(z.string().trim().min(1)).optional(),
     explanation: z.string().trim().optional(),
@@ -260,12 +269,15 @@ function mcqOptions(options: string[], translations?: string[]) {
 
 /**
  * Sinh audio đọc đề cho một loạt câu hỏi. Trẻ chưa đọc thạo nghe đề mới làm được
- * bài, nên mọi câu hỏi nên có audio. Chạy TUẦN TỰ và TRƯỚC transaction để không
- * giữ transaction mở trong lúc chờ mạng; câu nào lỗi thì audioUrl = null.
+ * bài, nên mọi câu hỏi nên có audio. MP3 do admin dán trong JSON được ưu tiên;
+ * còn lại mới gọi TTS. Chạy TUẦN TỰ và TRƯỚC transaction để không giữ transaction
+ * mở trong lúc chờ mạng; câu nào lỗi thì audioUrl = null.
  */
-async function audioForPrompts(prompts: string[]): Promise<Array<string | null>> {
+async function audioForPrompts(
+  questions: Array<{ prompt: string; audioUrl?: string }>
+): Promise<Array<string | null>> {
   const out: Array<string | null> = [];
-  for (const p of prompts) out.push(await ensureAudio(null, p));
+  for (const q of questions) out.push(await ensureAudio(q.audioUrl?.trim() || null, q.prompt));
   return out;
 }
 
@@ -300,7 +312,7 @@ export async function bulkCreateReadingQuestionsAction(readingId: string, jsonTe
   if (!reading) return { ok: false as const, error: "Không tìm thấy bài đọc." };
 
   const startOrder = (await db.question.count({ where: { readingId } })) + 1;
-  const audios = await audioForPrompts(questions.map((q) => q.prompt));
+  const audios = await audioForPrompts(questions);
 
   let created: Awaited<ReturnType<typeof db.question.create>>[];
   try {
@@ -309,6 +321,7 @@ export async function bulkCreateReadingQuestionsAction(readingId: string, jsonTe
         const base = {
           prompt: q.prompt,
           promptTranslation: q.promptTranslation || null,
+          imageUrl: q.imageUrl?.trim() ? q.imageUrl.trim() : null,
           audioUrl: audios[i],
           explanation: q.explanation,
           supportingQuote: q.supportingQuote,
@@ -625,7 +638,7 @@ export async function bulkCreateListeningQuestionsAction(listeningId: string, js
   if (!listening) return { ok: false as const, error: "Không tìm thấy bài nghe." };
 
   const startOrder = (await db.question.count({ where: { listeningId } })) + 1;
-  const audios = await audioForPrompts(questions.map((q) => q.prompt));
+  const audios = await audioForPrompts(questions);
 
   let created: Awaited<ReturnType<typeof db.question.create>>[];
   try {
@@ -634,6 +647,7 @@ export async function bulkCreateListeningQuestionsAction(listeningId: string, js
         const base = {
           prompt: q.prompt,
           promptTranslation: q.promptTranslation || null,
+          imageUrl: q.imageUrl?.trim() ? q.imageUrl.trim() : null,
           audioUrl: audios[i],
           explanation: q.explanation,
           supportingQuote: q.supportingQuote,
@@ -1296,11 +1310,22 @@ const vocabWordSchema = z.object({
 
 export type VocabWordInput = z.input<typeof vocabWordSchema>;
 
-/** So khớp "câu có chứa từ này không" — không phân biệt hoa/thường, theo ranh giới từ. */
+/**
+ * So khớp "câu có chứa từ này không" — không phân biệt hoa/thường, theo RANH GIỚI
+ * TỪ. Phải khớp đúng luật với `markWord` (src/lib/utils.ts) — thứ dùng để tô đậm
+ * từ trong câu ví dụ: tiếng Anh có khoảng trắng nên so chuỗi con sẽ nhận nhầm
+ * "cat" nằm trong "category", admin lưu được nhưng giao diện không tô được chữ nào.
+ */
 function sentenceContainsWord(sentence: string, word: string): boolean {
-  const w = word.trim().toLowerCase();
+  const w = word.trim();
   if (!w) return false;
-  return sentence.toLowerCase().includes(w);
+  const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  try {
+    return new RegExp(`\\b${escaped}\\b`, "i").test(sentence);
+  } catch {
+    // Từ toàn ký tự lạ (regex hỏng) → lùi về so chuỗi con để không chặn oan admin.
+    return sentence.toLowerCase().includes(w.toLowerCase());
+  }
 }
 
 export async function saveVocabWordAction(
@@ -2272,6 +2297,10 @@ function questionScalarData(
   const base = {
     prompt: q.prompt,
     promptTranslation: q.promptTranslation || null,
+    // Nhập hàng loạt KHÔNG gọi TTS (xem ghi chú đầu mục) — chỉ lấy MP3/ảnh admin
+    // dán sẵn trong JSON; thiếu thì admin bấm "Tạo audio" ở trang chi tiết.
+    imageUrl: q.imageUrl?.trim() ? q.imageUrl.trim() : null,
+    audioUrl: q.audioUrl?.trim() ? q.audioUrl.trim() : null,
     explanation: q.explanation,
     supportingQuote: q.supportingQuote,
     quoteTranslation: q.quoteTranslation || null,

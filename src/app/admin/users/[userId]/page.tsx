@@ -6,8 +6,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { hskLevelLabel, xpToLevel } from "@/lib/utils";
+import { levelLabel, xpToLevel } from "@/lib/utils";
 import { formatVnd, PAYMENT_PLANS } from "@/lib/payment-plans";
+import { PHONICS_LESSONS, getPhonicsLesson } from "@/lib/phonics-lessons";
 import { effectiveHearts } from "@/lib/hearts";
 import { getEntitlements } from "@/lib/entitlements";
 import { GrantSubscriptionForm } from "@/components/admin/grant-subscription-form";
@@ -19,12 +20,11 @@ export const dynamic = "force-dynamic";
 const SKILL_LABEL: Record<Skill, string> = {
   READING: "Đọc hiểu",
   LISTENING: "Nghe hiểu",
-  WRITING: "Viết luận",
+  WRITING: "Luyện viết",
   SPEAKING: "Luyện nói",
   VOCAB: "Từ vựng",
   GRAMMAR: "Ngữ pháp",
-  HANZI: "Chữ Hán",
-  PINYIN: "Phiên âm",
+  PHONICS: "Ghép vần",
   MOCK: "Thi thử",
 };
 
@@ -47,14 +47,14 @@ async function resolveAttemptTitles(
   attempts: { skill: Skill; refId: string }[]
 ): Promise<Map<string, string>> {
   const bySkill: Record<Skill, string[]> = {
-    READING: [], LISTENING: [], WRITING: [], SPEAKING: [], VOCAB: [], GRAMMAR: [], HANZI: [], PINYIN: [], MOCK: [],
+    READING: [], LISTENING: [], WRITING: [], SPEAKING: [], VOCAB: [], GRAMMAR: [], PHONICS: [], MOCK: [],
   };
   for (const a of attempts) bySkill[a.skill].push(a.refId);
 
   const map = new Map<string, string>();
   const key = (skill: Skill, id: string) => `${skill}|${id}`;
 
-  const [readings, listenings, writings, speakings, vlessons, glessons, hanzis, mocks] = await Promise.all([
+  const [readings, listenings, writings, speakings, vlessons, glessons, mocks] = await Promise.all([
     bySkill.READING.length
       ? db.readingTest.findMany({ where: { id: { in: bySkill.READING } }, select: { id: true, title: true } })
       : [],
@@ -73,9 +73,6 @@ async function resolveAttemptTitles(
     bySkill.GRAMMAR.length
       ? db.grammarLesson.findMany({ where: { id: { in: bySkill.GRAMMAR } }, select: { id: true, title: true } })
       : [],
-    bySkill.HANZI.length
-      ? db.hanziCharacter.findMany({ where: { id: { in: bySkill.HANZI } }, select: { id: true, character: true, meaning: true } })
-      : [],
     bySkill.MOCK.length
       ? db.mockExam.findMany({ where: { id: { in: bySkill.MOCK } }, select: { id: true, title: true } })
       : [],
@@ -87,8 +84,12 @@ async function resolveAttemptTitles(
   speakings.forEach((r) => map.set(key(Skill.SPEAKING, r.id), r.title || "Bộ luyện nói"));
   vlessons.forEach((r) => map.set(key(Skill.VOCAB, r.id), r.title || "Bài từ vựng"));
   glessons.forEach((r) => map.set(key(Skill.GRAMMAR, r.id), r.title || "Bài ngữ pháp"));
-  hanzis.forEach((r) => map.set(key(Skill.HANZI, r.id), `${r.character} (${r.meaning})`));
   mocks.forEach((r) => map.set(key(Skill.MOCK, r.id), r.title));
+  // Bài Ghép vần nằm TĨNH trong mã nguồn (src/lib/phonics-lessons.ts) nên không
+  // tra DB được — tra thẳng trong danh sách bài đã khai báo sẵn.
+  for (const id of bySkill.PHONICS) {
+    map.set(key(Skill.PHONICS, id), getPhonicsLesson(id)?.title ?? "Bài ghép vần");
+  }
 
   return map;
 }
@@ -109,7 +110,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
       attempts: { orderBy: { createdAt: "desc" }, take: 50 },
       vocabProgress: { where: { completed: true }, select: { id: true } },
       grammarProgress: { where: { completed: true }, select: { id: true } },
-      hanziProgress: { where: { mastered: true }, select: { id: true } },
+      phonicsProgress: { where: { completed: true }, select: { id: true } },
       roadmapProgress: { where: { completed: true }, select: { id: true } },
     },
   });
@@ -121,13 +122,14 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const isSelf = session?.user?.id === user.id;
   const now = new Date();
 
-  // Tổng nội dung học viên có thể truy cập (đã xuất bản) ở cấp HSK mục tiêu —
-  // khớp với cách tính % ở dashboard học viên.
-  const [vocabTotal, grammarTotal, hanziTotal] = await Promise.all([
-    db.vocabLesson.count({ where: { published: true, unit: { published: true, hskLevel: user.hskLevel } } }),
-    db.grammarLesson.count({ where: { published: true, unit: { published: true, hskLevel: user.hskLevel } } }),
-    db.hanziCharacter.count({ where: { published: true, hskLevel: user.hskLevel } }),
+  // Tổng nội dung học viên có thể truy cập (đã xuất bản) ở cấp độ mục tiêu —
+  // khớp với cách tính % ở dashboard học viên. Ghép vần là nội dung tĩnh trong
+  // mã nguồn nên tổng số bài lấy thẳng từ PHONICS_LESSONS.
+  const [vocabTotal, grammarTotal] = await Promise.all([
+    db.vocabLesson.count({ where: { published: true, unit: { published: true, level: user.level } } }),
+    db.grammarLesson.count({ where: { published: true, unit: { published: true, level: user.level } } }),
   ]);
+  const phonicsTotal = PHONICS_LESSONS.length;
 
   const titleMap = await resolveAttemptTitles(user.attempts);
   const paymentById = new Map(user.payments.map((p) => [p.id, p]));
@@ -136,7 +138,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
   const progressRows = [
     { label: "Từ vựng", done: user.vocabProgress.length, total: vocabTotal },
     { label: "Ngữ pháp", done: user.grammarProgress.length, total: grammarTotal },
-    { label: "Chữ Hán", done: user.hanziProgress.length, total: hanziTotal },
+    { label: "Ghép vần", done: user.phonicsProgress.length, total: phonicsTotal },
   ];
 
   const planOptions = PAYMENT_PLANS.map((p) => ({ id: p.id, name: p.name }));
@@ -208,8 +210,8 @@ export default async function AdminUserDetailPage({ params }: Props) {
           <CardContent className="flex items-center gap-3 p-4">
             <Crown className="h-5 w-5 text-violet-500" />
             <div>
-              <div className="text-xs text-muted-foreground">HSK mục tiêu</div>
-              <div className="text-lg font-bold">{hskLevelLabel(user.hskLevel)}</div>
+              <div className="text-xs text-muted-foreground">Cấp độ mục tiêu</div>
+              <div className="text-lg font-bold">{levelLabel(user.level)}</div>
             </div>
           </CardContent>
         </Card>
@@ -226,7 +228,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
           {ent.freestyle && <Badge variant="outline">Gói Tự do</Badge>}
           {[...ent.roadmapLevels].sort().map((lv) => (
             <Badge key={lv} variant="outline">
-              Lộ trình {hskLevelLabel(lv)}
+              Lộ trình {levelLabel(lv)}
             </Badge>
           ))}
           {!ent.isAdmin && !ent.freestyle && ent.roadmapLevels.size === 0 && !ent.unlimitedHearts && (
@@ -239,7 +241,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Tiến độ học · {hskLevelLabel(user.hskLevel)}
+            Tiến độ học · {levelLabel(user.level)}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -281,7 +283,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                   ? planNameById.get(paymentById.get(s.paymentId)?.planId ?? "")
                   : undefined;
                 const typeLabel =
-                  s.type === "ROADMAP" ? `Lộ trình ${s.hskLevel ? hskLevelLabel(s.hskLevel) : ""}`.trim() : "Gói Tự do";
+                  s.type === "ROADMAP" ? `Lộ trình ${s.level ? levelLabel(s.level) : ""}`.trim() : "Gói Tự do";
                 return (
                   <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                     <div className="min-w-0">

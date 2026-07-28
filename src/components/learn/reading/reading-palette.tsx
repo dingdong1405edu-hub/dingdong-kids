@@ -22,8 +22,9 @@ export function ReadingPalette({ total, answered, flagged, current, correctness,
             onClick={() => onJump(i)}
             aria-label={`Câu ${i + 1}`}
             className={cn(
-              // Nút to hơn bản người lớn: ngón tay trẻ em kém chính xác.
-              "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
+              // 48px — vùng chạm tối thiểu của dự án; ngón tay trẻ em kém chính
+              // xác, và đặt nhỏ hơn thì nút tròn bị base CSS kéo thành bầu dục.
+              "relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
               c === true
                 ? "border-emerald-500 bg-emerald-500 text-white"
                 : c === false
@@ -35,7 +36,6 @@ export function ReadingPalette({ total, answered, flagged, current, correctness,
                       : "border-input bg-background text-muted-foreground hover:border-primary/40",
               isFlagged && c === undefined && "ring-2 ring-sunny ring-offset-1",
             )}
-            style={{ minHeight: 40 }}
           >
             {i + 1}
             {isFlagged && (

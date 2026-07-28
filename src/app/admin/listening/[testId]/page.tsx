@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Trash2, Save, Pencil, Sparkles } from "lucide-react";
-import { hskLevelLabel } from "@/lib/utils";
+import { ArrowLeft, Plus, Trash2, Save, Pencil, Sparkles, Volume2 } from "lucide-react";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ListeningAudioFields } from "@/components/admin/listening-audio-fields";
 import { ListeningQuestionsImporter } from "@/components/admin/listening-questions-importer";
@@ -41,7 +42,7 @@ export default async function AdminListeningDetailPage({ params }: Props) {
 
       <div className="flex items-center gap-2">
         <h1 className="text-xl font-bold">{test.title}</h1>
-        <Badge variant="outline">{hskLevelLabel(test.hskLevel)}</Badge>
+        <Badge variant="outline">{levelLabel(test.level)}</Badge>
       </div>
 
       {/* Edit audio / transcript / meta */}
@@ -67,15 +68,15 @@ export default async function AdminListeningDetailPage({ params }: Props) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label>Cấp độ HSK</Label>
+                  <Label>Cấp độ</Label>
                   <select
-                    name="hskLevel"
-                    defaultValue={test.hskLevel}
+                    name="level"
+                    defaultValue={test.level}
                     className="flex h-9 w-full rounded-md border px-3 py-1 text-sm"
                   >
-                    {["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"].map((l) => (
+                    {LEVELS.map((l) => (
                       <option key={l} value={l}>
-                        {l}
+                        {themeFor(l).label}
                       </option>
                     ))}
                   </select>
@@ -143,15 +144,19 @@ export default async function AdminListeningDetailPage({ params }: Props) {
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Câu hỏi</Label>
-              <Input name="prompt" className="font-chinese" placeholder="Nội dung câu hỏi..." required />
+              <Label>Câu hỏi (tiếng Anh)</Label>
+              <Input name="prompt" placeholder="What is the boy's name?" required />
+              <p className="text-xs text-muted-foreground">Hệ thống tự tạo audio đọc câu hỏi cho bé.</p>
+            </div>
+            <div className="space-y-1">
+              <Label>Dịch câu hỏi (tiếng Việt, tùy chọn)</Label>
+              <Input name="promptTranslation" placeholder="Bạn nam tên là gì?" />
             </div>
             <div className="space-y-1">
               <Label>Đáp án (mỗi dòng 1 option — dùng cho MCQ)</Label>
               <Textarea
                 name="options"
-                className="font-chinese"
-                placeholder="Option A&#10;Option B&#10;Option C&#10;Option D"
+                placeholder="Ben&#10;Tom&#10;Sam&#10;Max"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -171,8 +176,7 @@ export default async function AdminListeningDetailPage({ params }: Props) {
               <Label>Giải thích (vì sao chọn đáp án này)</Label>
               <Textarea
                 name="explanation"
-                className="font-chinese"
-                placeholder="Giải thích để hiển thị khi chữa bài..."
+                placeholder="Giải thích thật ngắn, dễ hiểu — hiện khi chữa bài..."
               />
             </div>
             <Button type="submit">Thêm câu hỏi</Button>
@@ -192,11 +196,16 @@ export default async function AdminListeningDetailPage({ params }: Props) {
               <CardContent className="flex items-start justify-between gap-3 p-3">
                 <div className="flex-1">
                   <span className="text-xs font-semibold text-muted-foreground">{idx + 1}. </span>
-                  <span className="font-chinese text-sm">{q.prompt}</span>
-                  <div className="mt-1">
+                  <span className="text-sm">{q.prompt}</span>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     <Badge variant="secondary" className="text-xs">
                       {q.type}
                     </Badge>
+                    {q.audioUrl && (
+                      <Badge variant="outline" className="gap-1 text-[10px]">
+                        <Volume2 className="h-3 w-3" /> Audio
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <form

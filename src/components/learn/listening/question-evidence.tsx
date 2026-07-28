@@ -36,7 +36,6 @@ export function QuestionEvidence({
             "inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-colors",
             saved ? "bg-sunny/25 text-amber-700 dark:text-amber-300" : "text-muted-foreground hover:bg-muted",
           )}
-          style={{ minHeight: 36 }}
         >
           {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
           {saved ? "Đã cất để ôn" : "Cất để ôn"}
@@ -60,8 +59,7 @@ export function QuestionEvidence({
               type="button"
               onClick={onPlay}
               aria-label="Nghe lại đoạn này"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10"
-              style={{ minHeight: 40 }}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10"
             >
               <Volume2 className="h-5 w-5" />
             </button>

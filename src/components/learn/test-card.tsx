@@ -63,7 +63,7 @@ export function TestCard({ href, title, level, tags, attempts, score, meta, seed
             )}
             {typeof attempts === "number" && (
               <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
-                <Users className="h-3 w-3" /> {(attempts + socialProofCount(s)).toLocaleString("vi-VN")} bạn đã làm
+                <Users className="h-3 w-3" /> {(attempts + socialProofCount(s)).toLocaleString("vi-VN")} bạn nhỏ đã làm
               </span>
             )}
             {level && (

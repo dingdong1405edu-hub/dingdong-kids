@@ -41,10 +41,10 @@ function sectionHasPractice(s: GrammarSection): boolean {
 }
 
 /**
- * Grammar lesson orchestrator — chỉ HỌC: với mỗi phần, học viên xem lý thuyết rồi
- * luyện tập (minigame), sang phần kế, cho tới hết. Hoàn thành luyện tập sẽ mở khoá
- * bài tiếp theo (KHÔNG cần làm bài kiểm tra). Bài kiểm tra được TÁCH RIÊNG sang
- * trang .../test (nút "Làm bài kiểm tra"); chỉ ở đó mới có điểm kinh nghiệm.
+ * Điều phối bài mẫu câu — phần HỌC: mỗi chặng bé xem mẫu câu rồi chơi luyện tập
+ * ngay cho chặng đó, xong mới sang chặng kế, cho tới hết. Chơi hết là mở khoá bài
+ * tiếp theo (KHÔNG bắt buộc làm bài thử tài). Bài thử tài TÁCH RIÊNG sang trang
+ * .../test (nút "Làm bài thử tài"); chỉ ở đó bé mới nhận sao.
  */
 export function GrammarFlow({ lesson, content, unitId, onComplete, closeHref: closeHrefProp, showTest = true, passThreshold }: Props) {
   const router = useRouter();

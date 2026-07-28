@@ -29,7 +29,7 @@ interface GradeResult {
   score: number;
   criteria: {
     pronunciation: { score: number; errors: Array<{ word: string; issue: string; correct: string }> };
-    /** Trọng âm & ngữ điệu — thay cho "thanh điệu" của bản tiếng Trung. */
+    /** Trọng âm & ngữ điệu — bé nhấn đúng từ, lên/xuống giọng đúng chỗ. */
     intonation: { score: number; errors: Array<{ word: string; expected: string; detected: string }> };
     fluency: { score: number; wordsPerMinute: number; feedback: string };
   };

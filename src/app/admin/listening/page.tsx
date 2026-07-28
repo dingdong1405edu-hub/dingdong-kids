@@ -9,7 +9,8 @@ import { ImageUpload } from "@/components/admin/image-upload";
 import { ListeningAudioFields } from "@/components/admin/listening-audio-fields";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList, type ReorderItem } from "@/components/admin/reorder-list";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import {
   createListeningAction,
   deleteListeningAction,
@@ -18,33 +19,33 @@ import {
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
 import { redirect } from "next/navigation";
 import { Trash2, Plus, ChevronRight, Headphones, Volume2 } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 
 const LISTENING_SAMPLE = `[
   {
-    "title": "Hội thoại chào hỏi",
-    "hskLevel": "HSK1",
+    "title": "Chào bạn mới",
+    "level": "STARTERS",
     "audioUrl": "",
-    "transcript": "你好，我叫小明。你叫什么名字？",
+    "transcript": "Hello! My name is Ben. I am seven years old. What is your name?",
     "timeLimit": 300,
     "questions": [
-      { "type": "MCQ", "prompt": "他叫什么名字？", "options": ["小明", "小红", "小李"], "answer": 0 },
-      { "type": "TRUE_FALSE", "prompt": "他们在打电话。", "answer": false }
+      { "type": "MCQ", "prompt": "What is the boy's name?", "options": ["Ben", "Tom", "Sam"], "answer": 0 },
+      { "type": "TRUE_FALSE", "prompt": "Ben is seven years old.", "answer": true }
     ]
   }
 ]`;
 
 export default async function AdminListeningPage() {
   const tests = await db.listeningTest.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { questions: true } } },
   });
 
-  // Nhóm theo cấp HSK — đổi thứ tự được giới hạn trong từng cấp.
-  const byLevel = new Map<HSKLevel, typeof tests>();
+  // Nhóm theo cấp độ — đổi thứ tự được giới hạn trong từng cấp.
+  const byLevel = new Map<EnglishLevel, typeof tests>();
   for (const t of tests) {
-    if (!byLevel.has(t.hskLevel)) byLevel.set(t.hskLevel, []);
-    byLevel.get(t.hskLevel)!.push(t);
+    if (!byLevel.has(t.level)) byLevel.set(t.level, []);
+    byLevel.get(t.level)!.push(t);
   }
 
   return (
@@ -61,7 +62,7 @@ export default async function AdminListeningPage() {
           hasQuestions
           sampleJson={LISTENING_SAMPLE}
           sampleFileName="mau-bai-nghe.json"
-          description="Mỗi mục = 1 bài nghe: title · hskLevel · audioUrl (tùy chọn — để trống rồi tải MP3 sau) · transcript (tùy chọn) · timeLimit (giây) · questions[]. Câu hỏi cùng định dạng bài đọc: MCQ / TRUE_FALSE / FILL_BLANK. Không cần nhập pinyin — máy tự sinh."
+          description="Mỗi mục = 1 bài nghe: title · level · audioUrl (tùy chọn — để trống thì mở từng bài rồi bấm “Tạo audio”) · transcript (lời thoại tiếng Anh) · timeLimit (giây) · questions[]. Câu hỏi cùng định dạng bài đọc: MCQ / TRUE_FALSE / FILL_BLANK."
         />
       </div>
 
@@ -85,15 +86,15 @@ export default async function AdminListeningPage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1">
                 <Label>Tiêu đề</Label>
-                <Input name="title" required placeholder="VD: Hội thoại chào hỏi" />
+                <Input name="title" required placeholder="VD: Chào bạn mới" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <Label>Cấp độ HSK</Label>
-                  <select name="hskLevel" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                    {["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"].map((l) => (
+                  <Label>Cấp độ</Label>
+                  <select name="level" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                    {LEVELS.map((l) => (
                       <option key={l} value={l}>
-                        {l}
+                        {themeFor(l).label}
                       </option>
                     ))}
                   </select>
@@ -115,8 +116,8 @@ export default async function AdminListeningPage() {
             <div className="space-y-2">
               <Button type="submit">Tạo bài nghe &amp; thêm câu hỏi</Button>
               <p className="text-xs text-muted-foreground">
-                Sau khi tạo, bạn sẽ vào ngay trang thêm câu hỏi cho bài này. Bài mới ở trạng thái Bản nháp — bấm
-                “Đang hiện/Bản nháp” để xuất bản.
+                Chỉ cần nhập lời thoại tiếng Anh — hệ thống tự tạo audio bằng giọng máy. Sau khi tạo, bạn sẽ vào
+                ngay trang thêm câu hỏi. Bài mới ở trạng thái Bản nháp — bấm “Đang hiện/Bản nháp” để xuất bản.
               </p>
             </div>
           </form>
@@ -143,7 +144,7 @@ export default async function AdminListeningPage() {
                       <div>
                         <div className="font-semibold">{test.title}</div>
                         <div className="mt-1 flex items-center gap-2">
-                          <Badge variant="outline">{hskLevelLabel(test.hskLevel)}</Badge>
+                          <Badge variant="outline">{levelLabel(test.level)}</Badge>
                           <span className="text-xs text-muted-foreground">{test._count.questions} câu hỏi</span>
                           <span
                             className={
@@ -181,8 +182,8 @@ export default async function AdminListeningPage() {
             }));
             return (
               <div key={level} className="space-y-2">
-                <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
-                <ReorderList spec={{ kind: "content", model: "listening", hskLevel: level }} items={items} />
+                <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
+                <ReorderList spec={{ kind: "content", model: "listening", level }} items={items} />
               </div>
             );
           })}

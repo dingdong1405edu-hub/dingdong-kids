@@ -9,7 +9,7 @@ import {
   type TopicHint,
   type TopicFormDefaults,
 } from "@/components/admin/speaking-topic-fields";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import {
   createSpeakingTopicAction,
   updateSpeakingTopicAction,
@@ -18,22 +18,22 @@ import {
 } from "@/server/actions/admin";
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
 import { Trash2, Plus, ArrowLeft, MessagesSquare } from "lucide-react";
-import { HSKLevel } from "@prisma/client";
+import { EnglishLevel } from "@prisma/client";
 
 const SPEAKING_TOPIC_SAMPLE = `[
   {
-    "title": "Sở thích",
-    "hskLevel": "HSK4",
-    "topic": "爱好 — Sở thích",
-    "questionZh": "请谈谈你的爱好。",
-    "questionPinyin": "Qǐng tántan nǐ de àihào.",
-    "questionVi": "Hãy nói về sở thích của bạn.",
-    "outline": "- Sở thích là gì\\n- Vì sao thích\\n- Thời gian dành cho nó",
+    "title": "Thú cưng của em",
+    "level": "MOVERS",
+    "topic": "My pets",
+    "question": "Tell me about your pet. What is it? What does it like doing?",
+    "questionVi": "Hãy kể về thú cưng của bé. Đó là con gì? Nó thích làm gì?",
+    "outline": "- Đó là con gì, tên là gì\\n- Nó trông thế nào\\n- Nó thích ăn gì, thích chơi gì\\n- Vì sao bé quý nó",
     "hints": [
-      { "text": "打篮球", "pinyin": "dǎ lánqiú", "vi": "chơi bóng rổ" }
+      { "text": "fluffy", "vi": "lông xù, mềm" },
+      { "text": "play with a ball", "vi": "chơi với quả bóng" }
     ],
-    "minChars": 80,
-    "prepSeconds": 10
+    "minWords": 40,
+    "prepSeconds": 20
   }
 ]`;
 
@@ -53,27 +53,26 @@ function asHints(v: unknown): TopicHint[] {
     .filter((h): h is Record<string, unknown> => !!h && typeof h === "object")
     .map((h) => ({
       text: typeof h.text === "string" ? h.text : "",
-      pinyin: typeof h.pinyin === "string" ? h.pinyin : "",
       vi: typeof h.vi === "string" ? h.vi : "",
     }));
 }
 
 export default async function AdminSpeakingTopicsPage() {
   const topics = await db.speakingTopic.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
   });
 
-  const byLevel = new Map<HSKLevel, typeof topics>();
+  const byLevel = new Map<EnglishLevel, typeof topics>();
   for (const t of topics) {
-    if (!byLevel.has(t.hskLevel)) byLevel.set(t.hskLevel, []);
-    byLevel.get(t.hskLevel)!.push(t);
+    if (!byLevel.has(t.level)) byLevel.set(t.level, []);
+    byLevel.get(t.level)!.push(t);
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <MessagesSquare className="h-6 w-6 text-indigo-600" /> Nói theo chủ đề (HSKK)
+          <MessagesSquare className="h-6 w-6 text-indigo-600" /> Nói theo chủ đề
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           <BulkItemImport
@@ -82,7 +81,7 @@ export default async function AdminSpeakingTopicsPage() {
             unitNoun="chủ đề"
             sampleJson={SPEAKING_TOPIC_SAMPLE}
             sampleFileName="mau-chu-de-noi.json"
-            description="Mỗi mục = 1 chủ đề: hskLevel + questionZh (bắt buộc); tùy chọn title · topic · questionPinyin · questionVi · outline · hints[] ({text,pinyin?,vi?}) · sampleAnswer · minChars · prepSeconds. MP3 (audioUrl) tải lên sau."
+            description="Mỗi mục = 1 chủ đề: level + question (câu hỏi tiếng Anh, bắt buộc); tùy chọn title · topic · questionVi · outline · hints[] ({text, vi?}) · sampleAnswer · minWords · prepSeconds. Audio câu hỏi sinh tự động khi mở từng chủ đề và bấm “Tạo audio”."
           />
           <Link href="/admin/speaking">
             <Button variant="outline" size="sm">
@@ -92,9 +91,9 @@ export default async function AdminSpeakingTopicsPage() {
         </div>
       </div>
       <p className="text-sm text-muted-foreground">
-        Giám khảo đặt câu hỏi mở theo chủ đề (kèm MP3 + transcript + gợi ý + dàn ý). Học viên ghi âm trả lời thành một
-        đoạn dài → AI chấm chi tiết: nội dung, ngữ pháp, từ vựng, mạch lạc, lưu loát + sửa lỗi. Mẹo: bấm{" "}
-        <b>“Điền nhanh bằng JSON”</b> để dán một lần cho mọi ô chữ, rồi chỉ cần tải MP3.
+        Giám khảo đặt một câu hỏi mở theo chủ đề (kèm audio + gợi ý từ + dàn ý). Bé ghi âm trả lời thành một đoạn
+        → AI chấm nội dung, từ vựng, ngữ pháp, phát âm và độ trôi chảy, khen trước rồi mới gợi ý sửa. Mẹo: bấm{" "}
+        <b>“Điền nhanh bằng JSON”</b> để dán một lần cho mọi ô chữ.
       </p>
 
       {/* Create */}
@@ -122,23 +121,21 @@ export default async function AdminSpeakingTopicsPage() {
         <div className="space-y-6">
           {[...byLevel.entries()].map(([level, group]) => (
             <div key={level} className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
               <div className="space-y-3">
                 {group.map((t) => {
                   const defaults: TopicFormDefaults = {
                     title: t.title,
-                    hskLevel: t.hskLevel,
+                    level: t.level,
                     topic: t.topic,
-                    questionZh: t.questionZh,
-                    questionPinyin: t.questionPinyin,
+                    question: t.question,
                     questionVi: t.questionVi,
                     outline: t.outline,
                     audioUrl: t.audioUrl,
                     transcript: t.transcript,
                     hints: asHints(t.hints),
                     sampleAnswer: t.sampleAnswer,
-                    sampleAnswerPinyin: t.sampleAnswerPinyin,
-                    minChars: t.minChars,
+                    minWords: t.minWords,
                     prepSeconds: t.prepSeconds,
                     order: t.order,
                     imageUrl: t.imageUrl,
@@ -150,12 +147,10 @@ export default async function AdminSpeakingTopicsPage() {
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-semibold">{t.title || t.topic || "(chưa đặt tên)"}</span>
-                              <Badge variant="outline">{hskLevelLabel(t.hskLevel)}</Badge>
-                              {t.audioUrl && <Badge variant="secondary">Có MP3</Badge>}
+                              <Badge variant="outline">{levelLabel(t.level)}</Badge>
+                              {t.audioUrl && <Badge variant="secondary">Có audio</Badge>}
                             </div>
-                            <div className="font-chinese mt-1 line-clamp-2 text-sm text-muted-foreground">
-                              {t.questionZh}
-                            </div>
+                            <div className="mt-1 line-clamp-2 text-sm text-muted-foreground">{t.question}</div>
                           </div>
                           <div className="flex shrink-0 flex-col items-end gap-2">
                             <PublishToggle model="speakingTopic" id={t.id} published={t.published} />

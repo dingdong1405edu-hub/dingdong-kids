@@ -103,18 +103,17 @@ export function QuestionCard({
             <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-rose-500" />
           ))}
         <div className="font-primer min-w-0 flex-1 text-[17px] font-semibold leading-snug">{q.prompt}</div>
-        <SpeakButton text={q.prompt} audioUrl={q.audioUrl} className="h-10 w-10" label="Nghe đọc câu hỏi" />
+        <SpeakButton text={q.prompt} audioUrl={q.audioUrl} label="Nghe đọc câu hỏi" />
         <button
           type="button"
           onClick={onToggleFlag}
           aria-label={flagged ? "Bỏ đánh dấu" : "Đánh dấu để xem lại"}
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border-2 transition-colors",
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 transition-colors",
             flagged
               ? "border-sunny bg-sunny/20 text-amber-600 dark:text-amber-300"
               : "border-transparent text-muted-foreground hover:bg-muted",
           )}
-          style={{ minHeight: 40 }}
         >
           <Flag className={cn("h-4 w-4", flagged && "fill-current")} />
         </button>
@@ -236,7 +235,7 @@ export function QuestionCard({
           {submitted && !isCorrect && correctText && (
             <p className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-300">
               Đáp án đúng là <span className="font-primer font-bold">{correctText}</span>
-              <SpeakButton text={correctText} className="h-9 w-9" />
+              <SpeakButton text={correctText} />
             </p>
           )}
         </div>

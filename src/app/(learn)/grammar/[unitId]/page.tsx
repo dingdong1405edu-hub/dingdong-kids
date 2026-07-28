@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -9,6 +10,19 @@ import { grammarItemCount, grammarTestCount } from "@/lib/grammar";
 
 interface Props {
   params: Promise<{ unitId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { unitId } = await params;
+  const u = await db.grammarUnit.findUnique({
+    where: { id: unitId },
+    select: { title: true, theme: true },
+  });
+  if (!u) return { title: "Ngữ pháp" };
+  return {
+    title: u.title,
+    description: `Ngữ pháp tiếng Anh cho bé${u.theme ? ` · ${u.theme}` : ""} — học rồi luyện ngay từng bước.`,
+  };
 }
 
 export default async function GrammarUnitPage({ params }: Props) {

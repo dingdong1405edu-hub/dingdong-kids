@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -8,6 +9,19 @@ import { CheckCircle2, FileDown } from "lucide-react";
 
 interface Props {
   params: Promise<{ unitId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { unitId } = await params;
+  const u = await db.vocabUnit.findUnique({
+    where: { id: unitId },
+    select: { title: true, theme: true },
+  });
+  if (!u) return { title: "Từ vựng" };
+  return {
+    title: u.title,
+    description: `Chủ đề từ vựng tiếng Anh cho bé${u.theme ? ` · ${u.theme}` : ""} — học qua tranh và tiếng đọc.`,
+  };
 }
 
 export default async function VocabUnitPage({ params }: Props) {

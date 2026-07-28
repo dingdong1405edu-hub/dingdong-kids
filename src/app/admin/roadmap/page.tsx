@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PublishToggle } from "@/components/admin/publish-toggle";
-import { hskLevelLabel } from "@/lib/utils";
-import { LEVELS } from "@/lib/roadmap";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, SKILL_META, themeFor } from "@/lib/roadmap";
 import { createCourseForLevelAction } from "@/server/actions/roadmap-admin";
 import { ChevronRight, Route, Plus, BookOpen } from "lucide-react";
 
@@ -15,7 +15,7 @@ export default async function AdminRoadmapPage() {
     include: { _count: { select: { lessons: true } } },
   });
   const byLevel = new Map<string, (typeof courses)[number]>(
-    courses.map((c) => [c.hskLevel as string, c])
+    courses.map((c) => [c.level as string, c])
   );
 
   return (
@@ -25,8 +25,8 @@ export default async function AdminRoadmapPage() {
           <Route className="h-6 w-6 text-primary" /> Lộ trình học
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          6 khóa HSK, mỗi bài gồm đủ 7 phần: Từ vựng · Ngữ pháp · Chữ Hán · Đọc · Nghe · Viết · Nói.
-          Chọn một khóa để thêm và quản lý bài học.
+          6 khóa theo cấp Cambridge, mỗi bài gồm đủ {SKILL_META.length} phần:{" "}
+          {SKILL_META.map((s) => s.label).join(" · ")}. Chọn một khóa để thêm và quản lý bài học.
         </p>
       </div>
 
@@ -37,7 +37,9 @@ export default async function AdminRoadmapPage() {
             return (
               <Card key={level} className="border-dashed">
                 <CardContent className="flex flex-col items-center gap-2 p-5 text-center">
-                  <Badge variant="outline">{hskLevelLabel(level)}</Badge>
+                  <Badge variant="outline">
+                    {themeFor(level).emoji} {levelLabel(level)}
+                  </Badge>
                   <p className="text-sm text-muted-foreground">Chưa có khóa cho cấp này.</p>
                   <form
                     action={async () => {
@@ -46,7 +48,7 @@ export default async function AdminRoadmapPage() {
                     }}
                   >
                     <Button type="submit" size="sm" variant="outline">
-                      <Plus className="h-4 w-4" /> Tạo khóa {hskLevelLabel(level)}
+                      <Plus className="h-4 w-4" /> Tạo khóa {levelLabel(level)}
                     </Button>
                   </form>
                 </CardContent>
@@ -59,11 +61,13 @@ export default async function AdminRoadmapPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate font-semibold">{course.title}</div>
-                    {course.titleZh && (
-                      <div className="truncate font-chinese text-sm text-muted-foreground">{course.titleZh}</div>
+                    {course.subtitle && (
+                      <div className="truncate text-sm text-muted-foreground">{course.subtitle}</div>
                     )}
                   </div>
-                  <Badge variant="outline" className="shrink-0">{hskLevelLabel(course.hskLevel)}</Badge>
+                  <Badge variant="outline" className="shrink-0">
+                    {themeFor(course.level).emoji} {levelLabel(course.level)}
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <BookOpen className="h-3.5 w-3.5" /> {course._count.lessons} bài học

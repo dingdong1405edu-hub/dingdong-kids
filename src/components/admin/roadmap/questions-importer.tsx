@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 import { authoringToRoadmapQuestions, type RoadmapQuestion } from "@/lib/roadmap-content";
 import {
   generateRoadmapReadingQuestionsAction,
@@ -14,21 +14,21 @@ import {
 } from "@/server/actions/roadmap-admin";
 
 const PLACEHOLDER = `[
-  { "type": "MCQ", "prompt": "作者周末做了什么?", "options": ["去公园", "在家睡觉", "去上班", "看医生"], "answer": 0, "explanation": "...", "supportingQuote": "周末我去了公园" },
-  { "type": "TRUE_FALSE", "prompt": "作者喜欢运动。", "answer": true, "explanation": "..." },
-  { "type": "FILL_BLANK", "prompt": "作者每天早上去 ___ 跑步。", "answer": "公园", "accepted": ["公园里"] }
+  { "type": "MCQ", "prompt": "What pet does Mai have?", "promptTranslation": "Bé Mai nuôi con vật gì?", "options": ["a dog", "a cat", "a fish", "a bird"], "optionsTranslation": ["một chú chó", "một chú mèo", "một chú cá", "một chú chim"], "answer": 0, "explanation": "Bài nói Mai có một chú chó nhỏ.", "supportingQuote": "Mai has a little dog.", "quoteTranslation": "Bé Mai có một chú chó nhỏ." },
+  { "type": "TRUE_FALSE", "prompt": "Mai and Bong run in the garden.", "promptTranslation": "Mai và Bông chạy chơi trong vườn.", "answer": true, "explanation": "Sáng nào hai bạn cũng chạy trong vườn." },
+  { "type": "FILL_BLANK", "prompt": "The dog's name is ___.", "promptTranslation": "Chú chó tên là ___.", "answer": "Bong", "accepted": ["bong"] }
 ]`;
 
 export function RoadmapQuestionsImporter({
   skill,
   source,
-  hskLevel,
+  level,
   onImport,
 }: {
   skill: "READING" | "LISTENING";
   /** Đoạn văn (đọc) hoặc lời thoại (nghe) để AI sinh câu hỏi. */
   source: string;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   onImport: (questions: RoadmapQuestion[]) => void;
 }) {
   const [json, setJson] = useState("");
@@ -40,8 +40,8 @@ export function RoadmapQuestionsImporter({
     setGenerating(true);
     const res =
       skill === "READING"
-        ? await generateRoadmapReadingQuestionsAction({ passage: source, hskLevel, count })
-        : await generateRoadmapListeningQuestionsAction({ transcript: source, hskLevel, count });
+        ? await generateRoadmapReadingQuestionsAction({ passage: source, level, count })
+        : await generateRoadmapListeningQuestionsAction({ transcript: source, level, count });
     setGenerating(false);
     if (res.ok && res.data) {
       setJson(res.data.json);
@@ -104,7 +104,9 @@ export function RoadmapQuestionsImporter({
         />
         <p className="text-[11px] text-muted-foreground">
           Dán mảng JSON câu hỏi (hoặc bấm AI). MCQ kèm <code>options</code> + <code>answer</code> (chỉ số từ 0);
-          TRUE_FALSE <code>answer</code> true/false; FILL_BLANK <code>answer</code> là chữ Hán.
+          TRUE_FALSE <code>answer</code> true/false; FILL_BLANK <code>answer</code> là từ tiếng Anh. Nên có
+          bản dịch tiếng Việt (<code>promptTranslation</code>, <code>optionsTranslation</code>,{" "}
+          <code>quoteTranslation</code>) để bé đọc phần chữa bài hiểu ngay.
         </p>
         <Button type="button" size="sm" onClick={handleAdd} disabled={generating} className="gap-1.5">
           <ListPlus className="h-4 w-4" /> Thêm tất cả vào danh sách

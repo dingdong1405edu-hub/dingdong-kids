@@ -12,6 +12,11 @@ interface ImageUploadProps {
   defaultValue?: string | null;
   /** Optional aspect ratio for the preview box. */
   className?: string;
+  /**
+   * Báo URL ảnh mỗi khi đổi — cho form KHÔNG dùng FormData (vd form từ vựng gọi
+   * server action trực tiếp) hoặc để hiện cảnh báo "chưa có ảnh" ngay lập tức.
+   */
+  onValueChange?: (url: string) => void;
 }
 
 /**
@@ -19,8 +24,18 @@ interface ImageUploadProps {
  * click) and stores the returned URL in a hidden input so it submits with the
  * surrounding server-action <form>. Also accepts a pasted URL as a fallback.
  */
-export function ImageUpload({ name = "imageUrl", defaultValue, className }: ImageUploadProps) {
-  const [url, setUrl] = useState<string>(defaultValue ?? "");
+export function ImageUpload({
+  name = "imageUrl",
+  defaultValue,
+  className,
+  onValueChange,
+}: ImageUploadProps) {
+  const [url, setUrlState] = useState<string>(defaultValue ?? "");
+
+  function setUrl(next: string) {
+    setUrlState(next);
+    onValueChange?.(next);
+  }
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [showUrl, setShowUrl] = useState(false);

@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 import { ChevronDown, Save, Eye, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ import {
 } from "@/server/actions/roadmap-admin";
 import { VocabSectionEditor } from "./vocab-section-editor";
 import { GrammarSectionEditor } from "./grammar-section-editor";
-import { HanziSectionEditor } from "./hanzi-section-editor";
+import { PhonicsSectionEditor } from "./phonics-section-editor";
 import { ReadingSectionEditor } from "./reading-section-editor";
 import { ListeningSectionEditor } from "./listening-section-editor";
 import { WritingSectionEditor } from "./writing-section-editor";
@@ -25,13 +25,13 @@ import { SpeakingSectionEditor } from "./speaking-section-editor";
 interface Props {
   lessonId: string;
   skill: SkillKey;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
   sectionId: string | null;
   published: boolean;
   initialContent: unknown;
 }
 
-export function SectionPanel({ lessonId, skill, hskLevel, sectionId, published, initialContent }: Props) {
+export function SectionPanel({ lessonId, skill, level, sectionId, published, initialContent }: Props) {
   const meta = SKILL_META.find((m) => m.key === skill)!;
   const Icon = meta.icon;
   const router = useRouter();
@@ -74,12 +74,12 @@ export function SectionPanel({ lessonId, skill, hskLevel, sectionId, published, 
         return <VocabSectionEditor {...p} />;
       case "GRAMMAR":
         return <GrammarSectionEditor {...p} />;
-      case "HANZI":
-        return <HanziSectionEditor {...p} />;
+      case "PHONICS":
+        return <PhonicsSectionEditor {...p} />;
       case "READING":
-        return <ReadingSectionEditor {...p} hskLevel={hskLevel} />;
+        return <ReadingSectionEditor {...p} level={level} />;
       case "LISTENING":
-        return <ListeningSectionEditor {...p} hskLevel={hskLevel} />;
+        return <ListeningSectionEditor {...p} level={level} />;
       case "WRITING":
         return <WritingSectionEditor {...p} />;
       case "SPEAKING":
@@ -102,7 +102,7 @@ export function SectionPanel({ lessonId, skill, hskLevel, sectionId, published, 
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5 font-semibold">
             {meta.label}
-            <span className="font-chinese text-xs font-normal text-muted-foreground">{meta.labelZh}</span>
+            <span className="text-xs font-normal text-muted-foreground">{meta.labelEn}</span>
           </span>
         </span>
         {hasContent ? (

@@ -140,12 +140,11 @@ export function SelectionLookup({
     >
       <div className="flex items-center justify-between gap-2 border-b px-4 py-2">
         <span className="font-primer min-w-0 flex-1 truncate text-sm font-semibold">{anchor.text}</span>
-        <SpeakButton text={anchor.text} className="h-9 w-9" label="Nghe đọc cả cụm" />
+        <SpeakButton text={anchor.text} label="Nghe đọc cả cụm" />
         <button
           onClick={onClose}
           aria-label="Đóng"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-          style={{ minHeight: 36 }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
         >
           <X className="h-5 w-5" />
         </button>
@@ -176,19 +175,18 @@ export function SelectionLookup({
                         {e.meaning}
                       </div>
                     </div>
-                    <SpeakButton text={e.word} className="h-9 w-9" />
+                    <SpeakButton text={e.word} />
                     <button
                       type="button"
                       onClick={() => save(e)}
                       disabled={!!st}
                       aria-label="Cất vào sổ từ"
                       className={cn(
-                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors",
                         st === "saved"
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
                       )}
-                      style={{ minHeight: 36 }}
                     >
                       {st === "saving" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />

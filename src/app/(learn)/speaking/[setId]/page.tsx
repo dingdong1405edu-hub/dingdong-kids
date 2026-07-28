@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -6,6 +7,11 @@ import { SpeakingClient } from "./speaking-client";
 interface Props {
   params: Promise<{ setId: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Luyện nói",
+  description: "Bé nói tiếng Anh thật to — máy nghe, khen bé và chỉ chỗ nói hay hơn.",
+};
 
 export default async function SpeakingSetPage({ params }: Props) {
   const { setId } = await params;

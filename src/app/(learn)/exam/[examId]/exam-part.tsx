@@ -142,7 +142,7 @@ function EssayBlock({
   submitted: boolean;
   result: EssayResult | undefined;
 }) {
-  // Tiếng Anh đếm TỪ (bản tiếng Trung trước đây đếm ký tự).
+  // Tiếng Anh đếm TỪ, không đếm ký tự — ngưỡng `minWords` cũng tính theo từ.
   const wordCount = countWords(value);
   const minWords = part.writingMinWords ?? 0;
   const progress = minWords > 0 ? Math.min(100, Math.round((wordCount / minWords) * 100)) : 0;

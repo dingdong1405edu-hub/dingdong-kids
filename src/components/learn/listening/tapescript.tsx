@@ -110,8 +110,7 @@ export function Tapescript({
                   type="button"
                   onClick={() => onPlaySegment(i)}
                   aria-label="Nghe lại câu này"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
-                  style={{ minHeight: 40 }}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-primary/15 hover:text-primary"
                 >
                   <Volume2 className="h-5 w-5" />
                 </button>

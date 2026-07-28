@@ -19,7 +19,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: "Bé hãy đăng nhập rồi nộp bài nhé!" }, { status: 401 });
 
   if (!isGradingConfigured()) {
     return NextResponse.json(

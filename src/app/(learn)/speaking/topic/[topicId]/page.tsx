@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -5,6 +6,19 @@ import { TopicSpeakingClient, type TopicData, type TopicHint } from "./topic-spe
 
 interface Props {
   params: Promise<{ topicId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { topicId } = await params;
+  const t = await db.speakingTopic.findUnique({
+    where: { id: topicId },
+    select: { title: true, topic: true, published: true },
+  });
+  if (!t || !t.published) return { title: "Nói theo chủ đề" };
+  return {
+    title: t.topic || t.title || "Nói theo chủ đề",
+    description: "Bé nghe câu hỏi rồi trả lời bằng tiếng Anh — máy khen và gợi ý cách nói hay hơn.",
+  };
 }
 
 /** `hints` lưu dạng Json tự do → lọc về [{ text, vi }] an toàn cho client. */

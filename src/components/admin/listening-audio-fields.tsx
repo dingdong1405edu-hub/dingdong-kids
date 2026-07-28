@@ -5,39 +5,40 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, countChineseChars } from "@/lib/utils";
+import { TtsButton } from "@/components/admin/tts-button";
+import { cn, countWords } from "@/lib/utils";
 import {
   transcribeListeningAudioAction,
   generateTranscriptExplanationAction,
 } from "@/server/actions/admin";
 
 interface ListeningAudioFieldsProps {
-  /** Hidden input name for the resulting audio URL. */
+  /** Tên trường ẩn chứa URL audio. */
   audioName?: string;
-  /** Textarea input name for the transcript. */
+  /** Tên trường textarea của lời thoại. */
   transcriptName?: string;
-  /** Textarea input name for the Vietnamese transcript explanation. */
+  /** Tên trường textarea của phần dịch & giải thích (tiếng Việt). */
   transcriptExplanationName?: string;
   defaultAudioUrl?: string | null;
   defaultTranscript?: string | null;
   defaultTranscriptExplanation?: string | null;
-  /** Test id — required for the AI "dịch & giải thích" button (edit page only). */
+  /** Mã bài nghe — cần cho nút AI "dịch & giải thích" (chỉ có ở trang sửa). */
   listeningId?: string;
-  /** Unique suffix so two instances (create + edit) don't collide on element ids. */
+  /** Hậu tố để hai form (tạo + sửa) không trùng id phần tử. */
   idSuffix?: string;
 }
 
 /**
- * Admin audio + transcript editor for a listening test. One client component so
- * the AI helpers can read/write the live transcript value. Submits three fields
- * with the surrounding server-action <form>: `audioUrl` (hidden) + `transcript`
- * + `transcriptExplanation`.
+ * Ô soạn audio + lời thoại của một bài nghe. Gộp trong MỘT client component để
+ * các nút AI đọc/ghi được giá trị lời thoại đang gõ. Gửi kèm <form> server action
+ * ba trường: `audioUrl` (ẩn) + `transcript` + `transcriptExplanation`.
  *
- *  - Upload an MP3/WAV/OGG/M4A file → POST /api/admin/audio (file). (Admin tự tải
- *    audio thật — KHÔNG còn tạo MP3 bằng AI vì không có giọng TTS tiếng Trung.)
- *  - Audio → transcript: Deepgram transcribes the audio to Mandarin text.
- *  - Transcript → dịch & giải thích (tiếng Việt) via Groq, hiện ở phần chữa bài.
- *  - Or paste a direct URL (fallback for durable/CDN storage).
+ *  - CÁCH NHANH NHẤT: gõ lời thoại rồi bấm "🔊 Tạo audio từ lời thoại" — máy đọc
+ *    bằng giọng tiếng Anh sẵn có, không phải tự thu MP3 nữa.
+ *  - Vẫn tải MP3 thật lên được (giọng người thu, hội thoại nhiều người…) qua
+ *    POST /api/admin/audio, hoặc dán liên kết audio.
+ *  - Audio → lời thoại: Deepgram ghi lại lời thoại tiếng Anh từ file audio.
+ *  - Lời thoại → dịch & giải thích (tiếng Việt) bằng Groq, hiện ở phần chữa bài.
  */
 export function ListeningAudioFields({
   audioName = "audioUrl",
@@ -61,7 +62,7 @@ export function ListeningAudioFields({
   // Suffix keeps element ids distinct when both the create + edit forms mount.
   const fieldId = `${useId()}${idSuffix}`;
 
-  const charCount = countChineseChars(transcript);
+  const wordCount = countWords(transcript);
   const busy = uploading || transcribing || explaining;
 
   async function uploadFile(file: File) {
@@ -94,7 +95,7 @@ export function ListeningAudioFields({
 
   async function generateTranscriptFromAudio() {
     if (!audioUrl.trim()) {
-      toast.error("Hãy tải audio lên (hoặc dán liên kết) trước khi tạo transcript");
+      toast.error("Hãy tải audio lên (hoặc dán liên kết) trước khi ghi lời thoại");
       return;
     }
     setTranscribing(true);
@@ -102,12 +103,12 @@ export function ListeningAudioFields({
       const res = await transcribeListeningAudioAction(audioUrl);
       if (res.ok) {
         setTranscript(res.transcript);
-        toast.success("Đã tạo transcript từ audio (Deepgram)");
+        toast.success("Đã ghi lời thoại từ audio.");
       } else {
         toast.error(res.error);
       }
     } catch {
-      toast.error("Lỗi khi tạo transcript từ audio");
+      toast.error("Chưa ghi được lời thoại từ audio, thử lại nhé.");
     } finally {
       setTranscribing(false);
     }
@@ -119,7 +120,7 @@ export function ListeningAudioFields({
       return;
     }
     if (!transcript.trim()) {
-      toast.error("Hãy có lời thoại (transcript) trước khi dịch.");
+      toast.error("Hãy có lời thoại trước khi dịch.");
       return;
     }
     setExplaining(true);
@@ -127,7 +128,7 @@ export function ListeningAudioFields({
       const res = await generateTranscriptExplanationAction(listeningId);
       if (res.ok) {
         setExplanation(res.text);
-        toast.success("Đã dịch & giải thích lời thoại (Groq)");
+        toast.success("Đã dịch & giải thích lời thoại.");
       } else {
         toast.error(res.error);
       }
@@ -146,35 +147,42 @@ export function ListeningAudioFields({
       {/* Transcript */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <Label htmlFor={`${fieldId}-transcript`}>Transcript (lời thoại tiếng Trung)</Label>
-          <span className="text-xs text-muted-foreground">{charCount} chữ Hán</span>
+          <Label htmlFor={`${fieldId}-transcript`}>Lời thoại (tiếng Anh)</Label>
+          <span className="text-xs text-muted-foreground">{wordCount} từ</span>
         </div>
         <Textarea
           id={`${fieldId}-transcript`}
           name={transcriptName}
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
-          className="font-chinese min-h-32"
-          placeholder={"A: 你好！你叫什么名字？\nB: 我叫王芳。你呢？"}
+          className="font-primer min-h-32"
+          placeholder={"A: Hello! What is your name?\nB: My name is Lucy. And you?"}
         />
         <p className="text-xs text-muted-foreground">
           Mẹo: dùng nhãn <code className="font-mono">A:</code> / <code className="font-mono">B:</code> đầu dòng cho
           hội thoại — hệ thống sẽ tách câu, đổi giọng A/B và dò “đáp án nằm ở câu nào”.
         </p>
-        <div className="pt-0.5">
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          {/* Cách nhanh nhất: gõ lời thoại → máy đọc thành audio ngay. */}
+          <TtsButton
+            text={transcript}
+            onDone={setAudioUrl}
+            disabled={busy}
+            label="Tạo audio từ lời thoại"
+            title={transcript.trim() ? "Máy đọc lời thoại thành file audio" : "Gõ lời thoại trước đã"}
+          />
           <button
             type="button"
             onClick={generateTranscriptFromAudio}
             disabled={busy || !audioUrl.trim()}
             title={!audioUrl.trim() ? "Cần có audio ở dưới trước" : undefined}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20",
+              "inline-flex items-center gap-1.5 rounded-lg border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50",
             )}
           >
             {transcribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileAudio className="h-4 w-4" />}
-            {transcribing ? "Đang tạo transcript…" : "Tạo transcript từ audio (Deepgram)"}
+            {transcribing ? "Đang ghi lời thoại…" : "Ngược lại: ghi lời thoại TỪ audio"}
           </button>
-          <span className="ml-2 text-xs text-muted-foreground">Ghi lời thoại tiếng Trung từ file audio bên dưới.</span>
         </div>
       </div>
 
@@ -268,9 +276,10 @@ export function ListeningAudioFields({
           />
         )}
         <p className="text-xs text-muted-foreground">
-          Tự tải file MP3 thật lên (giọng người/thu âm). Có thể bấm{" "}
-          <span className="font-medium">Tạo transcript từ audio (Deepgram)</span> để máy tự ghi lời thoại. Nếu bài chưa
-          có MP3, người học vẫn nghe được nhờ giọng đọc tiếng Trung của trình duyệt.
+          Cách nhanh: gõ lời thoại ở trên rồi bấm{" "}
+          <span className="font-medium">“🔊 Tạo audio từ lời thoại”</span> — máy đọc giúp. Muốn giọng người
+          thật (hội thoại nhiều nhân vật, tiếng động nền…) thì tải MP3 lên ở đây. Bài chưa có audio thì trình
+          duyệt vẫn đọc tạm bằng giọng máy, nhưng nghe kém hay hơn nhiều.
         </p>
       </div>
 

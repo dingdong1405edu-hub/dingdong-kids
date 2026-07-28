@@ -94,7 +94,7 @@ export function PassageAnalysis({
                           <span className="font-primer min-w-0 flex-1 text-[15px] font-semibold leading-snug text-foreground">
                             {s.en}
                           </span>
-                          <SpeakButton text={s.en} className="h-9 w-9" label="Nghe đọc câu này" />
+                          <SpeakButton text={s.en} label="Nghe đọc câu này" />
                         </div>
                         {s.vi && <p className="text-sm italic text-muted-foreground">{s.vi}</p>}
                         {s.note && (

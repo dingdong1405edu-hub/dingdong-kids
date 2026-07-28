@@ -15,24 +15,33 @@ import {
 const PLACEHOLDER = `[
   {
     "type": "MCQ",
-    "prompt": "作者周末做了什么?",
-    "options": ["去公园", "在家睡觉", "去上班", "看医生"],
+    "prompt": "What pet does Mai have?",
+    "promptTranslation": "Bé Mai nuôi con vật gì?",
+    "options": ["a dog", "a cat", "a fish", "a bird"],
+    "optionsTranslation": ["một chú chó", "một chú mèo", "một chú cá", "một chú chim"],
     "answer": 0,
-    "explanation": "Đoạn văn nói tác giả đi công viên vào cuối tuần.",
-    "supportingQuote": "周末我去了公园"
+    "explanation": "Bài đọc nói Mai có một chú chó nhỏ tên Bông.",
+    "supportingQuote": "Mai has a little dog.",
+    "quoteTranslation": "Bé Mai có một chú chó nhỏ."
   },
   {
     "type": "TRUE_FALSE",
-    "prompt": "作者喜欢运动。",
+    "prompt": "Mai and Bong run in the garden.",
+    "promptTranslation": "Mai và Bông chạy chơi trong vườn.",
     "answer": true,
-    "explanation": "Tác giả nói rất thích chạy bộ."
+    "explanation": "Bài đọc kể sáng nào hai bạn cũng chạy trong vườn.",
+    "supportingQuote": "They run in the garden every morning.",
+    "quoteTranslation": "Sáng nào hai bạn cũng chạy trong vườn."
   },
   {
     "type": "FILL_BLANK",
-    "prompt": "作者每天早上去 ___ 跑步。",
-    "answer": "公园",
-    "accepted": ["公园里"],
-    "explanation": "Câu mở đầu cho biết địa điểm."
+    "prompt": "The dog's name is ___.",
+    "promptTranslation": "Chú chó tên là ___.",
+    "answer": "Bong",
+    "accepted": ["bong"],
+    "explanation": "Câu thứ hai cho biết tên chú chó.",
+    "supportingQuote": "His name is Bong.",
+    "quoteTranslation": "Tên bạn ấy là Bông."
   }
 ]`;
 
@@ -117,7 +126,10 @@ export function ReadingQuestionsImporter({ readingId }: { readingId: string }) {
           Dán JSON một mảng câu hỏi (hoặc bấm “AI tạo câu hỏi”). Loại hỗ trợ:{" "}
           <span className="font-medium">MCQ</span> (kèm <code>options</code> + <code>answer</code> là chỉ số từ 0),{" "}
           <span className="font-medium">TRUE_FALSE</span> (<code>answer</code> true/false),{" "}
-          <span className="font-medium">FILL_BLANK</span> (<code>answer</code> là chữ Hán). Không cần nhập pinyin — máy tự sinh.
+          <span className="font-medium">FILL_BLANK</span> (<code>answer</code> là từ tiếng Anh). Nên kèm bản dịch
+          tiếng Việt: <code>promptTranslation</code>, <code>optionsTranslation</code>,{" "}
+          <code>quoteTranslation</code> — hiện ở phần chữa bài để bé hiểu mình sai ở đâu. Audio đọc đề được
+          tạo tự động khi lưu.
         </p>
       </div>
 

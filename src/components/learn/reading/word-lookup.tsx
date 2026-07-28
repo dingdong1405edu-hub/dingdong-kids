@@ -4,10 +4,11 @@ import { createPortal } from "react-dom";
 import { X, BookmarkPlus, BookmarkCheck, Loader2, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn, levelLabel } from "@/lib/utils";
+import { isLevel } from "@/lib/roadmap";
 import { lookupWordAction } from "@/server/actions/word-lookup";
 import { saveWordAction } from "@/server/actions/saved-word";
 import { splitPassageTokens } from "./types";
-import { speakEnglish } from "./speak-en";
+import { playEnglish } from "./speak-en";
 
 export interface LookupAnchor {
   /** Từ tiếng Anh bé vừa bấm (đã bỏ dấu câu hai đầu). */
@@ -99,19 +100,14 @@ export function SpeakButton({
       title={label}
       onClick={(e) => {
         e.stopPropagation();
-        if (audioUrl?.trim()) {
-          try {
-            const a = new Audio(audioUrl);
-            a.play().catch(() => speakEnglish(text));
-            return;
-          } catch {
-            /* rơi xuống giọng trình duyệt */
-          }
-        }
-        speakEnglish(text);
+        // playEnglish tự tắt tiếng đang phát trước đó, nên bé bấm liên tiếp
+        // nhiều nút loa cũng chỉ nghe MỘT giọng — không bị chồng tiếng.
+        playEnglish({ text, audioUrl, rate: 0.85 });
       }}
       className={cn(
-        "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform hover:bg-primary/20 active:scale-95",
+        // 48px: đúng vùng chạm tối thiểu ép trong globals.css. Đặt nhỏ hơn thì
+        // min-height của base vẫn kéo cao 48px → nút tròn biến thành hình bầu dục.
+        "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform hover:bg-primary/20 active:scale-95",
         className,
       )}
     >
@@ -263,8 +259,7 @@ export function WordLookup({
         <button
           onClick={onClose}
           aria-label="Đóng"
-          className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
-          style={{ minHeight: 36 }}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted"
         >
           <X className="h-5 w-5" />
         </button>
@@ -283,7 +278,10 @@ export function WordLookup({
                   {posLabel(info.partOfSpeech)}
                 </span>
               )}
-              {info.level && (
+              {/* Chỉ hiện chip khi AI trả về ĐÚNG một cấp Cambridge có thật.
+                  levelLabel() rơi về "Pre-Starters" cho mọi chuỗi lạ, nên nếu
+                  không kiểm tra thì một từ khó có thể bị dán nhãn cấp dễ nhất. */}
+              {isLevel(info.level) && (
                 <span className="rounded-full bg-sunny/25 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300">
                   {levelLabel(info.level)}
                 </span>
@@ -297,7 +295,7 @@ export function WordLookup({
                   <li key={i} className="rounded-2xl bg-muted/60 p-2.5">
                     <div className="flex items-center gap-1.5">
                       <span className="font-primer min-w-0 flex-1 text-sm leading-snug">{ex.sentence}</span>
-                      <SpeakButton text={ex.sentence} className="h-9 w-9" label="Nghe câu ví dụ" />
+                      <SpeakButton text={ex.sentence} label="Nghe câu ví dụ" />
                     </div>
                     {ex.meaning && <p className="mt-0.5 text-xs italic text-muted-foreground">{ex.meaning}</p>}
                   </li>

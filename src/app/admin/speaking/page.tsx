@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList } from "@/components/admin/reorder-list";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import {
   deleteSpeakingAction,
   updateSpeakingAction,
@@ -17,26 +18,26 @@ import {
 } from "@/server/actions/admin";
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
 import { Trash2, Plus, MessagesSquare } from "lucide-react";
+import Link from "next/link";
+import { db as prisma } from "@/lib/db";
+import { EnglishLevel } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 const SPEAKING_SET_SAMPLE = `[
   {
-    "title": "HSKK sơ cấp - Bài 1",
-    "hskLevel": "HSK1",
+    "title": "Cambridge Speaking · Starters — Bài 1",
+    "level": "STARTERS",
     "part1Sentences": [
-      { "text": "你好", "pinyin": "Nǐ hǎo" },
-      { "text": "谢谢你", "pinyin": "Xièxie nǐ" }
+      { "text": "Hello! My name is Mai.", "vi": "Xin chào! Mình tên là Mai." },
+      { "text": "I am six years old.", "vi": "Mình sáu tuổi." }
     ],
-    "part2Passage": { "text": "我叫小明，今年十岁，是学生。", "pinyin": "Wǒ jiào Xiǎomíng, jīnnián shí suì, shì xuésheng." },
+    "part2Passage": { "text": "This is my family. I have a mum, a dad and a little brother. We live in a small house with a big garden.", "vi": "Đây là gia đình mình. Mình có mẹ, bố và một em trai. Nhà mình nhỏ nhưng có khu vườn rộng." },
     "part3Questions": [
-      { "question": "你叫什么名字？", "pinyin": "Nǐ jiào shénme míngzi?" },
-      { "question": "你今年多大？", "pinyin": "Nǐ jīnnián duō dà?" }
+      { "question": "What is your favourite colour?", "vi": "Màu bé thích nhất là màu gì?" },
+      { "question": "What do you like to eat?", "vi": "Bé thích ăn món gì?" }
     ]
   }
 ]`;
-import Link from "next/link";
-import { db as prisma } from "@/lib/db";
-import { HSKLevel } from "@prisma/client";
-import { revalidatePath } from "next/cache";
 
 async function createSpeakingAction(fd: FormData) {
   "use server";
@@ -52,7 +53,7 @@ async function createSpeakingAction(fd: FormData) {
   const created = await prisma.speakingSet.create({
     data: {
       title: fd.get("title") as string,
-      hskLevel: fd.get("hskLevel") as HSKLevel,
+      level: fd.get("level") as EnglishLevel,
       imageUrl: (fd.get("imageUrl") as string) || undefined,
       part1Sentences: parseJson("part1Sentences", "Part 1"),
       part2Passage: parseJson("part2Passage", "Part 2"),
@@ -73,28 +74,28 @@ async function createSpeakingAction(fd: FormData) {
 
 export default async function AdminSpeakingPage() {
   const sets = await db.speakingSet.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
   });
 
-  // Gom theo cấp HSK — mỗi cấp một <ReorderList> riêng (đổi thứ tự theo phạm vi cấp).
-  const byLevel = new Map<HSKLevel, typeof sets>();
+  // Gom theo cấp độ — mỗi cấp một <ReorderList> riêng (đổi thứ tự theo phạm vi cấp).
+  const byLevel = new Map<EnglishLevel, typeof sets>();
   for (const set of sets) {
-    if (!byLevel.has(set.hskLevel)) byLevel.set(set.hskLevel, []);
-    byLevel.get(set.hskLevel)!.push(set);
+    if (!byLevel.has(set.level)) byLevel.set(set.level, []);
+    byLevel.get(set.level)!.push(set);
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Bộ luyện nói HSKK</h1>
+        <h1 className="text-2xl font-bold">Bộ luyện nói (Cambridge Speaking)</h1>
         <div className="flex flex-wrap items-center gap-2">
           <BulkItemImport
             action={bulkImportSpeakingSetsAction}
-            title="Nhập hàng loạt bộ nói HSKK"
+            title="Nhập hàng loạt bộ nói"
             unitNoun="bộ nói"
             sampleJson={SPEAKING_SET_SAMPLE}
             sampleFileName="mau-bo-noi.json"
-            description="Mỗi mục = 1 bộ nói: title (tùy chọn) · hskLevel · part1Sentences[] (lặp câu) · part2Passage{} (đọc đoạn) · part3Questions[] (trả lời). Mỗi câu/đoạn có { text/question, pinyin? } — bỏ trống pinyin máy sẽ tự sinh."
+            description="Mỗi mục = 1 bộ nói: title (tùy chọn) · level · part1Sentences[] (nhắc lại câu) · part2Passage{} (đọc to đoạn văn) · part3Questions[] (trả lời câu hỏi). Mỗi câu/đoạn có { text/question, vi? } — vi là bản dịch tiếng Việt (tùy chọn)."
           />
           <Link href="/admin/speaking/topics">
             <Button variant="outline" size="sm">
@@ -110,12 +111,12 @@ export default async function AdminSpeakingPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Tiêu đề</Label>
-                <Input name="title" placeholder="HSKK HSK1 - Bài 1" />
+                <Input name="title" placeholder="Cambridge Speaking · Starters — Bài 1" />
               </div>
               <div className="space-y-1">
-                <Label>Cấp độ HSK</Label>
-                <select name="hskLevel" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                  {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+                <Label>Cấp độ</Label>
+                <select name="level" className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                  {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
                 </select>
               </div>
               <div className="space-y-1 col-span-2">
@@ -124,29 +125,29 @@ export default async function AdminSpeakingPage() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Part 1 Sentences (JSON array)</Label>
+              <Label>Part 1 · Nhắc lại câu (JSON array)</Label>
               <textarea
                 name="part1Sentences"
                 className="flex min-h-24 w-full rounded-md border px-3 py-2 text-xs font-mono"
-                defaultValue={`[{"text":"你好","pinyin":"Nǐ hǎo"}]`}
+                defaultValue={`[{"text":"Hello! My name is Mai.","vi":"Xin chào! Mình tên là Mai."}]`}
                 required
               />
             </div>
             <div className="space-y-1">
-              <Label>Part 2 Passage (JSON object)</Label>
+              <Label>Part 2 · Đọc to đoạn văn (JSON object)</Label>
               <textarea
                 name="part2Passage"
                 className="flex min-h-16 w-full rounded-md border px-3 py-2 text-xs font-mono"
-                defaultValue={`{"text":"段落内容","pinyin":"Duànluò nèiróng"}`}
+                defaultValue={`{"text":"This is my family.","vi":"Đây là gia đình mình."}`}
                 required
               />
             </div>
             <div className="space-y-1">
-              <Label>Part 3 Questions (JSON array)</Label>
+              <Label>Part 3 · Trả lời câu hỏi (JSON array)</Label>
               <textarea
                 name="part3Questions"
                 className="flex min-h-16 w-full rounded-md border px-3 py-2 text-xs font-mono"
-                defaultValue={`[{"question":"你好吗？","pinyin":"Nǐ hǎo ma?"}]`}
+                defaultValue={`[{"question":"What is your favourite colour?","vi":"Màu bé thích nhất là màu gì?"}]`}
                 required
               />
             </div>
@@ -161,9 +162,9 @@ export default async function AdminSpeakingPage() {
       <div className="space-y-6">
         {[...byLevel.entries()].map(([level, group]) => (
           <div key={level} className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
             <ReorderList
-              spec={{ kind: "content", model: "speaking", hskLevel: level }}
+              spec={{ kind: "content", model: "speaking", level }}
               items={group.map((set) => ({
                 id: set.id,
                 content: (
@@ -178,7 +179,7 @@ export default async function AdminSpeakingPage() {
                         )}
                         <div className="flex-1 space-y-2">
                           <div className="font-semibold">{set.title || set.id}</div>
-                          <Badge variant="outline" className="mt-1">{hskLevelLabel(set.hskLevel)}</Badge>
+                          <Badge variant="outline" className="mt-1">{levelLabel(set.level)}</Badge>
                           <details>
                             <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Sửa</summary>
                             <form action={async (fd: FormData) => { "use server"; await updateSpeakingAction(fd); }} className="mt-3 space-y-3">
@@ -189,9 +190,9 @@ export default async function AdminSpeakingPage() {
                                   <Input name="title" defaultValue={set.title ?? ""} />
                                 </div>
                                 <div className="space-y-1">
-                                  <Label>Cấp độ HSK</Label>
-                                  <select name="hskLevel" defaultValue={set.hskLevel} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
-                                    {["HSK1","HSK2","HSK3","HSK4","HSK5","HSK6"].map(l => <option key={l} value={l}>{l}</option>)}
+                                  <Label>Cấp độ</Label>
+                                  <select name="level" defaultValue={set.level} className="flex h-9 w-full rounded-md border px-3 py-1 text-sm">
+                                    {LEVELS.map((l) => <option key={l} value={l}>{themeFor(l).label}</option>)}
                                   </select>
                                 </div>
                                 <div className="space-y-1 col-span-2">
@@ -200,7 +201,7 @@ export default async function AdminSpeakingPage() {
                                 </div>
                               </div>
                               <div className="space-y-1">
-                                <Label>Part 1 Sentences (JSON array)</Label>
+                                <Label>Part 1 · Nhắc lại câu (JSON array)</Label>
                                 <textarea
                                   name="part1Sentences"
                                   className="flex min-h-24 w-full rounded-md border px-3 py-2 text-xs font-mono"
@@ -209,7 +210,7 @@ export default async function AdminSpeakingPage() {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label>Part 2 Passage (JSON object)</Label>
+                                <Label>Part 2 · Đọc to đoạn văn (JSON object)</Label>
                                 <textarea
                                   name="part2Passage"
                                   className="flex min-h-16 w-full rounded-md border px-3 py-2 text-xs font-mono"
@@ -218,7 +219,7 @@ export default async function AdminSpeakingPage() {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label>Part 3 Questions (JSON array)</Label>
+                                <Label>Part 3 · Trả lời câu hỏi (JSON array)</Label>
                                 <textarea
                                   name="part3Questions"
                                   className="flex min-h-16 w-full rounded-md border px-3 py-2 text-xs font-mono"

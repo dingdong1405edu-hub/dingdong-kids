@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ListeningAudioFields } from "@/components/admin/listening-audio-fields";
-import { Plus, Trash2, Save, Pencil, Headphones, BookText, PenLine } from "lucide-react";
+import { Plus, Trash2, Save, Pencil, Headphones, BookText, PenLine, Mic } from "lucide-react";
 import type { Skill } from "@prisma/client";
 import { sectionLabel } from "@/lib/mock-exam";
 import { PartBlock, type ExamPartData } from "./part-block";
@@ -22,6 +22,7 @@ export interface ExamSectionData {
 function SkillIcon({ skill }: { skill: Skill }) {
   if (skill === "LISTENING") return <Headphones className="h-4 w-4 text-teal-600" />;
   if (skill === "READING") return <BookText className="h-4 w-4 text-emerald-600" />;
+  if (skill === "SPEAKING") return <Mic className="h-4 w-4 text-rose-600" />;
   return <PenLine className="h-4 w-4 text-violet-600" />;
 }
 
@@ -63,7 +64,7 @@ export function SectionBlock({ section, examId }: { section: ExamSectionData; ex
             <input type="hidden" name="examId" value={examId} />
             <div className="space-y-1">
               <Label>Tiêu đề phần (để trống = mặc định)</Label>
-              <Input name="title" defaultValue={section.title} className="font-chinese" placeholder="一、听力" />
+              <Input name="title" defaultValue={section.title} placeholder="Listening · Nghe" />
             </div>
             <div className="space-y-1 sm:col-span-2">
               <Label>Hướng dẫn phần (tùy chọn)</Label>
@@ -106,24 +107,18 @@ export function SectionBlock({ section, examId }: { section: ExamSectionData; ex
             <input type="hidden" name="sectionId" value={section.id} />
             <div className="space-y-1">
               <Label>Tiêu đề tiểu phần</Label>
-              <Input name="title" className="font-chinese" placeholder="第一部分" />
+              <Input name="title" placeholder="Part 1" />
             </div>
             <div className="space-y-1">
               <Label>Hướng dẫn / ví dụ (tùy chọn)</Label>
-              <Textarea name="instructions" className="min-h-14" placeholder="例如：..." />
+              <Textarea name="instructions" className="min-h-14" placeholder="Look and read. Choose the correct word..." />
             </div>
 
             {skill === "READING" && (
-              <>
-                <div className="space-y-1">
-                  <Label>Đoạn văn (Hán tự)</Label>
-                  <Textarea name="passage" className="min-h-24 font-chinese" placeholder="Nội dung đoạn văn..." />
-                </div>
-                <div className="space-y-1">
-                  <Label>Pinyin (tùy chọn)</Label>
-                  <Textarea name="passagePinyin" className="min-h-16 font-pinyin" />
-                </div>
-              </>
+              <div className="space-y-1">
+                <Label>Đoạn văn (tiếng Anh)</Label>
+                <Textarea name="passage" className="min-h-24" placeholder="Nội dung đoạn văn tiếng Anh..." />
+              </div>
             )}
 
             {skill === "LISTENING" && <ListeningAudioFields idSuffix={`-new-${section.id}`} />}
@@ -131,12 +126,12 @@ export function SectionBlock({ section, examId }: { section: ExamSectionData; ex
             {skill === "WRITING" && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-1 sm:col-span-2">
-                  <Label>Đề bài viết tự luận (để trống nếu chỉ dùng câu hỏi)</Label>
-                  <Textarea name="writingPrompt" className="min-h-16" placeholder="Đề bài viết..." />
+                  <Label>Đề bài viết (để trống nếu chỉ dùng câu hỏi)</Label>
+                  <Textarea name="writingPrompt" className="min-h-16" placeholder="Write about your favourite day..." />
                 </div>
                 <div className="space-y-1">
-                  <Label>Số chữ tối thiểu</Label>
-                  <Input name="writingMinChars" type="number" min="0" placeholder="80" />
+                  <Label>Số từ tối thiểu</Label>
+                  <Input name="writingMinWords" type="number" min="0" placeholder="30" />
                 </div>
               </div>
             )}

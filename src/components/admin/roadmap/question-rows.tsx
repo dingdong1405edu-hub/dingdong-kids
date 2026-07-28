@@ -3,6 +3,8 @@ import { Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { MediaField } from "./media-field";
+import { TtsButton } from "@/components/admin/tts-button";
 import { cn } from "@/lib/utils";
 import type { RoadmapQuestion } from "@/lib/roadmap-content";
 
@@ -54,6 +56,11 @@ export function QuestionRows({
     opts[oi] = { ...opts[oi], text };
     update(i, { options: opts });
   }
+  function setOptionImage(i: number, oi: number, imageUrl: string | null) {
+    const opts = [...(rows[i].options ?? [])];
+    opts[oi] = { ...opts[oi], imageUrl };
+    update(i, { options: opts });
+  }
   function addOption(i: number) {
     update(i, { options: [...(rows[i].options ?? []), { text: "" }] });
   }
@@ -85,7 +92,7 @@ export function QuestionRows({
                 ))}
               </select>
             </div>
-            <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)}>
+            <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)} aria-label="Xoá câu hỏi">
               <Trash2 className="h-3.5 w-3.5 text-destructive" />
             </Button>
           </div>
@@ -93,8 +100,8 @@ export function QuestionRows({
           <Textarea
             value={q.prompt}
             onChange={(e) => update(i, { prompt: e.target.value })}
-            placeholder="Nội dung câu hỏi (Hán tự)..."
-            className="min-h-12 font-chinese text-sm"
+            placeholder="Câu hỏi bằng tiếng Anh, vd: What colour is the cat?"
+            className="min-h-12 font-primer text-sm"
           />
           <Input
             value={q.promptTranslation ?? ""}
@@ -102,6 +109,22 @@ export function QuestionRows({
             placeholder="Dịch câu hỏi (tiếng Việt, tuỳ chọn)"
             className="h-8 text-sm"
           />
+
+          {/* Audio đọc đề: bé chưa đọc thạo vẫn nghe được câu hỏi. */}
+          <div className="flex items-center gap-1.5">
+            <TtsButton size="xs" text={q.prompt} onDone={(url) => update(i, { audioUrl: url })} />
+            <Input
+              value={q.audioUrl ?? ""}
+              onChange={(e) => update(i, { audioUrl: e.target.value || null })}
+              placeholder="Audio đọc đề — bấm “Tạo audio” là xong"
+              className="h-8 text-sm"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground">Ảnh của câu hỏi (tuỳ chọn)</p>
+            <MediaField kind="image" value={q.imageUrl} onChange={(url) => update(i, { imageUrl: url })} />
+          </div>
 
           {q.type === "MCQ" && (
             <div className="space-y-1.5">
@@ -111,33 +134,43 @@ export function QuestionRows({
               {(q.options ?? []).map((opt, oi) => {
                 const correct = q.correctAnswer.index === oi;
                 return (
-                  <div key={oi} className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => update(i, { correctAnswer: { index: oi } })}
-                      aria-label="Chọn đáp án đúng"
-                      className={cn(
-                        "shrink-0 rounded-full p-0.5",
-                        correct ? "text-green-600" : "text-muted-foreground/40 hover:text-muted-foreground"
-                      )}
-                    >
-                      <CheckCircle2 className="h-5 w-5" />
-                    </button>
-                    <Input
-                      value={opt.text}
-                      onChange={(e) => setOptionText(i, oi, e.target.value)}
-                      placeholder={`Lựa chọn ${oi + 1}`}
-                      className="h-8 font-chinese text-sm"
+                  <div key={oi} className="space-y-1 rounded-lg border bg-muted/20 p-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => update(i, { correctAnswer: { index: oi } })}
+                        aria-label="Chọn đáp án đúng"
+                        className={cn(
+                          "shrink-0 rounded-full p-0.5",
+                          correct ? "text-green-600" : "text-muted-foreground/40 hover:text-muted-foreground"
+                        )}
+                      >
+                        <CheckCircle2 className="h-5 w-5" />
+                      </button>
+                      <Input
+                        value={opt.text}
+                        onChange={(e) => setOptionText(i, oi, e.target.value)}
+                        placeholder={`Lựa chọn ${oi + 1}`}
+                        className="h-8 font-primer text-sm"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeOption(i, oi)}
+                        disabled={(q.options ?? []).length <= 2}
+                        aria-label="Xoá lựa chọn"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    {/* Ảnh cho lựa chọn: bé chọn bằng HÌNH nhanh và vui hơn đọc chữ. */}
+                    <MediaField
+                      kind="image"
+                      label="Ảnh cho lựa chọn này (tuỳ chọn)"
+                      value={opt.imageUrl}
+                      onChange={(url) => setOptionImage(i, oi, url)}
                     />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeOption(i, oi)}
-                      disabled={(q.options ?? []).length <= 2}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
                 );
               })}
@@ -155,8 +188,8 @@ export function QuestionRows({
                 onChange={(e) => update(i, { correctAnswer: { value: e.target.value === "true" } })}
                 className={selectCls}
               >
-                <option value="true">Đúng (正确)</option>
-                <option value="false">Sai (错误)</option>
+                <option value="true">Đúng (True)</option>
+                <option value="false">Sai (False)</option>
               </select>
             </div>
           )}
@@ -166,8 +199,8 @@ export function QuestionRows({
               <Input
                 value={q.correctAnswer.text ?? ""}
                 onChange={(e) => update(i, { correctAnswer: { ...q.correctAnswer, text: e.target.value } })}
-                placeholder="Đáp án đúng (Hán tự)"
-                className="h-8 font-chinese text-sm"
+                placeholder="Đáp án đúng (tiếng Anh)"
+                className="h-8 font-primer text-sm"
               />
               <Input
                 value={(q.correctAnswer.accepted ?? []).join(", ")}
@@ -182,8 +215,8 @@ export function QuestionRows({
                     },
                   })
                 }
-                placeholder="Đáp án thay thế, cách nhau bởi dấu phẩy"
-                className="h-8 font-chinese text-sm"
+                placeholder="Cách viết khác cũng tính đúng, cách nhau bởi dấu phẩy"
+                className="h-8 font-primer text-sm"
               />
             </div>
           )}
@@ -191,14 +224,20 @@ export function QuestionRows({
           <Textarea
             value={q.explanation ?? ""}
             onChange={(e) => update(i, { explanation: e.target.value || null })}
-            placeholder="Giải thích đáp án (tuỳ chọn)"
+            placeholder="Giải thích cho bé: vì sao đáp án này đúng (tuỳ chọn)"
             className="min-h-10 text-sm"
           />
           <Input
             value={q.supportingQuote ?? ""}
             onChange={(e) => update(i, { supportingQuote: e.target.value || null })}
             placeholder={quoteLabel}
-            className="h-8 font-chinese text-sm"
+            className="h-8 font-primer text-sm"
+          />
+          <Input
+            value={q.quoteTranslation ?? ""}
+            onChange={(e) => update(i, { quoteTranslation: e.target.value || null })}
+            placeholder="Dịch câu trích dẫn (tiếng Việt, tuỳ chọn)"
+            className="h-8 text-sm"
           />
         </div>
       ))}

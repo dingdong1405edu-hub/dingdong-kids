@@ -7,29 +7,29 @@ import { playWord } from "@/lib/speech";
 import { AnswerExplanation } from "@/components/learn/answer-explanation";
 import type { VocabWordCard } from "@/types";
 
-export type OptionKind = "hanzi" | "pinyin" | "text";
+export type OptionKind = "word" | "ipa" | "text";
 
 export interface McqCardProps {
   /** Dòng hướng dẫn (vd "Từ này nghĩa là gì?"). */
   question: string;
-  /** Vùng đề bài (chữ Hán to / nghĩa / nút nghe) — do caller dựng. */
+  /** Vùng đề bài (từ tiếng Anh cỡ lớn / nghĩa / nút nghe) — do caller dựng. */
   promptNode: React.ReactNode;
   options: string[];
   optionKind: OptionKind;
   correctIndex: number;
-  /** Nếu có: hiện nút "Nghe"; dùng cho dạng nghe-chọn / chọn thanh điệu. */
+  /** Nếu có: hiện nút "Nghe"; dùng cho dạng nghe-chọn. */
   audioWord?: VocabWordCard | null;
   /** Tự phát audio khi vào (mặc định false; bài "nghe" bật true). */
   autoPlay?: boolean;
-  /** Giải thích đáp án (dựng từ dữ liệu từ: chữ + pinyin + nghĩa + ví dụ). */
+  /** Giải thích đáp án (dựng từ dữ liệu từ: từ + phiên âm + nghĩa + ví dụ). */
   explanation?: string | null;
   onAnswered: (correct: boolean) => void;
 }
 
 /**
- * Thẻ trắc nghiệm dùng chung cho các mini-game ôn từ (chọn nghĩa / chọn chữ Hán /
- * chọn pinyin / chọn thanh điệu / nghe-chọn). Một lượt đoán → hiện phản hồi
- * (đúng xanh, sai đỏ + tô đáp án đúng) → "Tiếp tục".
+ * Thẻ trắc nghiệm dùng chung cho các mini-game ôn từ (chọn nghĩa / chọn từ tiếng
+ * Anh / chọn phiên âm / nghe-chọn). Một lượt đoán → hiện phản hồi (đúng xanh,
+ * chưa đúng đỏ + tô đáp án đúng) → "Tiếp tục".
  */
 export function McqCard({
   question,
@@ -50,15 +50,16 @@ export function McqCard({
   useEffect(() => {
     if (autoPlay && audioWord && !played.current) {
       played.current = true;
-      playWord({ hanzi: audioWord.hanzi, audioUrl: audioWord.audioUrl });
+      playWord({ word: audioWord.word, audioUrl: audioWord.audioUrl });
     }
   }, [autoPlay, audioWord]);
 
+  // Từ tiếng Anh dùng phông tập đọc (Andika, chữ a/g một tầng) cho bé dễ nhận mặt chữ.
   const optionClass =
-    optionKind === "hanzi"
-      ? "font-chinese text-2xl"
-      : optionKind === "pinyin"
-        ? "font-pinyin text-lg"
+    optionKind === "word"
+      ? "font-primer text-2xl font-semibold"
+      : optionKind === "ipa"
+        ? "text-lg tracking-wide"
         : "text-base";
 
   return (
@@ -72,7 +73,7 @@ export function McqCard({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => playWord({ hanzi: audioWord.hanzi, audioUrl: audioWord.audioUrl })}
+              onClick={() => playWord({ word: audioWord.word, audioUrl: audioWord.audioUrl })}
             >
               <Volume2 className="mr-1.5 h-4 w-4" /> Nghe lại
             </Button>
@@ -124,7 +125,7 @@ export function McqCard({
                 )}
               >
                 {correct ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
-                {correct ? "Chính xác!" : "Chưa đúng — xem đáp án đúng"}
+                {correct ? "Giỏi quá! 🎉" : "Chưa đúng rồi — cùng xem đáp án nhé 🌟"}
               </div>
               <Button onClick={() => onAnswered(correct)}>
                 Tiếp tục <ArrowRight className="ml-1.5 h-4 w-4" />

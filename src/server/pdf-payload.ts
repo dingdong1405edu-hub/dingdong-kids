@@ -117,8 +117,10 @@ export async function loadReadingPayload(testId: string): Promise<PdfLoadResult>
       props: {
         title: test.title,
         level: test.level,
+        // Bản in chỉ có ĐOẠN VĂN TIẾNG ANH: mẫu PDF (reading-pdf.tsx) cố ý không
+        // chèn lớp dịch/chú thích lên mặt chữ để trẻ tập đọc thẳng bằng tiếng Anh.
+        // `passageTranslation` vẫn nằm trong DB cho phần chữa bài trên web.
         passage: test.passage,
-        passageTranslation: test.passageTranslation,
         questions: mapQuestions(test.questions),
       },
     },
@@ -185,8 +187,9 @@ export async function loadVocabPayload(lessonId: string): Promise<PdfLoadResult>
       kind: "vocab",
       props: {
         lessonTitle: title,
+        // Chủ đề đơn vị (`unit.theme`, vd "Animals") đã nằm sẵn trong tên đơn vị
+        // nên mẫu PDF chỉ nhận `unitTitle` — không truyền thêm dòng phụ.
         unitTitle: lesson.unit.title,
-        unitTheme: lesson.unit.theme,
         level: lesson.unit.level,
         words: lesson.words.map((w) => ({
           id: w.id,

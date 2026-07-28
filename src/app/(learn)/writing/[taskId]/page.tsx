@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -6,6 +7,11 @@ import { WritingClient } from "./writing-client";
 interface Props {
   params: Promise<{ taskId: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Tập viết",
+  description: "Bé viết câu tiếng Anh, cô AI khen trước rồi giúp bé sửa cho hay hơn.",
+};
 
 export default async function WritingTaskPage({ params }: Props) {
   const { taskId } = await params;

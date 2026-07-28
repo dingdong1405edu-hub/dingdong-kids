@@ -5,7 +5,7 @@ import { levelLabel } from "@/lib/utils";
 /* Logo dùng đường dẫn tĩnh để component render được cả trên TRÌNH DUYỆT (trang xem
  * trước) lẫn server. Khi tạo PDF, src/lib/pdf/render.tsx thay đường dẫn này bằng
  * data-URI (vì page.setContent không có base URL). */
-const LOGO_SRC = "/logo-hsk.png";
+const LOGO_SRC = "/logo-kids.png";
 
 /* Khung & các mảnh dựng dùng chung cho mọi tài liệu PDF. Toàn bộ dùng INLINE
  * STYLE (không Tailwind) để render độc lập qua renderToStaticMarkup → Chromium.

@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
-import { Upload, FileSpreadsheet, ClipboardPaste, Download, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, ClipboardPaste, Download, AlertTriangle, ImageOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,27 +13,27 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toPinyin } from "@/lib/pinyin";
 import { cn } from "@/lib/utils";
 import type { VocabSectionContent } from "@/lib/roadmap-content";
 
 type Word = VocabSectionContent["words"][number];
 
 interface RawRow {
-  hanzi: string;
-  pinyin: string;
+  word: string;
+  ipa: string;
   meaning: string;
-  exHanzi: string;
+  partOfSpeech: string;
+  imageUrl: string;
+  exSentence: string;
   exMeaning: string;
 }
 interface PreviewRow extends RawRow {
-  pinyinFilled: string;
-  exPinyin: string;
   valid: boolean;
 }
 
-const HEADER_RE = /h[áa]n|hanzi|chữ|pinyin|nghĩa|meaning/i;
-const hasHan = (s: string) => /\p{Script=Han}/u.test(s);
+const HEADER_RE = /word|từ|ipa|phiên âm|nghĩa|meaning|loại|ảnh|image/i;
+/** Có ít nhất một chữ cái Latin → coi như đây là một từ tiếng Anh. */
+const hasLetters = (s: string) => /[a-zA-Z]/.test(s);
 
 function splitCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -58,6 +58,7 @@ function splitCsvLine(line: string): string[] {
   return out;
 }
 
+/** Cột: 0 từ · 1 IPA · 2 nghĩa · 3 từ loại · 4 link ảnh · 5 câu ví dụ · 6 nghĩa ví dụ. */
 function rowsFromMatrix(matrix: unknown[][]): RawRow[] {
   const cleaned = matrix
     .map((r) => (Array.isArray(r) ? r.map((c) => (c == null ? "" : String(c)).trim()) : []))
@@ -65,13 +66,15 @@ function rowsFromMatrix(matrix: unknown[][]): RawRow[] {
   if (cleaned.length === 0) return [];
   let start = 0;
   const first = cleaned[0];
-  if (first && !hasHan(first[0] ?? "") && HEADER_RE.test(first.join(" "))) start = 1;
+  if (first && HEADER_RE.test(first.join(" ")) && !first[0]?.includes(" ")) start = 1;
   return cleaned.slice(start).map((c) => ({
-    hanzi: c[0] ?? "",
-    pinyin: c[1] ?? "",
+    word: c[0] ?? "",
+    ipa: c[1] ?? "",
     meaning: c[2] ?? "",
-    exHanzi: c[3] ?? "",
-    exMeaning: c[4] ?? "",
+    partOfSpeech: c[3] ?? "",
+    imageUrl: c[4] ?? "",
+    exSentence: c[5] ?? "",
+    exMeaning: c[6] ?? "",
   }));
 }
 
@@ -85,17 +88,15 @@ function parsePasted(text: string): RawRow[] {
 function finalize(rows: RawRow[]): PreviewRow[] {
   return rows.map((r) => ({
     ...r,
-    valid: r.hanzi !== "" && r.meaning !== "" && hasHan(r.hanzi),
-    pinyinFilled: r.pinyin || (r.hanzi ? toPinyin(r.hanzi) : ""),
-    exPinyin: r.exHanzi ? toPinyin(r.exHanzi) : "",
+    valid: r.word !== "" && r.meaning !== "" && hasLetters(r.word),
   }));
 }
 
 const SAMPLE_CSV =
-  "hán tự,pinyin,nghĩa,ví dụ,nghĩa ví dụ\n" +
-  "你好,,Xin chào,你好吗？,Bạn khỏe không?\n" +
-  "谢谢,,Cảm ơn,谢谢你,Cảm ơn bạn\n" +
-  "学生,,Học sinh,我是学生,Tôi là học sinh\n";
+  "từ,IPA,nghĩa,từ loại,link ảnh,câu ví dụ,nghĩa câu ví dụ\n" +
+  "cat,/kæt/,con mèo,danh từ,,My cat is small.,Con mèo của tôi bé xíu.\n" +
+  "apple,/ˈæp.əl/,quả táo,danh từ,,I eat an apple every day.,Tôi ăn một quả táo mỗi ngày.\n" +
+  "jump,/dʒʌmp/,nhảy,động từ,,Frogs can jump very high.,Ếch nhảy rất cao.\n";
 
 /** Nhập từ vựng hàng loạt (dán bảng / .csv / .xlsx) vào nội dung lộ trình. */
 export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => void }) {
@@ -108,6 +109,7 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
   const preview = useMemo(() => finalize(rows), [rows]);
   const validCount = preview.filter((r) => r.valid).length;
   const skipCount = preview.length - validCount;
+  const noImageCount = preview.filter((r) => r.valid && !r.imageUrl).length;
 
   function reset() {
     setPasteText("");
@@ -153,13 +155,13 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
     const words: Word[] = preview
       .filter((r) => r.valid)
       .map((r) => ({
-        hanzi: r.hanzi,
-        pinyin: r.pinyinFilled,
+        word: r.word,
+        ipa: r.ipa,
         meaning: r.meaning,
+        partOfSpeech: r.partOfSpeech,
+        imageUrl: r.imageUrl || null,
         audioUrl: null,
-        examples: r.exHanzi
-          ? [{ hanzi: r.exHanzi, pinyin: r.exPinyin, meaning: r.exMeaning }]
-          : [],
+        examples: r.exSentence ? [{ sentence: r.exSentence, meaning: r.exMeaning }] : [],
       }));
     if (words.length === 0) {
       toast.error("Không có dòng hợp lệ để nhập.");
@@ -188,8 +190,9 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
         <DialogHeader>
           <DialogTitle>Nhập từ vựng hàng loạt</DialogTitle>
           <DialogDescription>
-            Cột theo thứ tự: <b>Hán tự</b> · <b>Pinyin</b> (để trống sẽ tự sinh) · <b>Nghĩa</b> · Ví dụ · Nghĩa ví dụ.
-            Dán bảng từ Excel/Google Sheets hoặc tải file .csv / .xlsx.
+            Cột theo thứ tự: <b>Từ tiếng Anh</b> · <b>IPA</b> · <b>Nghĩa tiếng Việt</b> · Từ loại · Link ảnh ·
+            Câu ví dụ · Nghĩa câu ví dụ. Dán bảng từ Excel/Google Sheets hoặc tải file .csv / .xlsx. Nhập xong
+            nhớ bấm “🔊 Tạo audio” cho từng từ.
           </DialogDescription>
         </DialogHeader>
 
@@ -209,7 +212,7 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
               onChange={(e) => handlePaste(e.target.value)}
               rows={6}
               className="font-mono text-sm"
-              placeholder={"你好\tnǐ hǎo\tXin chào\n谢谢\t\tCảm ơn"}
+              placeholder={"cat\t/kæt/\tcon mèo\tdanh từ\napple\t\tquả táo"}
             />
             <p className="text-[11px] text-muted-foreground">
               Mỗi dòng một từ. Bôi đen các ô trong Excel rồi Ctrl+C → dán vào đây (ngăn cách bằng Tab), hoặc dán CSV.
@@ -237,11 +240,16 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
 
         {preview.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
               <span className="font-medium text-green-600">{validCount} hợp lệ</span>
               {skipCount > 0 && (
                 <span className="flex items-center gap-1 text-amber-600">
                   <AlertTriangle className="h-3.5 w-3.5" /> {skipCount} bị bỏ qua
+                </span>
+              )}
+              {noImageCount > 0 && (
+                <span className="flex items-center gap-1 text-amber-600">
+                  <ImageOff className="h-3.5 w-3.5" /> {noImageCount} từ chưa có ảnh
                 </span>
               )}
             </div>
@@ -250,9 +258,10 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
                 <thead className="sticky top-0 bg-muted/80 text-xs">
                   <tr>
                     <th className="px-2 py-1.5">#</th>
-                    <th className="px-2 py-1.5">Hán tự</th>
-                    <th className="px-2 py-1.5">Pinyin</th>
+                    <th className="px-2 py-1.5">Từ</th>
+                    <th className="px-2 py-1.5">IPA</th>
                     <th className="px-2 py-1.5">Nghĩa</th>
+                    <th className="px-2 py-1.5">Ảnh</th>
                     <th className="px-2 py-1.5">Ví dụ</th>
                   </tr>
                 </thead>
@@ -260,10 +269,11 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
                   {preview.slice(0, 200).map((r, i) => (
                     <tr key={i} className={cn("border-t", !r.valid && "bg-destructive/10 text-muted-foreground")}>
                       <td className="px-2 py-1 text-xs text-muted-foreground">{i + 1}</td>
-                      <td className="px-2 py-1 font-chinese">{r.hanzi || "—"}</td>
-                      <td className="px-2 py-1 font-pinyin text-xs">{r.pinyinFilled || "—"}</td>
+                      <td className="px-2 py-1 font-primer">{r.word || "—"}</td>
+                      <td className="px-2 py-1 text-xs">{r.ipa || "—"}</td>
                       <td className="px-2 py-1 text-xs">{r.meaning || "—"}</td>
-                      <td className="px-2 py-1 font-chinese text-xs">{r.exHanzi || ""}</td>
+                      <td className="px-2 py-1 text-xs">{r.imageUrl ? "✓" : "—"}</td>
+                      <td className="px-2 py-1 font-primer text-xs">{r.exSentence || ""}</td>
                     </tr>
                   ))}
                 </tbody>

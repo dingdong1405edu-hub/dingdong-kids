@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Pencil, Plus, Save } from "lucide-react";
-import { EXAM_SECTION_META } from "@/lib/mock-exam";
+import { EXAM_SECTION_META, EXAM_SKILLS } from "@/lib/mock-exam";
 import { createSectionAction, updateMockExamAction } from "@/server/actions/mock-exam";
+import { LEVELS, themeFor } from "@/lib/roadmap";
+import { levelLabel } from "@/lib/utils";
 import { SectionBlock } from "./section-block";
-
-const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
 
 interface Props {
   params: Promise<{ examId: string }>;
@@ -45,9 +46,9 @@ export default async function AdminExamDetailPage({ params }: Props) {
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại danh sách đề thi
       </Link>
-      <div>
+      <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-bold">{exam.title}</h1>
-        {exam.titleZh && <p className="font-chinese text-muted-foreground">{exam.titleZh}</p>}
+        <Badge variant="outline">{levelLabel(exam.level)}</Badge>
       </div>
 
       {/* Edit exam meta */}
@@ -67,24 +68,20 @@ export default async function AdminExamDetailPage({ params }: Props) {
           >
             <input type="hidden" name="id" value={exam.id} />
             <div className="space-y-1">
-              <Label>Tiêu đề (VI)</Label>
+              <Label>Tiêu đề</Label>
               <Input name="title" defaultValue={exam.title} required />
             </div>
             <div className="space-y-1">
-              <Label>Tiêu đề (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" defaultValue={exam.titleZh ?? ""} />
-            </div>
-            <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
+              <Label>Cấp độ</Label>
               <select
-                name="hskLevel"
-                defaultValue={exam.hskLevel}
+                name="level"
+                defaultValue={exam.level}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 required
               >
-                {HSK_LEVELS.map((l) => (
+                {LEVELS.map((l) => (
                   <option key={l} value={l}>
-                    {l}
+                    {themeFor(l).label}
                   </option>
                 ))}
               </select>
@@ -116,7 +113,7 @@ export default async function AdminExamDetailPage({ params }: Props) {
         <h2 className="text-lg font-bold">Các phần thi</h2>
         {exam.sections.length === 0 ? (
           <p className="rounded-xl border border-dashed py-8 text-center text-sm text-muted-foreground">
-            Chưa có phần nào. Thêm phần Nghe / Đọc / Viết ở dưới.
+            Chưa có phần nào. Thêm phần Listening / Reading / Writing / Speaking ở dưới.
           </p>
         ) : (
           exam.sections.map((section) => (
@@ -143,10 +140,10 @@ export default async function AdminExamDetailPage({ params }: Props) {
             <input type="hidden" name="examId" value={exam.id} />
             <div className="space-y-1">
               <Label>Kỹ năng</Label>
-              <select name="skill" className="flex h-9 w-48 rounded-md border px-3 py-1 text-sm">
-                {(["LISTENING", "READING", "WRITING"] as const).map((s) => (
+              <select name="skill" className="flex h-9 w-56 rounded-md border px-3 py-1 text-sm">
+                {EXAM_SKILLS.map((s) => (
                   <option key={s} value={s} disabled={usedSkills.has(s)}>
-                    {EXAM_SECTION_META[s].zh} · {EXAM_SECTION_META[s].label}
+                    {EXAM_SECTION_META[s].en} · {EXAM_SECTION_META[s].label}
                     {usedSkills.has(s) ? " (đã có)" : ""}
                   </option>
                 ))}
@@ -154,7 +151,8 @@ export default async function AdminExamDetailPage({ params }: Props) {
             </div>
             <Button type="submit">Thêm phần</Button>
             <p className="w-full text-xs text-muted-foreground">
-              Thứ tự khuyến nghị: Nghe → Đọc → Viết (đúng đề HSK). Phần được thêm theo thứ tự bạn tạo.
+              Thứ tự khuyến nghị: Listening → Reading → Writing → Speaking (đúng thứ tự thi Cambridge).
+              Phần được thêm theo thứ tự bạn tạo.
             </p>
           </form>
         </CardContent>

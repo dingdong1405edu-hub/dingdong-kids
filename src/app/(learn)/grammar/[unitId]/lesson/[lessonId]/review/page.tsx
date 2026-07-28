@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -8,6 +9,11 @@ import type { Exercise } from "@/types";
 interface Props {
   params: Promise<{ unitId: string; lessonId: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Ôn tập ngữ pháp",
+  description: "Ôn lại bài ngữ pháp tiếng Anh bằng câu hỏi nhanh và thẻ ghi nhớ.",
+};
 
 /** Ôn tập một bài — không lý thuyết, trộn quiz + flashcard của riêng bài đó. */
 export default async function GrammarLessonReviewPage({ params }: Props) {

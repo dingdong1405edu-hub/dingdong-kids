@@ -14,7 +14,7 @@ export function ExamResults({
   const { overall, passed, sections } = result;
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+    <div className="sticker overflow-hidden">
       {/* Banner */}
       <div
         className={cn(
@@ -44,25 +44,25 @@ export function ExamResults({
                 )}
               >
                 {passed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
-                {passed ? "Đạt" : "Chưa đạt"}
+                {passed ? "Bé làm được rồi!" : "Bé đã cố gắng lắm!"}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" /> {elapsedLabel}
               </span>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">Điểm tổng (trung bình các phần)</p>
+            <p className="mt-1 text-sm text-muted-foreground">Điểm chung của cả bài thi</p>
           </div>
         </div>
         <div className="text-right">
           <div
             className={cn(
-              "text-4xl font-extrabold",
+              "font-display text-4xl font-extrabold",
               passed ? "text-emerald-600 dark:text-emerald-300" : "text-amber-600 dark:text-amber-300",
             )}
           >
             {overall}
           </div>
-          <div className="text-xs text-muted-foreground">/ 100 · đạt ≥ 60</div>
+          <div className="text-xs text-muted-foreground">/ 100 · đạt khi ≥ 60</div>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export function ExamResults({
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {sectionLabel(s.skill, s.title)}
             </div>
-            <div className="mt-1 text-2xl font-bold">
+            <div className="font-display mt-1 text-2xl font-bold">
               {s.score === null ? "—" : s.score}
               {s.score !== null && <span className="text-sm font-normal text-muted-foreground"> / 100</span>}
             </div>
@@ -83,7 +83,7 @@ export function ExamResults({
               </div>
             )}
             {s.score === null && (
-              <div className="text-xs text-amber-600 dark:text-amber-300">Chưa chấm được</div>
+              <div className="text-xs text-amber-600 dark:text-amber-300">Phần này chưa chấm được</div>
             )}
           </div>
         ))}

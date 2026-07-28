@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { playWord } from "@/lib/speech";
 import type { MatchExercise } from "@/types";
 
 interface Props {
@@ -11,22 +12,23 @@ interface Props {
 }
 
 export function MatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
-  const [selected, setSelected] = useState<{ zh: string | null; vi: string | null }>({ zh: null, vi: null });
+  const [selected, setSelected] = useState<{ en: string | null; vi: string | null }>({ en: null, vi: null });
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<string | null>(null);
 
   const pairs = exercise.pairs;
-  const zhItems = pairs.map((p) => p.zh);
+  const enItems = pairs.map((p) => p.en);
   // Shuffle once per exercise — computing in the render body reshuffles on every
   // state change, making the column jump after each tap.
-  const viItems = useMemo(
-    () => [...pairs.map((p) => p.vi)].sort(() => Math.random() - 0.5),
-    [pairs]
-  );
+  // Giữ cả cặp (không chỉ chuỗi tiếng Việt) để còn hiện ảnh minh hoạ cho bé.
+  const viItems = useMemo(() => [...pairs].sort(() => Math.random() - 0.5), [pairs]);
 
-  function handleZh(zh: string) {
-    if (disabled || matched.has(zh)) return;
-    setSelected((s) => ({ ...s, zh }));
+  function handleEn(en: string) {
+    if (disabled || matched.has(en)) return;
+    // Bé chưa đọc thạo: chạm vào từ tiếng Anh là nghe luôn cách đọc.
+    const pair = pairs.find((p) => p.en === en);
+    playWord({ word: en, audioUrl: pair?.audioUrl });
+    setSelected((s) => ({ ...s, en }));
   }
 
   function handleVi(vi: string) {
@@ -35,19 +37,19 @@ export function MatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
   }
 
   useEffect(() => {
-    if (!selected.zh || !selected.vi) return;
-    const pair = pairs.find((p) => p.zh === selected.zh);
+    if (!selected.en || !selected.vi) return;
+    const pair = pairs.find((p) => p.en === selected.en);
     if (pair?.vi === selected.vi) {
-      setMatched((m) => new Set([...m, selected.zh!, selected.vi!]));
-      setSelected({ zh: null, vi: null });
+      setMatched((m) => new Set([...m, selected.en!, selected.vi!]));
+      setSelected({ en: null, vi: null });
       if (matched.size + 2 >= pairs.length * 2) {
         setTimeout(() => onAnswer(true), 300);
       }
     } else {
-      setWrong(`${selected.zh}-${selected.vi}`);
+      setWrong(`${selected.en}-${selected.vi}`);
       setTimeout(() => {
         setWrong(null);
-        setSelected({ zh: null, vi: null });
+        setSelected({ en: null, vi: null });
       }, 600);
     }
   }, [selected, pairs, matched, onAnswer]);
@@ -60,42 +62,47 @@ export function MatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-center">Nối từ với nghĩa tương ứng</h2>
+      <h2 className="text-xl font-bold text-center">Nối từ tiếng Anh với nghĩa</h2>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          {zhItems.map((zh) => (
+          {enItems.map((en) => (
             <motion.button
-              key={zh}
+              key={en}
               whileTap={{ scale: 0.97 }}
-              onClick={() => handleZh(zh)}
-              disabled={matched.has(zh)}
+              onClick={() => handleEn(en)}
+              disabled={matched.has(en)}
               className={cn(
-                "w-full p-3 rounded-xl border-2 font-chinese text-xl font-semibold transition-all",
-                matched.has(zh) && "opacity-30 border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/15",
-                selected.zh === zh && !matched.has(zh) && "border-primary bg-primary/10",
-                wrong?.startsWith(zh) && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 animate-wrong",
-                !selected.zh || selected.zh === zh ? "" : "hover:border-border"
+                "w-full p-3 rounded-xl border-2 font-primer text-xl font-semibold transition-all",
+                matched.has(en) && "opacity-30 border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/15",
+                selected.en === en && !matched.has(en) && "border-primary bg-primary/10",
+                wrong?.startsWith(en) && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 animate-wrong",
+                !selected.en || selected.en === en ? "" : "hover:border-border"
               )}
             >
-              {zh}
+              {en}
             </motion.button>
           ))}
         </div>
         <div className="space-y-2">
-          {viItems.map((vi) => (
+          {viItems.map(({ vi, imageUrl }) => (
             <motion.button
               key={vi}
               whileTap={{ scale: 0.97 }}
               onClick={() => handleVi(vi)}
               disabled={matched.has(vi)}
               className={cn(
-                "w-full p-3 rounded-xl border-2 text-sm transition-all",
+                "flex w-full items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm transition-all",
                 matched.has(vi) && "opacity-30 border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/15",
                 selected.vi === vi && !matched.has(vi) && "border-primary bg-primary/10",
                 wrong?.endsWith(vi) && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 animate-wrong",
               )}
             >
-              {vi}
+              {/* Ảnh minh hoạ giúp bé chưa đọc thạo vẫn chọn được. */}
+              {imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+              )}
+              <span>{vi}</span>
             </motion.button>
           ))}
         </div>

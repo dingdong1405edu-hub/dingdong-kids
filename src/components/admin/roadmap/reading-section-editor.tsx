@@ -2,38 +2,38 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, FileJson, BookOpenText } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MediaField } from "./media-field";
+import { TtsButton } from "@/components/admin/tts-button";
 import { QuestionRows } from "./question-rows";
 import { RoadmapQuestionsImporter } from "./questions-importer";
 import { normalizeReadingContent, type RoadmapQuestion } from "@/lib/roadmap-content";
 import { buildReadingContent } from "@/lib/roadmap-authoring";
 
 const FULL_JSON_PLACEHOLDER = `{
-  "title": "Cuối tuần của tôi",
-  "titleZh": "我的周末",
+  "title": "Chú chó của bé Mai",
   "timeLimit": 600,
   "passages": [
     {
-      "passage": "周末我去了公园，那里有很多人……",
-      "passageTranslation": "Cuối tuần tôi đã đi công viên, ở đó có rất nhiều người……",
+      "passage": "Mai has a little dog. His name is Bong. They run in the garden every morning.",
+      "passageTranslation": "Bé Mai có một chú chó nhỏ tên là Bông. Sáng nào hai bạn cũng chạy chơi trong vườn.",
       "passageAnalysis": [
-        { "zh": "周末我去了公园。", "vi": "Cuối tuần tôi đã đi công viên.", "note": "了 chỉ hành động đã hoàn thành." }
+        { "en": "Mai has a little dog.", "vi": "Bé Mai có một chú chó nhỏ.", "note": "has = có, dùng cho she/he/it." }
       ],
       "questions": [
-        { "type": "MCQ", "prompt": "作者周末去了哪里?", "options": ["公园","学校","商店","医院"], "answer": 0, "explanation": "Đoạn văn nói tác giả đi công viên.", "supportingQuote": "周末我去了公园" },
-        { "type": "TRUE_FALSE", "prompt": "公园里人很多。", "answer": true, "explanation": "..." },
-        { "type": "FILL_BLANK", "prompt": "作者周末去了 ___。", "answer": "公园", "accepted": ["公园里"] }
+        { "type": "MCQ", "prompt": "What pet does Mai have?", "promptTranslation": "Bé Mai nuôi con vật gì?", "options": ["a dog","a cat","a fish","a bird"], "optionsTranslation": ["một chú chó","một chú mèo","một chú cá","một chú chim"], "answer": 0, "explanation": "Câu đầu nói Mai có một chú chó nhỏ.", "supportingQuote": "Mai has a little dog.", "quoteTranslation": "Bé Mai có một chú chó nhỏ." },
+        { "type": "TRUE_FALSE", "prompt": "They run in the garden.", "promptTranslation": "Hai bạn chạy chơi trong vườn.", "answer": true, "explanation": "Câu cuối kể hai bạn chạy trong vườn mỗi sáng." },
+        { "type": "FILL_BLANK", "prompt": "The dog's name is ___.", "answer": "Bong", "accepted": ["bong"] }
       ]
     },
     {
-      "passage": "第二段：我和朋友一起吃饭……",
+      "passage": "In the afternoon, Mai gives Bong a bath. Bong loves water!",
       "questions": [
-        { "type": "MCQ", "prompt": "作者和谁吃饭?", "options": ["朋友","老师","医生","家人"], "answer": 0, "explanation": "..." }
+        { "type": "MCQ", "prompt": "When does Mai give Bong a bath?", "options": ["in the afternoon","at night","before school","on Sunday"], "answer": 0, "explanation": "Câu đầu đoạn hai cho biết buổi chiều." }
       ]
     }
   ]
@@ -45,11 +45,11 @@ type PassageState = ReadingState["passages"][number];
 export function ReadingSectionEditor({
   value,
   onChange,
-  hskLevel,
+  level,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
 }) {
   // Luôn làm việc trên dạng chuẩn nhiều-đoạn (đọc được cả nội dung cũ một-đoạn).
   const v = normalizeReadingContent(value);
@@ -104,9 +104,10 @@ export function ReadingSectionEditor({
           <p className="text-[11px] text-muted-foreground">
             Một object có <code>passages</code> (mảng nhiều đoạn), mỗi đoạn kèm <code>questions</code> và (tùy chọn){" "}
             <code>passageTranslation</code> (dịch cả đoạn) + <code>passageAnalysis</code> (phân tích từng câu:{" "}
-            <code>zh·vi·note</code>) — hiện khi chữa bài. Câu hỏi dùng
-            <code> answer</code> (MCQ: chỉ số từ 0; TRUE_FALSE: true/false; FILL_BLANK: chữ Hán). Pinyin đoạn văn tự sinh nếu thiếu.
-            Dán sẽ <b>thay toàn bộ</b> nội dung phần Đọc bên dưới.
+            <code>en·vi·note</code>) — hiện khi chữa bài. Câu hỏi dùng
+            <code> answer</code> (MCQ: chỉ số từ 0; TRUE_FALSE: true/false; FILL_BLANK: từ tiếng Anh) và nên kèm
+            bản dịch tiếng Việt (<code>promptTranslation</code>, <code>optionsTranslation</code>,{" "}
+            <code>quoteTranslation</code>). Dán sẽ <b>thay toàn bộ</b> nội dung phần Đọc bên dưới.
           </p>
           <Button type="button" size="sm" variant="outline" onClick={applyJson} className="gap-1.5">
             <FileJson className="h-4 w-4" /> Áp dụng JSON
@@ -115,14 +116,10 @@ export function ReadingSectionEditor({
       </details>
 
       {/* Thông tin chung của phần */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]">
         <div className="space-y-1">
-          <Label className="text-xs">Tiêu đề (VI)</Label>
-          <Input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder="Cuối tuần của tôi" className="h-9" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Tiêu đề (ZH)</Label>
-          <Input value={v.titleZh} onChange={(e) => set({ titleZh: e.target.value })} placeholder="我的周末" className="h-9 font-chinese" />
+          <Label className="text-xs">Tiêu đề phần Đọc</Label>
+          <Input value={v.title} onChange={(e) => set({ title: e.target.value })} placeholder="Chú chó của bé Mai" className="h-9" />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Thời gian (giây)</Label>
@@ -157,14 +154,24 @@ export function ReadingSectionEditor({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs">Đoạn văn (Hán tự)</Label>
+            <Label className="text-xs">Đoạn văn (tiếng Anh)</Label>
             <Textarea
               value={p.passage}
               onChange={(e) => setPassage(i, { passage: e.target.value })}
-              placeholder="周末我去了公园……"
-              className="min-h-28 font-chinese text-sm"
+              placeholder="Mai has a little dog. His name is Bong…"
+              className="min-h-28 font-primer text-sm"
             />
-            <p className="text-[11px] text-muted-foreground">Không cần nhập pinyin — máy tự sinh khi hiển thị.</p>
+            <div className="flex items-center gap-1.5 pt-0.5">
+              {/* Bài đọc mẫu: bé vừa nghe vừa dò theo chữ — bước quan trọng để tập đọc. */}
+              <TtsButton size="xs" text={p.passage} onDone={(url) => setPassage(i, { audioUrl: url })} label="Tạo audio đọc mẫu" />
+              <Input
+                value={p.audioUrl ?? ""}
+                onChange={(e) => setPassage(i, { audioUrl: e.target.value || null })}
+                placeholder="Audio đọc mẫu cả đoạn"
+                className="h-8 text-sm"
+              />
+            </div>
+            {p.audioUrl ? <audio src={p.audioUrl} controls className="h-8 w-full" /> : null}
           </div>
 
           <div className="space-y-1">
@@ -172,7 +179,7 @@ export function ReadingSectionEditor({
             <Textarea
               value={p.passageTranslation ?? ""}
               onChange={(e) => setPassage(i, { passageTranslation: e.target.value })}
-              placeholder="Bản dịch cả đoạn — hiện cho học viên khi chữa bài."
+              placeholder="Bản dịch cả đoạn — hiện cho bé khi chữa bài."
               className="min-h-20 text-sm"
             />
             <p className="text-[11px] text-muted-foreground">
@@ -190,7 +197,7 @@ export function ReadingSectionEditor({
             <RoadmapQuestionsImporter
               skill="READING"
               source={p.passage}
-              hskLevel={hskLevel}
+              level={level}
               onImport={(qs) => setPassage(i, { questions: [...(p.questions as RoadmapQuestion[]), ...qs] })}
             />
             <QuestionRows

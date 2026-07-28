@@ -3,14 +3,14 @@ import { db } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { adminUpdateUserAction } from "@/server/actions/admin";
 
 export default async function AdminUsersPage() {
   const users = await db.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
-      id: true, name: true, email: true, role: true, hskLevel: true,
+      id: true, name: true, email: true, role: true, level: true,
       xp: true, hearts: true, streakDays: true, banned: true, createdAt: true,
       _count: { select: { attempts: true } },
     },
@@ -25,7 +25,7 @@ export default async function AdminUsersPage() {
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  {["Tên", "Email", "Role", "HSK", "XP", "Lượt học", "Trạng thái", ""].map((h) => (
+                  {["Tên", "Email", "Role", "Cấp độ", "XP", "Lượt học", "Trạng thái", ""].map((h) => (
                     <th key={h} className="text-left px-4 py-3 font-medium">{h}</th>
                   ))}
                 </tr>
@@ -48,7 +48,7 @@ export default async function AdminUsersPage() {
                         {u.role}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3">{hskLevelLabel(u.hskLevel)}</td>
+                    <td className="px-4 py-3">{levelLabel(u.level)}</td>
                     <td className="px-4 py-3">{u.xp}</td>
                     <td className="px-4 py-3">{u._count.attempts}</td>
                     <td className="px-4 py-3">

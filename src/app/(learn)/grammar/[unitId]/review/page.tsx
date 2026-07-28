@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -8,6 +9,11 @@ import type { Exercise } from "@/types";
 interface Props {
   params: Promise<{ unitId: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Ôn cả chủ đề",
+  description: "Ôn lại toàn bộ bài ngữ pháp tiếng Anh trong chủ đề này.",
+};
 
 /** Ôn tập cả unit — trộn bài tập của mọi bài trong unit thành một phiên. */
 export default async function GrammarUnitReviewPage({ params }: Props) {

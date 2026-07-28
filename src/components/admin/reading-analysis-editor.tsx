@@ -12,10 +12,11 @@ import {
 } from "@/server/actions/admin";
 
 const PLACEHOLDER = `{
-  "translation": "Cuối tuần tôi đã đi công viên. Buổi sáng tôi cùng bạn chạy bộ, buổi chiều chúng tôi cùng xem phim.",
+  "translation": "Bé Mai có một chú chó nhỏ tên là Bông. Sáng nào hai bạn cũng chạy chơi ngoài vườn.",
   "sentences": [
-    { "zh": "周末我去了公园。", "vi": "Cuối tuần tôi đã đi công viên.", "note": "了 đứng sau động từ chỉ hành động đã hoàn thành." },
-    { "zh": "早上我和朋友一起跑步。", "vi": "Buổi sáng tôi cùng bạn chạy bộ.", "note": "和…一起 = cùng với… làm gì." }
+    { "en": "Mai has a little dog.", "vi": "Bé Mai có một chú chó nhỏ.", "note": "has = có, dùng cho she/he/it." },
+    { "en": "His name is Bong.", "vi": "Tên bạn ấy là Bông.", "note": "his = của bạn ấy (con trai / con vật đực)." },
+    { "en": "They run in the garden every morning.", "vi": "Sáng nào hai bạn cũng chạy trong vườn.", "note": "every morning = mỗi buổi sáng." }
   ]
 }`;
 
@@ -88,8 +89,8 @@ export function ReadingAnalysisEditor({
         />
         <p className="text-xs text-muted-foreground">
           Object gồm <code>translation</code> (dịch cả bài) và <code>sentences</code> (mảng phân tích từng câu:{" "}
-          <code>zh</code> câu Hán · <code>vi</code> dịch · <code>note</code> giải thích, tùy chọn). Để trống rồi Lưu để
-          xoá. Không cần nhập pinyin — máy tự sinh khi hiển thị.
+          <code>en</code> câu tiếng Anh · <code>vi</code> dịch · <code>note</code> giải thích ngắn, tùy chọn). Viết{" "}
+          <code>note</code> thật đơn giản, đúng kiểu nói với trẻ. Để trống ô rồi bấm Lưu để xoá.
         </p>
       </div>
 

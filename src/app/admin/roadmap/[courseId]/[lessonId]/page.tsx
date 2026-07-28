@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { SKILL_META } from "@/lib/roadmap";
 import { updateRoadmapLessonAction } from "@/server/actions/roadmap-admin";
 import { SectionPanel } from "@/components/admin/roadmap/section-panel";
@@ -46,7 +46,7 @@ export default async function LessonEditorPage({ params }: Props) {
         <h1 className="text-2xl font-bold">
           Bài {lesson.order}. {lesson.topic}
         </h1>
-        <Badge variant="outline">{hskLevelLabel(lesson.course.hskLevel)}</Badge>
+        <Badge variant="outline">{levelLabel(lesson.course.level)}</Badge>
       </div>
 
       {/* Sửa thông tin bài */}
@@ -66,16 +66,16 @@ export default async function LessonEditorPage({ params }: Props) {
           >
             <input type="hidden" name="id" value={lesson.id} />
             <div className="space-y-1">
-              <Label>Tên bài (VI)</Label>
+              <Label>Tên bài (EN)</Label>
               <Input name="topic" defaultValue={lesson.topic} required />
             </div>
             <div className="space-y-1">
-              <Label>Tên bài (ZH)</Label>
-              <Input name="topicZh" className="font-chinese" defaultValue={lesson.topicZh} />
+              <Label>Tên bài (VI)</Label>
+              <Input name="topicVi" defaultValue={lesson.topicVi} />
             </div>
             <div className="space-y-1">
               <Label>Biểu tượng (emoji)</Label>
-              <Input name="icon" defaultValue={lesson.icon ?? ""} placeholder="👋" />
+              <Input name="icon" defaultValue={lesson.icon ?? ""} placeholder="🐘" />
             </div>
             <div className="space-y-1">
               <Label>Chương</Label>
@@ -130,7 +130,7 @@ export default async function LessonEditorPage({ params }: Props) {
                 key={meta.key}
                 lessonId={lesson.id}
                 skill={meta.key}
-                hskLevel={lesson.course.hskLevel}
+                level={lesson.course.level}
                 sectionId={sec?.id ?? null}
                 published={sec?.published ?? false}
                 initialContent={sec?.content ?? null}

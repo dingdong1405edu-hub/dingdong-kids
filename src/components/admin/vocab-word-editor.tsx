@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, ImageOff, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteVocabWordAction, reorderVocabWordsAction } from "@/server/actions/admin";
 import { VocabWordForm } from "./vocab-word-form";
@@ -45,8 +45,20 @@ export function VocabWordEditor({ lessonId, unitId, words }: Props) {
     router.refresh();
   }
 
+  // Trẻ nhỏ học bằng HÌNH và ÂM THANH là chính, nên nhắc rõ những từ còn thiếu.
+  const noImage = items.filter((w) => !w.imageUrl).length;
+
   return (
     <div className="space-y-3">
+      {noImage > 0 && (
+        <p className="flex items-start gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <ImageOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>
+            {noImage} từ chưa có ảnh minh hoạ. Hãy thêm ảnh trước khi xuất bản bài — nhiều bé chưa
+            đọc thạo, nhìn hình mới hiểu nghĩa.
+          </span>
+        </p>
+      )}
       {items.length === 0 ? (
         <p className="rounded-md border border-dashed py-6 text-center text-xs text-muted-foreground">
           Chưa có từ nào. Nhấn “Thêm từ” để bắt đầu.
@@ -64,9 +76,21 @@ export function VocabWordEditor({ lessonId, unitId, words }: Props) {
               >
                 <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />
                 <span className="w-5 shrink-0 text-center text-xs text-muted-foreground">{i + 1}</span>
-                <span className="font-chinese text-lg">{w.hanzi}</span>
-                <span className="font-pinyin text-sm text-muted-foreground">{w.pinyin}</span>
+                {w.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={w.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg border object-cover" />
+                ) : (
+                  <span
+                    title="Chưa có ảnh minh hoạ"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-amber-400 text-amber-600"
+                  >
+                    <ImageOff className="h-4 w-4" />
+                  </span>
+                )}
+                <span className="font-primer text-lg">{w.word}</span>
+                <span className="text-sm text-muted-foreground">{w.ipa}</span>
                 <span className="truncate text-sm">— {w.meaning}</span>
+                {w.audioUrl && <Volume2 className="h-3.5 w-3.5 shrink-0 text-sky-600" />}
                 <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                   {w.examples.length} ví dụ
                 </span>

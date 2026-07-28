@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -6,6 +7,18 @@ import type { VocabWordCard, WordExample, WordReviewState } from "@/types";
 
 interface Props {
   params: Promise<{ unitId: string; lessonId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lessonId } = await params;
+  const l = await db.vocabLesson.findUnique({
+    where: { id: lessonId },
+    select: { title: true },
+  });
+  return {
+    title: l?.title || "Bài từ vựng",
+    description: "Học từ vựng tiếng Anh cho bé qua tranh, âm thanh và trò chơi ghi nhớ.",
+  };
 }
 
 export default async function VocabLessonPage({ params }: Props) {

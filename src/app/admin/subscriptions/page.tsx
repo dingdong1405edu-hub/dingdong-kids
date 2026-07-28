@@ -1,7 +1,19 @@
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PAYMENT_PLANS } from "@/lib/payment-plans";
+import { PAYMENT_PLANS, roadmapPlanForLevel, FREESTYLE_PLANS } from "@/lib/payment-plans";
 import { GrantSubscriptionForm } from "@/components/admin/grant-subscription-form";
+import type { EnglishLevel, SubscriptionType } from "@prisma/client";
+
+/**
+ * Nhãn gói hiển thị cho một quyền lợi. Lấy TÊN GÓI từ cấu hình giá
+ * (src/lib/payment-plans.ts) để chỉ phải sửa tên/giá ở một nơi duy nhất.
+ */
+function subscriptionLabel(type: SubscriptionType, level: EnglishLevel | null): string {
+  if (type === "ROADMAP") {
+    return level ? (roadmapPlanForLevel(level)?.name ?? "Lộ trình") : "Lộ trình";
+  }
+  return FREESTYLE_PLANS[0]?.name ?? "Gói Tự do";
+}
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +65,7 @@ export default async function AdminSubscriptionsPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold">
-                      {s.type === "ROADMAP" ? `Lộ trình ${s.hskLevel ?? ""}`.trim() : "Tự do"}
+                      {subscriptionLabel(s.type, s.level)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       đến {new Date(s.expiresAt).toLocaleDateString("vi")}

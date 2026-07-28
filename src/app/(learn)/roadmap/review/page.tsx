@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -8,6 +9,11 @@ import type { VocabWordCard, WordExample, WordReviewState } from "@/types";
 interface Props {
   searchParams: Promise<{ level?: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Ôn tập tổng hợp",
+  description: "Ôn lại từ vựng tiếng Anh của cả lộ trình — mỗi ngày một chút cho nhớ lâu.",
+};
 
 /**
  * Hub ôn tập tổng hợp LỘ TRÌNH: mọi từ vựng lộ trình đã đến hạn ôn (SRS) trên toàn

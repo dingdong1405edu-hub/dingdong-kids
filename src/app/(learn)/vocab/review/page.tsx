@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { GlobalReview } from "@/components/learn/vocab/review/global-review";
 import type { VocabWordCard, WordExample, WordReviewState } from "@/types";
+
+export const metadata: Metadata = {
+  title: "Ôn lại từ cũ",
+  description: "Ôn lại những từ tiếng Anh bé sắp quên — đúng lúc để nhớ thật lâu.",
+};
 
 /**
  * Hub ôn tập tổng hợp: mọi từ vựng đã đến hạn ôn (SRS) trên toàn module, gom về

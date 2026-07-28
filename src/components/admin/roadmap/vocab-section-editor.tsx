@@ -1,11 +1,12 @@
 "use client";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ImageOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toPinyin } from "@/lib/pinyin";
+import { MediaField } from "./media-field";
 import { ExampleRows } from "./example-rows";
 import { RoadmapVocabImport } from "./vocab-import";
+import { TtsButton } from "@/components/admin/tts-button";
 import type { VocabSectionContent, WordExample } from "@/lib/roadmap-content";
 
 type Word = VocabSectionContent["words"][number];
@@ -27,59 +28,88 @@ export function VocabSectionEditor({
     setWords(words.map((w, j) => (j === i ? { ...w, ...patch } : w)));
   }
   function add() {
-    setWords([...words, { hanzi: "", pinyin: "", meaning: "", audioUrl: null, examples: [] }]);
+    setWords([
+      ...words,
+      { word: "", ipa: "", meaning: "", partOfSpeech: "", imageUrl: null, audioUrl: null, examples: [] },
+    ]);
   }
   function remove(i: number) {
     setWords(words.filter((_, j) => j !== i));
   }
 
+  // Trẻ nhỏ nhận nghĩa qua ẢNH trước cả chữ, nên thiếu ảnh là thiếu nghiêm trọng.
+  const noImage = words.filter((w) => !w.imageUrl).length;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
-          Mỗi từ gồm chữ Hán, pinyin, nghĩa và ví dụ. Học viên học từng từ: xem thẻ → tập viết → nhớ lại → flashcard.
+          Mỗi từ gồm từ tiếng Anh, phiên âm IPA, nghĩa, từ loại, ẢNH và audio. Bé học từng từ: xem thẻ →
+          nghe → nhớ lại → chơi flashcard.
         </p>
         <RoadmapVocabImport onImport={(ws) => setWords([...words, ...ws])} />
       </div>
+
+      {noImage > 0 && (
+        <p className="flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <ImageOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>{noImage} từ chưa có ảnh minh hoạ — hãy bổ sung trước khi xuất bản phần này.</span>
+        </p>
+      )}
+
       {words.map((w, i) => (
         <div key={i} className="space-y-2 rounded-xl border bg-card p-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground">Từ {i + 1}</span>
-            <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)}>
+            <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)} aria-label="Xoá từ">
               <Trash2 className="h-3.5 w-3.5 text-destructive" />
             </Button>
           </div>
-          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-4">
             <Input
-              value={w.hanzi}
-              onChange={(e) => update(i, { hanzi: e.target.value })}
-              onBlur={() => {
-                if (w.hanzi && !w.pinyin) update(i, { pinyin: toPinyin(w.hanzi) });
-              }}
-              placeholder="你好"
-              className="h-8 font-chinese text-sm"
+              value={w.word}
+              onChange={(e) => update(i, { word: e.target.value })}
+              placeholder="elephant"
+              className="h-8 font-primer text-sm"
             />
             <Input
-              value={w.pinyin}
-              onChange={(e) => update(i, { pinyin: e.target.value })}
-              placeholder="nǐ hǎo"
+              value={w.ipa ?? ""}
+              onChange={(e) => update(i, { ipa: e.target.value })}
+              placeholder="/ˈel.ɪ.fənt/"
               className="h-8 text-sm"
             />
             <Input
               value={w.meaning}
               onChange={(e) => update(i, { meaning: e.target.value })}
-              placeholder="Xin chào"
+              placeholder="con voi"
+              className="h-8 text-sm"
+            />
+            <Input
+              value={w.partOfSpeech ?? ""}
+              onChange={(e) => update(i, { partOfSpeech: e.target.value })}
+              placeholder="danh từ"
               className="h-8 text-sm"
             />
           </div>
-          <Input
-            value={w.audioUrl ?? ""}
-            onChange={(e) => update(i, { audioUrl: e.target.value || null })}
-            placeholder="URL audio (.mp3) — để trống thì trình duyệt tự đọc"
-            className="h-8 text-sm"
-          />
+
+          <div className="flex items-center gap-1.5">
+            <TtsButton size="xs" text={w.word} onDone={(url) => update(i, { audioUrl: url })} />
+            <Input
+              value={w.audioUrl ?? ""}
+              onChange={(e) => update(i, { audioUrl: e.target.value || null })}
+              placeholder="Audio đọc từ — bấm “Tạo audio” là xong"
+              className="h-8 text-sm"
+            />
+          </div>
+
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Ví dụ</Label>
+            <Label className="text-xs text-muted-foreground">Ảnh minh hoạ (rất nên có)</Label>
+            <MediaField kind="image" value={w.imageUrl} onChange={(url) => update(i, { imageUrl: url })} />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Câu ví dụ</Label>
             <ExampleRows
               value={(w.examples ?? []) as WordExample[]}
               onChange={(ex) => update(i, { examples: ex })}

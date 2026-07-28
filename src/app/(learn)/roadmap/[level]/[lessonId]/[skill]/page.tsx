@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -12,6 +13,15 @@ import type { WordReviewState } from "@/types";
 
 interface Props {
   params: Promise<{ level: string; lessonId: string; skill: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { skill: skillSlug } = await params;
+  const meta = SKILL_META.find((m) => m.key === (skillSlug.toUpperCase() as SkillKey));
+  return {
+    title: meta ? `${meta.label} · Lộ trình` : "Lộ trình",
+    description: "Bài học tiếng Anh cho bé trong lộ trình Cambridge của DingDong Kids.",
+  };
 }
 
 const SKILL_KEYS = SKILL_META.map((m) => m.key);

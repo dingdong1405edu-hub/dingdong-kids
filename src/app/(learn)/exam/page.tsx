@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
@@ -8,16 +9,21 @@ import { examComposition } from "@/lib/mock-exam";
 import { ExamHub, type ExamCardData } from "./exam-hub";
 import type { Skill } from "@prisma/client";
 
+export const metadata: Metadata = {
+  title: "Thi thử",
+  description: "Đề thi thử tiếng Anh cho bé theo đúng format Cambridge: Nghe · Đọc · Viết · Nói.",
+};
+
 export default async function ExamPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   const isAdmin = session.user.role === "ADMIN";
 
   const [user, exams, attempts] = await Promise.all([
-    db.user.findUnique({ where: { id: session.user.id }, select: { hskLevel: true } }),
+    db.user.findUnique({ where: { id: session.user.id }, select: { level: true } }),
     db.mockExam.findMany({
       where: isAdmin ? {} : { published: true },
-      orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+      orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
       include: {
         sections: {
           orderBy: { order: "asc" },
@@ -55,7 +61,7 @@ export default async function ExamPage() {
     return {
       id: e.id,
       title: e.title,
-      hskLevel: e.hskLevel,
+      level: e.level,
       composition: examComposition(skills) || "Đề thi",
       meta: metaParts.join(" · "),
       bestScore: bestMap.get(e.id) ?? null,
@@ -65,28 +71,28 @@ export default async function ExamPage() {
 
   return (
     <PracticeHub
-      accent="red"
+      accent="rose"
       icon={<GraduationCap className="h-7 w-7" />}
-      decoChar="试"
+      decoChar="🏅"
       title="Thi thử"
-      subtitle="Làm trọn bộ đề theo đúng format máy thi HSK để đánh giá trình độ hiện tại"
+      subtitle="Làm trọn bộ đề như kỳ thi Cambridge thật để xem bé đang ở đâu"
       tips={[
-        "Chọn cấp độ HSK rồi làm trọn bộ đề: Nghe hiểu · Đọc hiểu · Viết (HSK 3–6).",
-        "Có đồng hồ đếm ngược và tự nộp khi hết giờ như thi thật.",
-        "Hệ thống chấm tự động phần Nghe/Đọc và chấm AI phần Viết, cho điểm từng phần.",
-        "Điểm cao nhất của bạn được lưu lại trên từng đề để theo dõi tiến bộ.",
+        "Chọn cấp của bé rồi làm cả bộ đề: Nghe · Đọc · Viết · Nói.",
+        "Có đồng hồ đếm ngược và tự nộp khi hết giờ, y như thi thật.",
+        "Máy chấm ngay phần Nghe/Đọc, phần Viết được AI nhận xét từng ý.",
+        "Điểm cao nhất của bé được lưu lại để bố mẹ thấy bé tiến bộ.",
       ]}
     >
       <div className="space-y-8">
-        <ExamHub exams={cards} defaultLevel={user?.hskLevel ?? "HSK1"} />
+        <ExamHub exams={cards} defaultLevel={user?.level ?? "PRE_STARTERS"} />
 
         {/* Luyện từng kỹ năng riêng lẻ */}
         <div>
-          <h2 className="mb-3 text-lg font-bold">Luyện từng kỹ năng riêng lẻ</h2>
+          <h2 className="font-display mb-3 text-lg font-bold">Luyện riêng từng kỹ năng</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <PracticeLink href="/reading" icon={<BookText className="h-5 w-5 text-emerald-600" />} label="Đọc hiểu" />
             <PracticeLink href="/listening" icon={<Headphones className="h-5 w-5 text-teal-600" />} label="Nghe hiểu" />
-            <PracticeLink href="/writing" icon={<PenLine className="h-5 w-5 text-violet-600" />} label="Viết luận" />
+            <PracticeLink href="/writing" icon={<PenLine className="h-5 w-5 text-violet-600" />} label="Tập viết" />
           </div>
         </div>
       </div>
@@ -98,9 +104,9 @@ function PracticeLink({ href, icon, label }: { href: string; icon: React.ReactNo
   return (
     <Link
       href={href}
-      className="group flex items-center justify-between gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40"
+      className="group flex items-center justify-between gap-2 rounded-2xl border-2 bg-card p-4 transition-colors hover:border-primary/40"
     >
-      <span className="flex items-center gap-2 font-semibold">
+      <span className="flex items-center gap-2 font-bold">
         {icon} {label}
       </span>
       <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

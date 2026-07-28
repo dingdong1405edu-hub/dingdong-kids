@@ -1,8 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn, toneColor } from "@/lib/utils";
-import { getTone } from "@/lib/pinyin";
+import { cn } from "@/lib/utils";
 import type { VocabWordCard } from "@/types";
 
 interface Props {
@@ -11,13 +10,14 @@ interface Props {
   onDone: () => void;
 }
 
-type Side = "hanzi" | "meaning";
+type Side = "word" | "meaning";
 interface Tile {
   id: string;
   wordId: string;
   side: Side;
   text: string;
-  tone: number;
+  /** Ảnh minh hoạ (chỉ ở cột nghĩa) — bé chưa đọc thạo vẫn nhận ra được. */
+  imageUrl?: string | null;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -30,7 +30,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /**
- * Mini-game khởi động kiểu Duolingo: nối chữ Hán ↔ nghĩa. Mang tính làm nóng
+ * Mini-game khởi động kiểu Duolingo: nối từ tiếng Anh ↔ nghĩa. Mang tính làm nóng
  * (KHÔNG tính vào lịch SRS) — phần chấm điểm nhớ do flashcard & trắc nghiệm đảm
  * nhiệm. Nối đúng hết → onDone().
  */
@@ -39,11 +39,10 @@ export function MatchGame({ words, onDone }: Props) {
     () =>
       shuffle(
         words.map((w) => ({
-          id: `h-${w.id}`,
+          id: `w-${w.id}`,
           wordId: w.id,
-          side: "hanzi" as Side,
-          text: w.hanzi,
-          tone: getTone(w.pinyin),
+          side: "word" as Side,
+          text: w.word,
         })),
       ),
     [words],
@@ -56,7 +55,7 @@ export function MatchGame({ words, onDone }: Props) {
           wordId: w.id,
           side: "meaning" as Side,
           text: w.meaning,
-          tone: 0,
+          imageUrl: w.imageUrl,
         })),
       ),
     [words],
@@ -99,7 +98,7 @@ export function MatchGame({ words, onDone }: Props) {
     const isSelected = selected?.id === tile.id;
     const isWrong = wrongId === tile.id;
     return cn(
-      "flex min-h-[3.25rem] items-center justify-center rounded-xl border-2 px-3 py-3 text-center transition-all",
+      "flex min-h-[3.25rem] items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 text-center transition-all",
       isMatched && "border-green-400 dark:border-green-500/40 bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-300 opacity-60",
       !isMatched && isSelected && "border-primary bg-primary/10 ring-2 ring-primary/30",
       !isMatched && isWrong && "border-red-500 bg-red-50 dark:bg-red-500/15",
@@ -109,7 +108,7 @@ export function MatchGame({ words, onDone }: Props) {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
-      <p className="text-sm font-medium text-muted-foreground">Nối chữ Hán với nghĩa</p>
+      <p className="text-sm font-medium text-muted-foreground">Nối từ tiếng Anh với nghĩa</p>
       <div className="grid w-full max-w-md grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           {left.map((t) => (
@@ -120,9 +119,7 @@ export function MatchGame({ words, onDone }: Props) {
               onClick={() => tap(t)}
               className={tileClass(t)}
             >
-              <span className={cn("font-chinese text-2xl", !matched.has(t.wordId) && toneColor(t.tone))}>
-                {t.text}
-              </span>
+              <span className="font-primer text-2xl font-semibold">{t.text}</span>
             </button>
           ))}
         </div>
@@ -135,6 +132,10 @@ export function MatchGame({ words, onDone }: Props) {
               onClick={() => tap(t)}
               className={tileClass(t)}
             >
+              {t.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={t.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+              )}
               <span className="text-sm">{t.text}</span>
             </button>
           ))}

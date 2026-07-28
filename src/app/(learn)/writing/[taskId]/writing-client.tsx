@@ -80,7 +80,7 @@ export function WritingClient({
     .filter(Boolean);
   const hasOutline = outlineItems.length > 0;
 
-  // Tiếng Anh đếm TỪ (bản tiếng Trung trước đây đếm ký tự).
+  // Tiếng Anh đếm TỪ, không đếm ký tự — ngưỡng `minWords` cũng tính theo từ.
   const wordCount = countWords(text);
   const progress = Math.min(100, Math.round((wordCount / Math.max(1, task.minWords)) * 100));
 

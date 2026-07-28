@@ -11,7 +11,7 @@ import { ImageUpload } from "@/components/admin/image-upload";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList, type ReorderItem } from "@/components/admin/reorder-list";
 import { RoadmapLessonBulkImport } from "@/components/admin/roadmap/lesson-bulk-import";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
 import { SKILL_META } from "@/lib/roadmap";
 import {
   createRoadmapLessonAction,
@@ -54,7 +54,7 @@ export default async function AdminCoursePage({ params }: Props) {
 
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold">{course.title}</h1>
-        <Badge variant="outline">{hskLevelLabel(course.hskLevel)}</Badge>
+        <Badge variant="outline">{levelLabel(course.level)}</Badge>
       </div>
 
       {/* Sửa thông tin khóa */}
@@ -78,8 +78,8 @@ export default async function AdminCoursePage({ params }: Props) {
               <Input name="title" defaultValue={course.title} required />
             </div>
             <div className="space-y-1">
-              <Label>Tiêu đề (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" defaultValue={course.titleZh} />
+              <Label>Tiêu đề phụ (EN)</Label>
+              <Input name="subtitle" defaultValue={course.subtitle} placeholder="Off we go!" />
             </div>
             <div className="space-y-1 md:col-span-2">
               <Label>Mô tả</Label>
@@ -122,8 +122,8 @@ export default async function AdminCoursePage({ params }: Props) {
               <Input name="title" placeholder="Chào hỏi & Làm quen" required />
             </div>
             <div className="space-y-1">
-              <Label>Tên chương (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" placeholder="问候与认识" />
+              <Label>Tên chương (EN)</Label>
+              <Input name="subtitle" placeholder="Hello, friends!" />
             </div>
             <Button type="submit" className="sm:mb-0.5">
               <Plus className="h-4 w-4" /> Thêm chương
@@ -160,8 +160,8 @@ export default async function AdminCoursePage({ params }: Props) {
                           <Input name="title" defaultValue={ch.title} required />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Tên chương (ZH)</Label>
-                          <Input name="titleZh" className="font-chinese" defaultValue={ch.titleZh} />
+                          <Label className="text-xs">Tên chương (EN)</Label>
+                          <Input name="subtitle" defaultValue={ch.subtitle} />
                         </div>
                         <Button type="submit" size="sm" variant="outline" className="sm:mb-0.5">
                           <Save className="h-4 w-4" /> Lưu
@@ -213,16 +213,16 @@ export default async function AdminCoursePage({ params }: Props) {
           >
             <input type="hidden" name="courseId" value={course.id} />
             <div className="space-y-1">
-              <Label>Tên bài (VI)</Label>
-              <Input name="topic" placeholder="Chào hỏi" required />
+              <Label>Tên bài (EN)</Label>
+              <Input name="topic" placeholder="Animals" required />
             </div>
             <div className="space-y-1">
-              <Label>Tên bài (ZH)</Label>
-              <Input name="topicZh" className="font-chinese" placeholder="问候" />
+              <Label>Tên bài (VI)</Label>
+              <Input name="topicVi" placeholder="Các con vật" />
             </div>
             <div className="space-y-1">
               <Label>Biểu tượng (emoji)</Label>
-              <Input name="icon" placeholder="👋" />
+              <Input name="icon" placeholder="🐘" />
             </div>
             <div className="space-y-1">
               <Label>Chương</Label>
@@ -286,8 +286,8 @@ export default async function AdminCoursePage({ params }: Props) {
                             <span className="truncate font-semibold">
                               Bài {lesson.order}. {lesson.topic}
                             </span>
-                            <span className="truncate font-chinese text-sm text-muted-foreground">
-                              {lesson.topicZh}
+                            <span className="truncate text-sm text-muted-foreground">
+                              {lesson.topicVi}
                             </span>
                           </div>
                           <div className="mt-1 flex flex-wrap items-center gap-2">

@@ -17,12 +17,14 @@ import {
   GraduationCap,
   Mic,
   BookOpen,
+  BookMarked,
+  Headphones,
   Library,
   HeartHandshake,
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { cn, hskLevelLabel, hskBadgeClass } from "@/lib/utils";
+import { cn, levelLabel, levelBadgeClass } from "@/lib/utils";
 import {
   avatarColor,
   avatarInitial,
@@ -32,12 +34,16 @@ import {
   type ForumStats,
 } from "@/lib/community-forum";
 
+// Biểu tượng theo chuyên mục. Diễn đàn này dành cho BA MẸ bàn chuyện đồng hành
+// cùng con học tiếng Anh, nên chuyên mục bám theo các kỹ năng bé học trên app.
 const CAT_ICON: Record<string, LucideIcon> = {
   grammar: SpellCheck,
-  pronunciation: AudioLines,
-  exam: GraduationCap,
-  hskk: Mic,
+  phonics: AudioLines,
   vocab: BookOpen,
+  reading: BookMarked,
+  listening: Headphones,
+  speaking: Mic,
+  exam: GraduationCap,
   resources: Library,
   motivation: HeartHandshake,
   general: MessagesSquare,
@@ -57,8 +63,8 @@ function Avatar({ name, size = 40 }: { name: string; size?: number }) {
 
 function StatBox({ icon, value, label, live }: { icon: ReactNode; value: string; label: string; live?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border bg-card px-3 py-2.5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">{icon}</div>
+    <div className="flex items-center gap-2.5 rounded-2xl border-2 bg-card px-3 py-2.5">
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">{icon}</div>
       <div className="min-w-0 leading-tight">
         <div className="flex items-center gap-1.5 text-base font-extrabold tabular-nums">
           {value}
@@ -115,8 +121,8 @@ function ThreadRow({
   return (
     <article
       className={cn(
-        "rounded-2xl border bg-card p-4 transition-colors hover:border-primary/30",
-        thread.pinned && "border-amber-200 bg-amber-50/40 dark:border-amber-400/25 dark:bg-amber-500/5",
+        "sticker bg-card p-4 transition-colors hover:border-primary/40",
+        thread.pinned && "border-amber-300 bg-amber-50/50 dark:border-amber-400/30 dark:bg-amber-500/5",
       )}
     >
       <div className="flex gap-3">
@@ -130,9 +136,9 @@ function ThreadRow({
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 font-medium">
               <Icon className="h-3 w-3" /> {thread.categoryLabel}
             </span>
-            {thread.hsk && (
-              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", hskBadgeClass(thread.hsk))}>
-                {hskLevelLabel(thread.hsk)}
+            {thread.level && (
+              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-extrabold", levelBadgeClass(thread.level))}>
+                {levelLabel(thread.level)}
               </span>
             )}
           </div>
@@ -202,8 +208,8 @@ function ThreadRow({
                 <input
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  placeholder="Viết phản hồi thân thiện…"
-                  className="h-9 flex-1 rounded-full border bg-background px-4 text-sm outline-none focus:border-primary"
+                  placeholder="Viết phản hồi thân thiện với ba mẹ khác…"
+                  className="h-11 flex-1 rounded-full border-2 bg-background px-4 text-sm outline-none focus:border-primary"
                 />
                 <button
                   type="submit"
@@ -281,7 +287,7 @@ export function ForumFeed({
     const title = postTitle.trim();
     const body = postBody.trim();
     if (title.length < 5) {
-      toast.error("Tiêu đề hơi ngắn — viết rõ hơn một chút nhé.");
+      toast.error("Tiêu đề hơi ngắn — ba mẹ viết rõ hơn một chút nhé.");
       return;
     }
     const cat = categories.find((c) => c.key === postCat);
@@ -290,7 +296,7 @@ export function ForumFeed({
       author: me,
       title,
       body: body || title,
-      hsk: "",
+      level: "",
       tag: "Mới",
       likes: 0,
       views: 1,
@@ -309,7 +315,7 @@ export function ForumFeed({
     setComposerOpen(false);
     setActiveCat("all");
     setExpanded((prev) => new Set(prev).add(nt.id));
-    toast.success("Đã đăng bài! Cảm ơn bạn đã chia sẻ 🎉");
+    toast.success("Đã đăng bài! Cảm ơn ba mẹ đã chia sẻ 🎉");
   };
 
   const toggleLike = (id: string) =>
@@ -341,14 +347,14 @@ export function ForumFeed({
     <div className="space-y-4">
       {/* Stats */}
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <StatBox icon={<Users className="h-4 w-4" />} value={stats.members.toLocaleString("vi-VN")} label="Thành viên" />
+        <StatBox icon={<Users className="h-4 w-4" />} value={stats.members.toLocaleString("vi-VN")} label="Ba mẹ tham gia" />
         <StatBox icon={<Flame className="h-4 w-4" />} value={online.toLocaleString("vi-VN")} label="Đang online" live />
         <StatBox icon={<MessagesSquare className="h-4 w-4" />} value={stats.threads.toLocaleString("vi-VN")} label="Chủ đề" />
         <StatBox icon={<MessageCircle className="h-4 w-4" />} value={stats.posts.toLocaleString("vi-VN")} label="Bài viết" />
       </div>
 
-      {/* Composer */}
-      <div className="rounded-2xl border bg-card p-3">
+      {/* Ô soạn bài */}
+      <div className="sticker bg-card p-3">
         {!composerOpen ? (
           <button
             onClick={() => setComposerOpen(true)}
@@ -356,7 +362,7 @@ export function ForumFeed({
           >
             <Avatar name={me} />
             <span className="flex-1 rounded-full bg-muted px-4 py-2.5 text-sm text-muted-foreground">
-              Bạn đang thắc mắc điều gì? Đặt câu hỏi cho cộng đồng…
+              Bé nhà mình đang gặp khó ở đâu? Ba mẹ hỏi cộng đồng nhé…
             </span>
           </button>
         ) : (
@@ -367,7 +373,7 @@ export function ForumFeed({
                 autoFocus
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
-                placeholder="Tiêu đề — bạn muốn hỏi/chia sẻ điều gì?"
+                placeholder="Tiêu đề — ba mẹ muốn hỏi hay chia sẻ điều gì?"
                 className="h-10 flex-1 rounded-lg border bg-background px-3 text-sm font-medium outline-none focus:border-primary"
               />
             </div>
@@ -375,7 +381,7 @@ export function ForumFeed({
               value={postBody}
               onChange={(e) => setPostBody(e.target.value)}
               rows={3}
-              placeholder="Mô tả chi tiết (thêm ví dụ chữ Hán + pinyin nếu có) để mọi người dễ giúp bạn…"
+              placeholder="Ghi rõ bé mấy tuổi, đang học cấp nào và tình huống cụ thể — mọi người sẽ gợi ý đúng chỗ hơn…"
               className="w-full rounded-lg border bg-background p-3 text-sm outline-none focus:border-primary"
             />
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -400,7 +406,7 @@ export function ForumFeed({
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                  className="btn-chunky inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground"
                 >
                   <Send className="h-4 w-4" /> Đăng bài
                 </button>
@@ -420,7 +426,7 @@ export function ForumFeed({
               setQuery(e.target.value);
               setVisible(8);
             }}
-            placeholder="Tìm chủ đề, từ khoá, người đăng…"
+            placeholder="Tìm chủ đề, từ khoá, tên ba mẹ…"
             className="h-10 w-full rounded-full border bg-card pl-9 pr-3 text-sm outline-none focus:border-primary"
           />
         </div>
@@ -464,8 +470,8 @@ export function ForumFeed({
           />
         ))}
         {shown.length === 0 && (
-          <p className="rounded-2xl border border-dashed py-12 text-center text-sm text-muted-foreground">
-            Không tìm thấy chủ đề phù hợp. Thử từ khoá khác hoặc là người đầu tiên đăng nhé!
+          <p className="rounded-3xl border-2 border-dashed py-12 text-center text-sm text-muted-foreground">
+            Chưa có chủ đề nào khớp. Ba mẹ thử từ khoá khác, hoặc là người đầu tiên mở chuyện nhé! 🐻
           </p>
         )}
       </div>
@@ -473,7 +479,7 @@ export function ForumFeed({
       {visible < filtered.length && (
         <button
           onClick={() => setVisible((v) => v + 8)}
-          className="w-full rounded-xl border bg-card py-3 text-sm font-semibold text-primary transition-colors hover:bg-muted"
+          className="w-full rounded-2xl border-2 bg-card py-3 text-sm font-extrabold text-primary transition-colors hover:bg-muted"
         >
           Xem thêm chủ đề ({filtered.length - visible})
         </button>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
@@ -7,6 +8,11 @@ import { parseGrammarContent } from "@/lib/grammar";
 interface Props {
   params: Promise<{ unitId: string; lessonId: string }>;
 }
+
+export const metadata: Metadata = {
+  title: "Kiểm tra ngữ pháp",
+  description: "Bài kiểm tra nhỏ cuối bài ngữ pháp tiếng Anh cho bé.",
+};
 
 /** Bài kiểm tra ngữ pháp — tách riêng khỏi luồng học (chỉ đây mới có XP, ≥80%). */
 export default async function GrammarLessonTestPage({ params }: Props) {

@@ -30,16 +30,15 @@ export interface ExamPartData {
   instructions: string | null;
   imageUrl: string | null;
   passage: string | null;
-  passagePinyin: string | null;
   audioUrl: string | null;
   transcript: string | null;
   writingPrompt: string | null;
-  writingMinChars: number | null;
+  writingMinWords: number | null;
   questions: ExamQuestion[];
 }
 
-/** Một tiểu phần (第一部分...) trong trình soạn đề. Trường hiển thị tuỳ theo kỹ năng
- * của phần: Đọc → đoạn văn; Nghe → audio + transcript; Viết → ô viết tự luận. */
+/** Một tiểu phần (Part 1, Part 2...) trong trình soạn đề. Trường hiển thị tuỳ theo
+ * kỹ năng của phần: Đọc → đoạn văn; Nghe → audio + lời thoại; Viết → ô viết. */
 export function PartBlock({
   part,
   examId,
@@ -62,7 +61,7 @@ export function PartBlock({
           </span>
           {part.passage && <Badge variant="secondary" className="text-[10px]">Đoạn văn</Badge>}
           {part.audioUrl && <Badge variant="secondary" className="text-[10px]">Audio</Badge>}
-          {part.writingPrompt && <Badge variant="secondary" className="text-[10px]">Viết tự luận</Badge>}
+          {part.writingPrompt && <Badge variant="secondary" className="text-[10px]">Ô viết</Badge>}
           <span className="text-xs text-muted-foreground">{part.questions.length} câu</span>
         </div>
         <form
@@ -95,7 +94,7 @@ export function PartBlock({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label>Tiêu đề tiểu phần</Label>
-              <Input name="title" defaultValue={part.title} className="font-chinese" placeholder="第一部分" />
+              <Input name="title" defaultValue={part.title} placeholder="Part 1" />
             </div>
           </div>
           <div className="space-y-1">
@@ -104,16 +103,10 @@ export function PartBlock({
           </div>
 
           {skill === "READING" && (
-            <>
-              <div className="space-y-1">
-                <Label>Đoạn văn (Hán tự)</Label>
-                <Textarea name="passage" defaultValue={part.passage ?? ""} className="min-h-24 font-chinese" />
-              </div>
-              <div className="space-y-1">
-                <Label>Pinyin (tùy chọn)</Label>
-                <Textarea name="passagePinyin" defaultValue={part.passagePinyin ?? ""} className="min-h-16 font-pinyin" />
-              </div>
-            </>
+            <div className="space-y-1">
+              <Label>Đoạn văn (tiếng Anh)</Label>
+              <Textarea name="passage" defaultValue={part.passage ?? ""} className="min-h-24" />
+            </div>
           )}
 
           {skill === "LISTENING" && (
@@ -127,12 +120,12 @@ export function PartBlock({
           {skill === "WRITING" && (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="space-y-1 sm:col-span-2">
-                <Label>Đề bài viết tự luận (để trống nếu tiểu phần chỉ gồm câu hỏi)</Label>
+                <Label>Đề bài viết (để trống nếu tiểu phần chỉ gồm câu hỏi)</Label>
                 <Textarea name="writingPrompt" defaultValue={part.writingPrompt ?? ""} className="min-h-16" />
               </div>
               <div className="space-y-1">
-                <Label>Số chữ tối thiểu</Label>
-                <Input name="writingMinChars" type="number" min="0" defaultValue={part.writingMinChars ?? ""} />
+                <Label>Số từ tối thiểu</Label>
+                <Input name="writingMinWords" type="number" min="0" defaultValue={part.writingMinWords ?? ""} />
               </div>
             </div>
           )}
@@ -154,7 +147,7 @@ export function PartBlock({
             <div key={q.id} className="flex items-start justify-between gap-2 rounded-lg border bg-card p-2">
               <div className="min-w-0 flex-1">
                 <span className="text-xs font-semibold text-muted-foreground">{qi + 1}. </span>
-                <span className="font-chinese text-sm">{q.prompt}</span>
+                <span className="text-sm">{q.prompt}</span>
                 <Badge variant="outline" className="ml-1.5 text-[10px]">{q.type}</Badge>
                 {q.explanation && (
                   <p className="mt-1 rounded bg-muted px-2 py-1 text-xs text-muted-foreground">💡 {q.explanation}</p>
@@ -199,17 +192,18 @@ export function PartBlock({
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Pinyin câu hỏi (tùy chọn)</Label>
-              <Input name="promptPinyin" className="font-pinyin" />
+              <Label>Dịch câu hỏi (tiếng Việt, tùy chọn)</Label>
+              <Input name="promptTranslation" placeholder="Con chó ở đâu?" />
             </div>
           </div>
           <div className="space-y-1">
-            <Label>Câu hỏi</Label>
-            <Input name="prompt" className="font-chinese" placeholder="Nội dung câu hỏi..." required />
+            <Label>Câu hỏi (tiếng Anh)</Label>
+            <Input name="prompt" placeholder="Where is the dog?" required />
+            <p className="text-xs text-muted-foreground">Hệ thống tự tạo audio đọc câu hỏi cho bé.</p>
           </div>
           <div className="space-y-1">
             <Label>Đáp án MCQ (mỗi dòng 1 lựa chọn)</Label>
-            <Textarea name="options" className="font-chinese" placeholder="Lựa chọn A&#10;Lựa chọn B&#10;Lựa chọn C&#10;Lựa chọn D" />
+            <Textarea name="options" placeholder="Under the table&#10;On the bed&#10;In the garden&#10;Behind the door" />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="space-y-1">
@@ -225,12 +219,12 @@ export function PartBlock({
             </div>
             <div className="space-y-1">
               <Label>Điền · đáp án đúng</Label>
-              <Input name="correctText" className="font-chinese" />
+              <Input name="correctText" placeholder="under the table" />
             </div>
           </div>
           <div className="space-y-1">
             <Label>Điền · đáp án chấp nhận thêm (mỗi dòng 1, tùy chọn)</Label>
-            <Textarea name="correctAccepted" className="font-chinese" />
+            <Textarea name="correctAccepted" placeholder="the table" />
           </div>
           <div className="space-y-1">
             <Label>Giải thích (tùy chọn)</Label>

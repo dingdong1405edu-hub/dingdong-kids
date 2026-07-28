@@ -8,7 +8,11 @@ import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
  */
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Thông báo lỗi ở đây được client hiển thị THẲNG cho bé qua toast
+  // (xem speaking-client.tsx), nên phải là tiếng Việt dễ hiểu, không phải mã lỗi.
+  if (!session?.user) {
+    return NextResponse.json({ error: "Bé hãy đăng nhập rồi luyện nói nhé!" }, { status: 401 });
+  }
 
   if (!isTranscriptionConfigured()) {
     return NextResponse.json(

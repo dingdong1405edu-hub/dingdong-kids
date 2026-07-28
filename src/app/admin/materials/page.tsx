@@ -8,24 +8,24 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/admin/image-upload";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import { MATERIAL_CATEGORIES, categoryMeta, parseMaterialContent } from "@/lib/materials";
 import { bulkImportMaterialsAction } from "@/server/actions/admin";
 import { BulkItemImport } from "@/components/admin/bulk-item-import";
-import { HSKLevel, MaterialCategory, Prisma } from "@prisma/client";
+import { EnglishLevel, MaterialCategory, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { Plus, Trash2, Clock, FileText } from "lucide-react";
 
 const MATERIAL_SAMPLE = `[
   {
-    "title": "Cách dùng 了",
-    "titleZh": "了的用法",
+    "title": "Câu hỏi với “Where”",
     "category": "GRAMMAR",
-    "hskLevel": "HSK2",
-    "summary": "Tổng quan về trợ từ 了 trong tiếng Trung.",
-    "readMinutes": 5,
-    "tags": ["ngữ pháp", "了"],
-    "content": "# Giới thiệu\\n了 là một trợ từ quan trọng.\\n- Dùng sau động từ chỉ hành động hoàn thành\\n- Dùng cuối câu chỉ sự thay đổi\\n> Lưu ý: 了 không phải lúc nào cũng là quá khứ.\\n我吃了饭 | wǒ chī le fàn | Tôi đã ăn cơm"
+    "level": "MOVERS",
+    "summary": "Cách hỏi “ở đâu” trong tiếng Anh, kèm ví dụ về nhà cửa và trường lớp.",
+    "readMinutes": 4,
+    "tags": ["ngữ pháp", "câu hỏi"],
+    "content": "# Where là gì?\\nWhere dùng để hỏi VỊ TRÍ — một nơi nào đó.\\n- Where is my bag?\\n- Where are the cats?\\n> Nhớ nhé: sau Where là is (một cái) hoặc are (nhiều cái).\\nWhere is the dog? | Con chó ở đâu?"
   }
 ]`;
 
@@ -33,8 +33,8 @@ async function createMaterialAction(fd: FormData): Promise<void> {
   "use server";
   const { actor } = await requireAdminActor();
   const category = fd.get("category") as MaterialCategory;
-  const hskLevel = fd.get("hskLevel") as HSKLevel;
-  const order = await db.material.count({ where: { category, hskLevel } });
+  const level = fd.get("level") as EnglishLevel;
+  const order = await db.material.count({ where: { category, level } });
   const blocks = parseMaterialContent((fd.get("content") as string) || "");
   const tags = ((fd.get("tags") as string) || "")
     .split(",")
@@ -44,9 +44,8 @@ async function createMaterialAction(fd: FormData): Promise<void> {
   const created = await db.material.create({
     data: {
       title: fd.get("title") as string,
-      titleZh: (fd.get("titleZh") as string) || null,
       category,
-      hskLevel,
+      level,
       summary: fd.get("summary") as string,
       imageUrl: (fd.get("imageUrl") as string) || undefined,
       content: blocks as unknown as Prisma.InputJsonValue,
@@ -85,7 +84,7 @@ async function deleteMaterialAction(id: string): Promise<void> {
 
 export default async function AdminMaterialsPage() {
   const materials = await db.material.findMany({
-    orderBy: [{ hskLevel: "asc" }, { category: "asc" }, { order: "asc" }],
+    orderBy: [{ level: "asc" }, { category: "asc" }, { order: "asc" }],
   });
 
   return (
@@ -94,7 +93,7 @@ export default async function AdminMaterialsPage() {
         <div>
           <h1 className="text-2xl font-bold">Tài liệu học tập</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Quản lý tài liệu, ghi chú ngữ pháp, mẹo thi và bài đọc văn hóa cho người học.
+            Quản lý ghi chú ngữ pháp, mẹo thi Cambridge và bài đọc khám phá cho các bé và phụ huynh.
           </p>
         </div>
         <BulkItemImport
@@ -104,7 +103,7 @@ export default async function AdminMaterialsPage() {
           draft={false}
           sampleJson={MATERIAL_SAMPLE}
           sampleFileName="mau-tai-lieu.json"
-          description="Mỗi mục = 1 tài liệu: title · category (GRAMMAR | VOCABULARY | HANZI | PRONUNCIATION | EXAM_TIPS | CULTURE | CONVERSATION) · hskLevel · summary · content (chuỗi markup '# - > 汉字|pinyin|nghĩa' hoặc mảng block); tùy chọn titleZh · tags · readMinutes."
+          description="Mỗi mục = 1 tài liệu: title · category (GRAMMAR | VOCABULARY | SPELLING | PHONICS | EXAM_TIPS | CULTURE | CONVERSATION) · level · summary · content (chuỗi markup '# - > câu tiếng Anh | nghĩa tiếng Việt' hoặc mảng block); tùy chọn tags · readMinutes."
         />
       </div>
 
@@ -117,30 +116,26 @@ export default async function AdminMaterialsPage() {
         </CardHeader>
         <CardContent>
           <form action={createMaterialAction} className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <Label>Tiêu đề (VI)</Label>
-              <Input name="title" placeholder="VD: Cách dùng 了 trong tiếng Trung" required />
-            </div>
-            <div className="space-y-1">
-              <Label>Tiêu đề (ZH) — tùy chọn</Label>
-              <Input name="titleZh" className="font-chinese" placeholder="标题..." />
+            <div className="space-y-1 md:col-span-2">
+              <Label>Tiêu đề</Label>
+              <Input name="title" placeholder="VD: Câu hỏi với “Where”" required />
             </div>
             <div className="space-y-1">
               <Label>Phân loại</Label>
               <select name="category" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" required>
                 {MATERIAL_CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>
-                    {c.label} ({c.labelZh})
+                    {c.label} ({c.labelEn})
                   </option>
                 ))}
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
-              <select name="hskLevel" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" required>
-                {["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"].map((l) => (
+              <Label>Cấp độ</Label>
+              <select name="level" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm" required>
+                {LEVELS.map((l) => (
                   <option key={l} value={l}>
-                    {l}
+                    {themeFor(l).label}
                   </option>
                 ))}
               </select>
@@ -151,7 +146,7 @@ export default async function AdminMaterialsPage() {
             </div>
             <div className="space-y-1">
               <Label>Tags (phân tách bằng dấu phẩy)</Label>
-              <Input name="tags" placeholder="ngữ pháp, 了, trợ từ" />
+              <Input name="tags" placeholder="ngữ pháp, câu hỏi, trường lớp" />
             </div>
             <div className="space-y-1 md:col-span-2">
               <Label>Tải ảnh đại diện lên</Label>
@@ -166,11 +161,11 @@ export default async function AdminMaterialsPage() {
               <Textarea
                 name="content"
                 className="min-h-48 font-mono text-sm"
-                placeholder={"# Tiêu đề mục\nĐoạn văn bình thường.\n- Mục danh sách\n> Ghi chú quan trọng\n你好 | nǐ hǎo | Xin chào"}
+                placeholder={"# Tiêu đề mục\nĐoạn văn bình thường.\n- Mục danh sách\n> Ghi chú quan trọng\nWhere is the dog? | Con chó ở đâu?"}
               />
               <p className="text-xs text-muted-foreground">
                 Cú pháp: <code># </code> = tiêu đề · <code>- </code> = danh sách · <code>&gt; </code> = ghi chú ·{" "}
-                <code>汉字 | pinyin | nghĩa</code> = ví dụ · dòng trống ngăn đoạn văn.
+                <code>câu tiếng Anh | nghĩa tiếng Việt</code> = ví dụ · dòng trống ngăn đoạn văn.
               </p>
             </div>
             <div className="md:col-span-2">
@@ -202,11 +197,10 @@ export default async function AdminMaterialsPage() {
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{m.title}</span>
-                      {m.titleZh && <span className="font-chinese text-sm text-muted-foreground">{m.titleZh}</span>}
                     </div>
                     <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{m.summary}</p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">{hskLevelLabel(m.hskLevel)}</Badge>
+                      <Badge variant="outline">{levelLabel(m.level)}</Badge>
                       <Badge variant="secondary">{meta.label}</Badge>
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" /> {m.readMinutes} phút

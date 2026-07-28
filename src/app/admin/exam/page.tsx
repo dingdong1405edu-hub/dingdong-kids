@@ -8,17 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ReorderList, type ReorderItem } from "@/components/admin/reorder-list";
-import { hskLevelLabel } from "@/lib/utils";
+import { levelLabel } from "@/lib/utils";
+import { LEVELS, themeFor } from "@/lib/roadmap";
 import { sectionLabel } from "@/lib/mock-exam";
 import { createMockExamAction, deleteMockExamAction } from "@/server/actions/mock-exam";
 import { Trash2, Plus, ChevronRight, GraduationCap, Layers } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
-
-const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
+import type { EnglishLevel } from "@prisma/client";
 
 export default async function AdminExamPage() {
   const exams = await db.mockExam.findMany({
-    orderBy: [{ hskLevel: "asc" }, { order: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ level: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     include: {
       sections: {
         orderBy: { order: "asc" },
@@ -28,21 +27,21 @@ export default async function AdminExamPage() {
     },
   });
 
-  const byLevel = new Map<HSKLevel, typeof exams>();
+  const byLevel = new Map<EnglishLevel, typeof exams>();
   for (const e of exams) {
-    if (!byLevel.has(e.hskLevel)) byLevel.set(e.hskLevel, []);
-    byLevel.get(e.hskLevel)!.push(e);
+    if (!byLevel.has(e.level)) byLevel.set(e.level, []);
+    byLevel.get(e.level)!.push(e);
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <GraduationCap className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Đề thi thử (HSK trọn bộ)</h1>
+        <h1 className="text-2xl font-bold">Đề thi thử (Cambridge trọn bộ)</h1>
       </div>
       <p className="text-sm text-muted-foreground">
-        Mỗi đề là một bài thi hoàn chỉnh nhiều phần (Nghe · Đọc · Viết) đúng format máy thật. Tạo đề ở
-        đây, sau đó vào trang soạn để thêm phần → tiểu phần → câu hỏi.
+        Mỗi đề là một bài thi hoàn chỉnh nhiều phần (Listening · Reading &amp; Writing · Speaking) đúng
+        format kỳ thi Cambridge cho trẻ em. Tạo đề ở đây, sau đó vào trang soạn để thêm phần → tiểu phần → câu hỏi.
       </p>
 
       {/* Create form */}
@@ -55,23 +54,19 @@ export default async function AdminExamPage() {
         <CardContent>
           <form action={createMockExamAction} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
-              <Label>Tiêu đề (VI)</Label>
-              <Input name="title" placeholder="VD: Đề thi thử HSK4 — Đề 1" required />
+              <Label>Tiêu đề</Label>
+              <Input name="title" placeholder="VD: Đề thi thử Movers — Đề 1" required />
             </div>
             <div className="space-y-1">
-              <Label>Tiêu đề (ZH, tùy chọn)</Label>
-              <Input name="titleZh" className="font-chinese" placeholder="HSK四级 模拟试卷一" />
-            </div>
-            <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
+              <Label>Cấp độ</Label>
               <select
-                name="hskLevel"
+                name="level"
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 required
               >
-                {HSK_LEVELS.map((l) => (
+                {LEVELS.map((l) => (
                   <option key={l} value={l}>
-                    {l}
+                    {themeFor(l).label}
                   </option>
                 ))}
               </select>
@@ -96,7 +91,7 @@ export default async function AdminExamPage() {
         </CardContent>
       </Card>
 
-      {/* List grouped by HSK level */}
+      {/* List grouped by level */}
       {exams.length === 0 ? (
         <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
           Chưa có đề thi thử nào. Tạo đề đầu tiên ở trên.
@@ -114,14 +109,9 @@ export default async function AdminExamPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold">{exam.title}</span>
-                          {exam.titleZh && (
-                            <span className="font-chinese text-sm text-muted-foreground">
-                              {exam.titleZh}
-                            </span>
-                          )}
                         </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          <Badge variant="outline">{hskLevelLabel(exam.hskLevel)}</Badge>
+                          <Badge variant="outline">{levelLabel(exam.level)}</Badge>
                           {exam.sections.map((s, i) => (
                             <Badge key={i} variant="secondary" className="text-[10px]">
                               {sectionLabel(s.skill)}
@@ -157,8 +147,8 @@ export default async function AdminExamPage() {
             });
             return (
               <div key={level} className="space-y-2">
-                <h2 className="text-sm font-semibold text-muted-foreground">{hskLevelLabel(level)}</h2>
-                <ReorderList spec={{ kind: "mockExam", hskLevel: level }} items={items} />
+                <h2 className="text-sm font-semibold text-muted-foreground">{levelLabel(level)}</h2>
+                <ReorderList spec={{ kind: "mockExam", level }} items={items} />
               </div>
             );
           })}

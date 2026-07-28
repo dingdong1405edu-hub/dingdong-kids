@@ -9,21 +9,32 @@ export const metadata: Metadata = {
   // (thiếu nó, canonical trên Railway sẽ trỏ về localhost).
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "DingDong HSK — Học tiếng Trung chuẩn HSK cho người Việt",
+    default: "DingDong Kids — Học tiếng Anh vui cho bé 4-15 tuổi",
     template: `%s — ${SITE_NAME}`,
   },
   description:
-    "Nền tảng học tiếng Trung chuẩn HSK 1–6 cho người Việt: từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói và luyện thi HSKK, có AI chấm điểm từng bài.",
-  keywords: ["học tiếng Trung", "học tiếng Trung online", "HSK", "HSKK", "luyện thi HSK", "DingDong HSK"],
+    "Nền tảng học tiếng Anh cho trẻ em Việt Nam theo chuẩn Cambridge Young Learners (Pre-Starters → Preliminary B1). Bé học từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói qua trò chơi; AI chấm bài viết và phát âm; phụ huynh theo dõi tiến độ mỗi ngày.",
+  keywords: [
+    "học tiếng Anh cho trẻ em",
+    "tiếng Anh cho bé",
+    "tiếng Anh trẻ em online",
+    "Cambridge Young Learners",
+    "Starters Movers Flyers",
+    "phonics cho bé",
+    "luyện phát âm tiếng Anh cho trẻ",
+    "DingDong Kids",
+  ],
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
     locale: "vi_VN",
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
+    images: [
+      { url: "/og-cover.png", width: 1200, height: 630, alt: "DingDong Kids — Học tiếng Anh vui cho bé 4-15 tuổi" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/bao-cover.png"],
+    images: ["/og-cover.png"],
   },
   robots: {
     index: true,
@@ -38,8 +49,8 @@ export const viewport: Viewport = {
   // Khai báo hỗ trợ cả 2 giao diện để trình duyệt KHÔNG tự "bôi đen" trang.
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f4ea" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1118" },
+    { media: "(prefers-color-scheme: light)", color: "#fdfaf1" },
+    { media: "(prefers-color-scheme: dark)", color: "#121621" },
   ],
 };
 

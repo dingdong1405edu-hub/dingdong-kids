@@ -13,13 +13,14 @@ import { ImageUpload } from "@/components/admin/image-upload";
 import { revalidatePath } from "next/cache";
 import { db as prisma } from "@/lib/db";
 import { QuestionType, Prisma } from "@prisma/client";
-import { Plus, ArrowLeft, Trash2, Save, Pencil, Sparkles, Wand2, Languages } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, Save, Pencil, Sparkles, Wand2, Languages, Volume2 } from "lucide-react";
 import { deleteQuestionAction, updateReadingAction } from "@/server/actions/admin";
 import { generateReadingExplanation, isGradingConfigured } from "@/lib/groq";
+import { ensureAudio } from "@/lib/tts";
+import { LEVELS, themeFor } from "@/lib/roadmap";
+import { levelLabel } from "@/lib/utils";
 import { ReadingQuestionsImporter } from "@/components/admin/reading-questions-importer";
 import { ReadingAnalysisEditor } from "@/components/admin/reading-analysis-editor";
-
-const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
 
 async function createQuestionAction(fd: FormData): Promise<void> {
   "use server";
@@ -55,22 +56,22 @@ async function createQuestionAction(fd: FormData): Promise<void> {
   }
 
   // Giải thích + chỗ trích dẫn: ưu tiên admin tự nhập; nếu để trống thì nhờ Groq
-  // sinh sẵn (chỉ cho học viên đáp án lấy ở đâu + giải thích chi tiết). Lỗi AI
-  // không chặn việc tạo câu hỏi.
+  // sinh sẵn (chỉ cho bé đáp án lấy ở đâu + giải thích ngắn gọn). Lỗi AI không
+  // chặn việc tạo câu hỏi.
   let explanation = ((fd.get("explanation") as string) || "").trim() || undefined;
   let supportingQuote: string | undefined = undefined;
   if (!explanation && isGradingConfigured()) {
     try {
       const test = await prisma.readingTest.findUnique({
         where: { id: readingId },
-        select: { passage: true, hskLevel: true },
+        select: { passage: true, level: true },
       });
       if (test) {
         const r = await generateReadingExplanation({
           passage: test.passage,
           prompt,
           correctAnswer: correctAnswerText,
-          hskLevel: test.hskLevel,
+          level: test.level,
         });
         explanation = r.explanation || undefined;
         supportingQuote = r.supportingQuote || undefined;
@@ -80,12 +81,17 @@ async function createQuestionAction(fd: FormData): Promise<void> {
     }
   }
 
+  // Audio đọc đề: bé chưa đọc thạo vẫn tự làm được bài. Lỗi TTS không chặn việc lưu.
+  const audioUrl = await ensureAudio(null, prompt);
+
   // Append after existing questions so ordering is deterministic.
   const count = await prisma.question.count({ where: { readingId } });
   const created = await prisma.question.create({
     data: {
       type,
       prompt,
+      promptTranslation: ((fd.get("promptTranslation") as string) || "").trim() || null,
+      audioUrl,
       options: options ?? Prisma.JsonNull,
       correctAnswer,
       explanation,
@@ -125,9 +131,14 @@ export default async function AdminReadingDetailPage({ params }: Props) {
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại danh sách đề đọc
       </Link>
-      <div>
+      <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-bold">{test.title}</h1>
-        <p className="font-chinese text-muted-foreground">{test.titleZh}</p>
+        <Badge variant="outline">{levelLabel(test.level)}</Badge>
+        {test.audioUrl && (
+          <Badge variant="secondary" className="gap-1">
+            <Volume2 className="h-3 w-3" /> Có audio đọc mẫu
+          </Badge>
+        )}
       </div>
 
       {/* Edit test */}
@@ -146,25 +157,22 @@ export default async function AdminReadingDetailPage({ params }: Props) {
             className="grid grid-cols-1 gap-4 md:grid-cols-2"
           >
             <input type="hidden" name="id" value={test.id} />
+            <input type="hidden" name="audioUrl" value={test.audioUrl ?? ""} />
             <div className="space-y-1">
               <Label>Tiêu đề (VI)</Label>
               <Input name="title" defaultValue={test.title} required />
             </div>
             <div className="space-y-1">
-              <Label>Tiêu đề (ZH)</Label>
-              <Input name="titleZh" className="font-chinese" defaultValue={test.titleZh} required />
-            </div>
-            <div className="space-y-1">
-              <Label>Cấp độ HSK</Label>
+              <Label>Cấp độ</Label>
               <select
-                name="hskLevel"
-                defaultValue={test.hskLevel}
+                name="level"
+                defaultValue={test.level}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 required
               >
-                {HSK_LEVELS.map((l) => (
+                {LEVELS.map((l) => (
                   <option key={l} value={l}>
-                    {l}
+                    {themeFor(l).label}
                   </option>
                 ))}
               </select>
@@ -178,11 +186,11 @@ export default async function AdminReadingDetailPage({ params }: Props) {
               <ImageUpload name="imageUrl" defaultValue={test.imageUrl} />
             </div>
             <div className="space-y-1 md:col-span-2">
-              <Label>Đoạn văn (Hán tự)</Label>
-              <Textarea name="passage" className="min-h-32 font-chinese" defaultValue={test.passage} required />
+              <Label>Đoạn văn (tiếng Anh)</Label>
+              <Textarea name="passage" className="min-h-32" defaultValue={test.passage} required />
               <p className="text-xs text-muted-foreground">
-                Không cần nhập pinyin — máy tự sinh khi hiển thị. Dịch bài đọc + phân tích từng câu quản lý ở mục
-                “Dịch &amp; phân tích bài đọc” bên dưới.
+                Bài chưa có audio sẽ được đọc mẫu tự động bằng giọng máy. Bản dịch + phân tích từng câu quản lý ở
+                mục “Dịch &amp; phân tích bài đọc” bên dưới.
               </p>
             </div>
             <div className="md:col-span-2">
@@ -247,15 +255,19 @@ export default async function AdminReadingDetailPage({ params }: Props) {
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Câu hỏi</Label>
-              <Input name="prompt" className="font-chinese" placeholder="Nội dung câu hỏi..." required />
+              <Label>Câu hỏi (tiếng Anh)</Label>
+              <Input name="prompt" placeholder="What colour is the cat?" required />
+              <p className="text-xs text-muted-foreground">Hệ thống tự tạo audio đọc câu hỏi cho bé.</p>
+            </div>
+            <div className="space-y-1">
+              <Label>Dịch câu hỏi (tiếng Việt, tùy chọn)</Label>
+              <Input name="promptTranslation" placeholder="Chú mèo màu gì?" />
             </div>
             <div className="space-y-1">
               <Label>Đáp án MCQ (mỗi dòng 1 lựa chọn)</Label>
               <Textarea
                 name="options"
-                className="font-chinese"
-                placeholder="Lựa chọn A&#10;Lựa chọn B&#10;Lựa chọn C&#10;Lựa chọn D"
+                placeholder="White and grey&#10;Black&#10;Brown&#10;Yellow"
               />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -272,19 +284,19 @@ export default async function AdminReadingDetailPage({ params }: Props) {
               </div>
               <div className="space-y-1">
                 <Label>Điền · đáp án đúng</Label>
-                <Input name="correctText" className="font-chinese" placeholder="Đáp án điền..." />
+                <Input name="correctText" placeholder="food" />
               </div>
             </div>
             <div className="space-y-1">
               <Label>Điền · đáp án chấp nhận thêm (mỗi dòng 1, tùy chọn)</Label>
-              <Textarea name="correctAccepted" className="font-chinese" placeholder="Đáp án thay thế..." />
+              <Textarea name="correctAccepted" placeholder="some food" />
             </div>
             <div className="space-y-1">
               <Label>Giải thích (tùy chọn)</Label>
-              <Textarea name="explanation" className="min-h-16" placeholder="Giải thích đáp án..." />
+              <Textarea name="explanation" className="min-h-16" placeholder="Giải thích đáp án bằng lời thật ngắn, dễ hiểu với trẻ..." />
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                Để trống để AI (Groq) tự tạo giải thích chi tiết + chỉ ra câu trong bài chứa đáp án.
+                Để trống để AI (Groq) tự tạo giải thích + chỉ ra câu trong bài chứa đáp án.
               </p>
             </div>
             <Button type="submit">Thêm câu hỏi</Button>
@@ -301,14 +313,21 @@ export default async function AdminReadingDetailPage({ params }: Props) {
                 <div className="flex-1 space-y-1.5">
                   <div>
                     <span className="text-xs font-semibold text-muted-foreground">{idx + 1}. </span>
-                    <span className="font-chinese text-sm">{q.prompt}</span>
+                    <span className="text-sm">{q.prompt}</span>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {q.type}
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary" className="text-xs">
+                      {q.type}
+                    </Badge>
+                    {q.audioUrl && (
+                      <Badge variant="outline" className="gap-1 text-[10px]">
+                        <Volume2 className="h-3 w-3" /> Audio
+                      </Badge>
+                    )}
+                  </div>
                   {q.supportingQuote && (
                     <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      📍 <span className="font-chinese">{q.supportingQuote}</span>
+                      📍 <span>{q.supportingQuote}</span>
                     </p>
                   )}
                   {q.explanation && (
