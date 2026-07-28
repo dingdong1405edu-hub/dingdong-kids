@@ -21,9 +21,9 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 
 const learnLinks = [
   { label: "Từ vựng & ngữ pháp", href: "/#features" },
-  { label: "Chữ Hán & phát âm", href: "/#features" },
+  { label: "Ghép vần & phát âm", href: "/#features" },
   { label: "Đọc & nghe hiểu", href: "/#features" },
-  { label: "Viết luận & luyện nói", href: "/#features" },
+  { label: "Tập viết & luyện nói", href: "/#features" },
 ];
 
 const exploreLinks = [

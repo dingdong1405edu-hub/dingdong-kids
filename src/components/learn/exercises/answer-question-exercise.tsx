@@ -64,7 +64,7 @@ export function AnswerQuestionExerciseUI({ exercise, onAnswer, disabled }: Props
           }
         }}
         disabled={locked}
-        placeholder="Gõ câu trả lời bằng tiếng Trung…"
+        placeholder="Gõ câu trả lời bằng tiếng Anh…"
         lang="zh"
         className={cn("h-12 text-center font-primer text-lg", submitted && "opacity-100")}
       />

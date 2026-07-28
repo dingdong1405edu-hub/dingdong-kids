@@ -39,10 +39,10 @@ const audiences = [
 
 // Nỗi đau người học (cột trái)
 const painPoints = [
-  "Tài liệu rời rạc, toàn tiếng Anh hoặc tiếng Anh, khó cho bé mới bắt đầu.",
-  "Viết luận, luyện nói mà không ai sửa, chẳng biết mình sai trọng âm hay ngữ pháp ở đâu.",
-  "Chữ Hán khó nhớ vì học vẹt, không nắm được thứ tự nét.",
-  "Học vài hôm là nản, dễ bỏ vì không thấy mình tiến bộ.",
+  "Tài liệu rời rạc, phần lớn viết cho người lớn, khó cho bé mới bắt đầu.",
+  "Bé viết, bé nói mà không ai sửa, chẳng biết sai phát âm hay ngữ pháp ở đâu.",
+  "Học vẹt mặt chữ nên bé không tự đọc được từ mới bao giờ.",
+  "Học vài hôm là chán, dễ bỏ vì không thấy mình tiến bộ.",
 ];
 
 // Giải pháp (cột phải)
@@ -320,8 +320,8 @@ export default async function AboutPage() {
                 Hành trình DingDong Kids
               </h2>
               <p className={styles.sectionSubtitle}>
-                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Anh tử tế cho người
-                Việt.
+                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Anh tử tế cho trẻ
+                em Việt.
               </p>
             </div>
           </Reveal>

@@ -9,7 +9,7 @@ import {
   Target,
   BookOpen,
   SpellCheck,
-  PenTool,
+  AudioLines,
   BookText,
   Headphones,
   PenLine,
@@ -52,7 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/vocab", label: "Từ vựng", icon: BookOpen },
       { href: "/grammar", label: "Ngữ pháp", icon: SpellCheck },
-      { href: "/hanzi", label: "Chữ cái & phát âm", icon: PenTool },
+      { href: "/phonics", label: "Ghép vần", icon: AudioLines },
       { href: "/reading", label: "Đọc hiểu", icon: BookText },
       { href: "/listening", label: "Nghe hiểu", icon: Headphones },
       { href: "/writing", label: "Viết luận", icon: PenLine },

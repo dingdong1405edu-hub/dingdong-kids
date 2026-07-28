@@ -1,5 +1,5 @@
 // ===========================================================================
-//  TIỆN ÍCH XỬ LÝ TIẾNG ANH — thay cho src/lib/pinyin.ts của bản tiếng Trung.
+//  TIỆN ÍCH XỬ LÝ TIẾNG ANH — chuẩn hoá đáp án, chấm nới cho trẻ, tách vần.
 //  Thuần hàm, không phụ thuộc DB/mạng, dùng được ở cả server lẫn client.
 // ===========================================================================
 

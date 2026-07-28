@@ -31,7 +31,7 @@ export function BaoBuddy({
       className={`${styles.wrap}${className ? ` ${className}` : ""}`}
       style={{ "--bao-size": `${size}px` } as React.CSSProperties}
       role="img"
-      aria-label={ariaLabel ?? "Linh vật bánh bao DingDong"}
+      aria-label={ariaLabel ?? "Linh vật gấu Ding"}
     >
       {message ? <div className={styles.bubble}>{message}</div> : null}
       <BaoArt pose={pose} />

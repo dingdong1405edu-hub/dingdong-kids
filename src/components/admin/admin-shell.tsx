@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   BookOpen,
   SpellCheck,
-  PenTool,
   BookText,
   Headphones,
   PenLine,
@@ -46,10 +45,9 @@ const GROUPS: AdminNavGroup[] = [
     items: [
       { href: "/admin/vocab", label: "Từ vựng", icon: BookOpen },
       { href: "/admin/grammar", label: "Ngữ pháp", icon: SpellCheck },
-      { href: "/admin/hanzi", label: "Chữ Hán", icon: PenTool },
       { href: "/admin/reading", label: "Đọc hiểu", icon: BookText },
       { href: "/admin/listening", label: "Nghe hiểu", icon: Headphones },
-      { href: "/admin/writing", label: "Viết luận", icon: PenLine },
+      { href: "/admin/writing", label: "Tập viết", icon: PenLine },
       { href: "/admin/speaking", label: "Luyện nói", icon: Mic, exact: true },
       { href: "/admin/speaking/topics", label: "Nói theo chủ đề", icon: MessagesSquare },
       { href: "/admin/exam", label: "Thi thử", icon: GraduationCap },
@@ -78,13 +76,13 @@ function NavBody({ pathname, onNavigate }: { pathname: string; onNavigate?: () =
 
   return (
     <div className="flex h-full flex-col">
-      <Link href="/" className="flex h-16 items-center gap-2.5 border-b px-5" aria-label="DingDong HSK — về trang chủ">
+      <Link href="/" className="flex h-16 items-center gap-2.5 border-b px-5" aria-label="DingDong Kids — về trang chủ">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <Shield className="h-5 w-5" />
         </div>
         <div className="leading-tight">
           <div className="text-[15px] font-extrabold text-primary">Quản trị</div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">DingDong HSK</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">DingDong Kids</div>
         </div>
       </Link>
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { SUPPORT_EMAIL } from "@/lib/site";
+import { SUPPORT_EMAIL, SITE_URL } from "@/lib/site";
 import { MarketingNav } from "../_components/marketing-nav";
 import { MarketingFooter } from "../_components/marketing-footer";
 import styles from "../landing.module.css";
@@ -26,9 +26,9 @@ export default async function TermsPage() {
 
         <div className={styles.legalProse}>
           <p>
-            Chào mừng bạn đến với DingDong Kids. Khi tạo tài khoản hoặc sử dụng dịch vụ tại
-            dingdonghsk.com, bạn đồng ý với các điều khoản dưới đây. Vui lòng đọc kỹ trước khi sử
-            dụng.
+            Chào mừng bạn đến với DingDong Kids. Khi tạo tài khoản hoặc sử dụng dịch vụ tại{" "}
+            {SITE_URL.replace("https://", "")}, bạn đồng ý với các điều khoản dưới đây. Vui lòng
+            đọc kỹ trước khi sử dụng.
           </p>
 
           <h2>1. Dịch vụ</h2>

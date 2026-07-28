@@ -54,7 +54,7 @@ export function TypeSentenceExerciseUI({ exercise, onAnswer, disabled }: Props) 
           }
         }}
         disabled={locked}
-        placeholder="Gõ câu tiếng Trung hoàn chỉnh…"
+        placeholder="Gõ cả câu tiếng Anh…"
         lang="zh"
         rows={2}
         className="text-center font-primer text-lg"
