@@ -11,7 +11,7 @@ import styles from "../landing.module.css";
 const LINKS = [
   { href: "/#features", label: "Tính năng" },
   { href: "/#how", label: "Cách học" },
-  { href: "/#levels", label: "Lộ trình HSK" },
+  { href: "/#levels", label: "Lộ trình Cambridge" },
   { href: "/#pricing", label: "Bảng giá" },
   { href: "/gioi-thieu", label: "Giới thiệu" },
 ];
@@ -62,10 +62,10 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
       aria-label="Điều hướng chính"
     >
       <div className={styles.navContainer}>
-        <Link href="/" className={styles.navLogo} aria-label="DingDong HSK — về trang chủ" onClick={close}>
+        <Link href="/" className={styles.navLogo} aria-label="DingDong Kids — về trang chủ" onClick={close}>
           <Logo className={styles.navLogoIcon} />
           <span>
-            DingDong <b>HSK</b>
+            DingDong <b>Kids</b>
           </span>
         </Link>
 

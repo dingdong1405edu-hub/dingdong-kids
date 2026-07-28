@@ -7,10 +7,10 @@ import { ChatMessage, BaoAvatar } from "./chat-message";
 import type { UseBaoChat } from "./use-bao-chat";
 
 const SUGGESTIONS = [
-  "Giải thích 4 thanh điệu tiếng Trung",
+  "Cách đọc đuôi -s và -ed",
   "Phân biệt 的, 得 và 地",
   "Vài câu chào hỏi cơ bản",
-  "Mẹo nhớ chữ Hán dễ hơn",
+  "Mẹo nhớ từ vựng dễ hơn",
 ];
 
 export function ChatPanel({
@@ -59,7 +59,7 @@ export function ChatPanel({
             </span>
           </div>
           <div className="truncate text-[11px] text-muted-foreground">
-            Trợ lý học tiếng Trung
+            Trợ lý học tiếng Anh
           </div>
         </div>
         {messages.length > 0 && (
@@ -93,8 +93,8 @@ export function ChatPanel({
                 Chào {firstName ? firstName : "bạn"}! Mình là Bao 🥟
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Hỏi mình bất cứ điều gì về tiếng Trung — từ vựng, ngữ pháp, chữ Hán, thanh điệu hay
-                cách ôn thi HSK nhé!
+                Hỏi mình bất cứ điều gì về tiếng Anh — từ vựng, ngữ pháp, ghép vần, phát âm hay
+                cách ôn thi Cambridge nhé!
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 pt-1">

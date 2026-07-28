@@ -134,15 +134,15 @@ export function PaymentClient({
           >
             <ArrowLeft className="h-4 w-4" /> Quay lại
           </Link>
-          <Link href="/" aria-label="DingDong HSK — về trang chủ">
+          <Link href="/" aria-label="DingDong Kids — về trang chủ">
             <Logo className="mb-4 h-12 w-12" />
           </Link>
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             <Sparkles className="h-3.5 w-3.5" /> Nâng cấp tài khoản
           </div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Bảng giá DingDong HSK</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Bảng giá DingDong Kids</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Học theo lộ trình từng cấp HSK, hoặc dùng Gói Tự do để mở mọi tính năng luyện tập ngoài
+            Học theo lộ trình từng cấp độ Cambridge, hoặc dùng Gói Tự do để mở mọi tính năng luyện tập ngoài
             lộ trình. Mọi gói trả phí đều có{" "}
             <span className="font-semibold text-foreground">tim không giới hạn</span>. Thanh toán an
             toàn qua PayOS.
@@ -194,10 +194,10 @@ export function PaymentClient({
         <section className="mb-12">
           <div className="mb-5 flex items-center gap-2">
             <Map className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold">Học theo lộ trình (HSK 1–6)</h2>
+            <h2 className="text-xl font-bold">Học theo lộ trình (Pre-Starters → B1)</h2>
           </div>
           <p className="mb-5 text-sm text-muted-foreground">
-            Mỗi gói mở khóa toàn bộ lộ trình một cấp HSK trong 6 tháng. Từ HSK 3 trở lên được{" "}
+            Mỗi gói mở khóa toàn bộ lộ trình một cấp độ Cambridge trong 6 tháng. Từ Movers trở lên được{" "}
             <span className="font-semibold text-foreground">tặng kèm Gói Tự do</span>.
           </p>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{roadmapPlans.map(renderCard)}</div>
@@ -258,7 +258,7 @@ export function PaymentClient({
             <Link href="/dieu-khoan" className="underline hover:text-foreground">
               Điều khoản sử dụng
             </Link>{" "}
-            của DingDong HSK.
+            của DingDong Kids.
           </div>
         </div>
       </div>

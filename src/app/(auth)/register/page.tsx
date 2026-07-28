@@ -25,7 +25,7 @@ export default function RegisterPage() {
           <Link href="/" className="flex items-center gap-2">
             <Logo className="h-11 w-11" />
             <span className="text-lg font-extrabold tracking-tight">
-              DingDong <span className="text-primary">HSK</span>
+              DingDong <span className="text-primary">Kids</span>
             </span>
           </Link>
         </div>
@@ -33,7 +33,7 @@ export default function RegisterPage() {
         <Card className="border-border/60 shadow-soft-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-extrabold">Tạo tài khoản</CardTitle>
-            <CardDescription>Bắt đầu hành trình học tiếng Trung của bạn</CardDescription>
+            <CardDescription>Bắt đầu hành trình học tiếng Anh của bạn</CardDescription>
           </CardHeader>
           <CardContent>
             <AuthError />

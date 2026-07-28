@@ -8,17 +8,17 @@ import { PaymentClient } from "./payment-client";
 export const metadata: Metadata = {
   title: "Bảng giá & Thanh toán",
   description:
-    "Bảng giá DingDong HSK: Gói Lộ trình theo cấp HSK 1–6 (6 tháng) và Gói Tự do mở mọi tính năng luyện tập. Thanh toán an toàn qua PayOS, kích hoạt ngay khi thanh toán thành công.",
+    "Bảng giá DingDong Kids: Gói Lộ trình theo cấp Pre-Starters → B1 (6 tháng) và Gói Tự do mở mọi tính năng luyện tập. Thanh toán an toàn qua PayOS, kích hoạt ngay khi thanh toán thành công.",
   alternates: { canonical: "/payment" },
   openGraph: {
-    title: "Bảng giá DingDong HSK",
+    title: "Bảng giá DingDong Kids",
     description:
-      "Gói Lộ trình theo cấp HSK 1–6 và Gói Tự do mở mọi tính năng luyện tập. Thanh toán an toàn qua PayOS.",
+      "Gói Lộ trình theo cấp Pre-Starters → B1 và Gói Tự do mở mọi tính năng luyện tập. Thanh toán an toàn qua PayOS.",
     url: "/payment",
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
+    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 

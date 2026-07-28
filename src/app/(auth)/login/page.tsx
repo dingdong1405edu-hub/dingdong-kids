@@ -25,7 +25,7 @@ export default function LoginPage() {
           <Link href="/" className="flex items-center gap-2">
             <Logo className="h-11 w-11" />
             <span className="text-lg font-extrabold tracking-tight">
-              DingDong <span className="text-primary">HSK</span>
+              DingDong <span className="text-primary">Kids</span>
             </span>
           </Link>
         </div>
@@ -33,7 +33,7 @@ export default function LoginPage() {
         <Card className="border-border/60 shadow-soft-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-extrabold">Chào mừng trở lại</CardTitle>
-            <CardDescription>Đăng nhập để tiếp tục học tiếng Trung</CardDescription>
+            <CardDescription>Đăng nhập để tiếp tục học tiếng Anh</CardDescription>
           </CardHeader>
           <CardContent>
             <AuthError />

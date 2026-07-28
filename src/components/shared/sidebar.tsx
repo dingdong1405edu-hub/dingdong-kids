@@ -129,12 +129,12 @@ function NavContent({ user, onNavigate }: { user: SidebarUser; onNavigate?: () =
   return (
     <div className="flex h-full flex-col">
       {/* Brand */}
-      <Link href="/" className="flex h-16 items-center gap-2.5 border-b px-5" aria-label="DingDong HSK — về trang chủ">
+      <Link href="/" className="flex h-16 items-center gap-2.5 border-b px-5" aria-label="DingDong Kids — về trang chủ">
         <Logo className="h-9 w-9" />
         <div className="leading-tight">
-          <div className="text-[15px] font-extrabold text-primary">DingDong HSK</div>
+          <div className="text-[15px] font-extrabold text-primary">DingDong Kids</div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Học tiếng Trung
+            Học tiếng Anh
           </div>
         </div>
       </Link>

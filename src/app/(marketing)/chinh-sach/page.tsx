@@ -9,7 +9,7 @@ import styles from "../landing.module.css";
 export const metadata: Metadata = {
   title: "Chính sách bảo mật",
   description:
-    "Chính sách bảo mật của DingDong HSK: dữ liệu được thu thập, mục đích sử dụng, lưu trữ, chia sẻ với bên xử lý và quyền của người dùng.",
+    "Chính sách bảo mật của DingDong Kids: dữ liệu được thu thập, mục đích sử dụng, lưu trữ, chia sẻ với bên xử lý và quyền của người dùng.",
   alternates: { canonical: "/chinh-sach" },
 };
 
@@ -26,7 +26,7 @@ export default async function PrivacyPage() {
 
         <div className={styles.legalProse}>
           <p>
-            DingDong HSK tôn trọng quyền riêng tư của bạn. Chính sách này giải thích chúng tôi thu
+            DingDong Kids tôn trọng quyền riêng tư của bạn. Chính sách này giải thích chúng tôi thu
             thập những dữ liệu gì, dùng vào việc gì và bạn có những quyền nào đối với dữ liệu của
             mình.
           </p>

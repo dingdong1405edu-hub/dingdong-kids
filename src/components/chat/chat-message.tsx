@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import type { ChatRole } from "./use-bao-chat";
 
-/** Avatar tròn của chú bánh bao Bao — dùng ở bong bóng trả lời và header panel. */
+/** Avatar tròn của chú gấu Ding — dùng ở bong bóng trả lời và header panel. */
 export function BaoAvatar({ className }: { className?: string }) {
   return (
     <div

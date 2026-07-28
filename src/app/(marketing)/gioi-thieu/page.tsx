@@ -14,17 +14,17 @@ import styles from "../landing.module.css";
 export const metadata: Metadata = {
   title: "Giới thiệu",
   description:
-    "Câu chuyện và giá trị của DingDong HSK, nền tảng học tiếng Trung cho người Việt: 7 module kỹ năng theo chuẩn HSK 1–6 và HSKK, hơn 3000 từ vựng và mẫu câu, AI chấm bài viết và luyện nói.",
+    "Câu chuyện và giá trị của DingDong Kids, nền tảng học tiếng Anh cho trẻ em Việt: 7 module kỹ năng theo chuẩn Cambridge Young Learners, có ghép vần Phonics và AI chấm bài viết, luyện nói.",
   alternates: { canonical: "/gioi-thieu" },
   openGraph: {
-    title: "Giới thiệu DingDong HSK — Học tiếng Trung cùng AI",
+    title: "Giới thiệu DingDong Kids — Học tiếng Anh cùng AI",
     description:
-      "Sứ mệnh, hành trình và đội ngũ đứng sau nền tảng học tiếng Trung HSK 1–6 và HSKK cho người Việt.",
+      "Sứ mệnh, hành trình và đội ngũ đứng sau nền tảng học tiếng Anh Pre-Starters đến B1 Preliminary cho người Việt.",
     url: "/gioi-thieu",
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
+    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 
@@ -34,23 +34,23 @@ const audiences = [
   { icon: "💼", label: "Người đi làm" },
   { icon: "✈️", label: "Du học sinh" },
   { icon: "🀄", label: "Người mất gốc" },
-  { icon: "🏆", label: "Luyện thi HSK" },
+  { icon: "🏆", label: "Luyện thi Cambridge" },
 ];
 
 // Nỗi đau người học (cột trái)
 const painPoints = [
-  "Tài liệu rời rạc, toàn tiếng Anh hoặc tiếng Trung, khó cho người mới mất gốc.",
-  "Viết luận, luyện nói mà không ai sửa, chẳng biết mình sai thanh điệu hay ngữ pháp ở đâu.",
+  "Tài liệu rời rạc, toàn tiếng Anh hoặc tiếng Anh, khó cho bé mới bắt đầu.",
+  "Viết luận, luyện nói mà không ai sửa, chẳng biết mình sai trọng âm hay ngữ pháp ở đâu.",
   "Chữ Hán khó nhớ vì học vẹt, không nắm được thứ tự nét.",
   "Học vài hôm là nản, dễ bỏ vì không thấy mình tiến bộ.",
 ];
 
 // Giải pháp (cột phải)
 const solutions = [
-  "Lộ trình HSK 1–6 bằng tiếng Việt, chia nhỏ từng bài, học như chơi.",
-  "AI chấm bài viết và bài nói, chỉ rõ lỗi ngữ pháp, từ vựng, thanh điệu kèm bản sửa.",
-  "Viết chữ Hán theo từng nét trên ô 田字格, có animation thứ tự nét chuẩn.",
-  "XP, chuỗi ngày học, tim và chú bánh bao Bao giữ lửa cho bạn mỗi ngày.",
+  "Lộ trình Pre-Starters → B1 bằng tiếng Việt, chia nhỏ từng bài, học như chơi.",
+  "AI chấm bài viết và bài nói, chỉ rõ lỗi ngữ pháp, từ vựng, trọng âm kèm bản sửa.",
+  "Ghép vần từ âm sang từ: nghe âm, chọn chữ, đọc trơn — nền tảng để bé tự đọc.",
+  "XP, chuỗi ngày học, tim và chú gấu Ding giữ lửa cho bạn mỗi ngày.",
 ];
 
 // 4 giá trị cốt lõi — tái dùng featureCard + tint có sẵn
@@ -65,26 +65,26 @@ const values = [
     icon: "🇻🇳",
     cls: styles.iconHsk,
     title: "100% tiếng Việt, vì người Việt",
-    desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc, như nhầm thanh 3 với thanh 4.",
+    desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc, như nhầm trọng âm từ với thanh 4.",
   },
   {
     icon: "🥟",
     cls: styles.iconCommunity,
     title: "Nhẹ nhàng và vui mỗi ngày",
-    desc: "Giao diện ấm áp như tiệm bánh bao, linh vật dễ thương, XP và chuỗi ngày học biến việc học thành thói quen chứ không phải áp lực.",
+    desc: "Giao diện ấm áp như tiệm gấu Ding, linh vật dễ thương, XP và chuỗi ngày học biến việc học thành thói quen chứ không phải áp lực.",
   },
   {
     icon: "🎯",
     cls: styles.iconWriting,
     title: "Bám sát đề thi thật",
-    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format HSK 1–6 và HSKK. Bạn luyện đúng thứ sẽ gặp trong phòng thi.",
+    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format Pre-Starters đến B1 Preliminary. Bạn luyện đúng thứ sẽ gặp trong phòng thi.",
   },
 ];
 
 // SỐ LIỆU THẬT của nền tảng — đã đối chiếu với dữ liệu bài học, đừng phóng đại.
 const stats = [
-  { to: 6, suffix: "", label: "Cấp độ HSK 1–6" },
-  { to: 3000, suffix: "+", label: "Từ vựng & mẫu câu" },
+  { to: 6, suffix: "", label: "Cấp độ Pre-Starters → B1" },
+  { to: 15, suffix: "", label: "Tuổi phù hợp (từ 4)" },
   { to: 7, suffix: "", label: "Module kỹ năng" },
   { to: 2, suffix: "", label: "Kỹ năng AI chấm chi tiết" },
 ];
@@ -95,25 +95,25 @@ const milestones = [
     year: "2025",
     tag: "Khởi nguồn",
     title: "Ý tưởng ra đời",
-    desc: "Từ chính trải nghiệm tự học tiếng Trung của người sáng lập, ý tưởng về một nền tảng học ấm áp dành riêng cho người Việt được phác thảo.",
+    desc: "Từ chính trải nghiệm tự học tiếng Anh của người sáng lập, ý tưởng về một nền tảng học ấm áp dành riêng cho người Việt được phác thảo.",
   },
   {
     year: "2026",
     tag: "Nền móng",
     title: "Hoàn thiện 7 module kỹ năng",
-    desc: "Từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói được xây dựng xong cùng lộ trình HSK 1–6 bằng tiếng Việt.",
+    desc: "Từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói được xây dựng xong cùng lộ trình Cambridge bằng tiếng Việt.",
   },
   {
     year: "2026",
     tag: "Trí tuệ",
     title: "Đưa AI vào chấm bài viết & luyện nói",
-    desc: "AI chấm ngữ pháp, từ vựng, thanh điệu, độ lưu loát và trả nhận xét kèm bản sửa lỗi ngay sau khi bạn nộp bài.",
+    desc: "AI chấm ngữ pháp, từ vựng, trọng âm, độ lưu loát và trả nhận xét kèm bản sửa lỗi ngay sau khi bạn nộp bài.",
   },
   {
     year: "Mục tiêu",
     tag: "Lớn lên",
     title: "Đồng hành cùng 10.000+ người học",
-    desc: "Chặng tiếp theo của DingDong: giúp hơn mười nghìn người Việt học tiếng Trung đến nơi đến chốn.",
+    desc: "Chặng tiếp theo của DingDong: giúp hơn mười nghìn người Việt học tiếng Anh đến nơi đến chốn.",
     target: true,
   },
 ];
@@ -121,16 +121,16 @@ const milestones = [
 // Lời nhắn từ đội ngũ — nội dung thật, không dùng hồ sơ cá nhân dựng sẵn.
 const team = {
   avatar: "🥟",
-  name: "Đội ngũ DingDong HSK",
-  role: "Những người Việt từng tự học tiếng Trung",
-  tags: ["🎯 Bám sát chuẩn HSK & HSKK", "🇻🇳 Nội dung 100% tiếng Việt", "🤖 Ứng dụng AI vào việc học"],
+  name: "Đội ngũ DingDong Kids",
+  role: "Những người Việt từng tự học tiếng Anh",
+  tags: ["🎯 Bám sát chuẩn Cambridge YLE", "🇻🇳 Nội dung 100% tiếng Việt", "🤖 Ứng dụng AI vào việc học"],
   quote:
-    "“Chúng mình từng học tiếng Trung trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong là thứ chúng mình ước gì đã có ngày ấy: một lộ trình tử tế và một người đồng hành kiên nhẫn.”",
+    "“Chúng mình từng học tiếng Anh trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong là thứ chúng mình ước gì đã có ngày ấy: một lộ trình tử tế và một người đồng hành kiên nhẫn.”",
   paras: [
-    "DingDong HSK bắt đầu từ trải nghiệm rất thật: đứng trước hàng nghìn chữ Hán và bốn thanh điệu, học chữ rồi quên, nói thì sợ sai, luyện thi HSK mà chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng người học cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải.",
-    "Vì thế chúng mình gói tất cả vào DingDong HSK: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình, cùng một chú bánh bao dễ thương để bạn mỉm cười mỗi khi mở app. Cảm ơn bạn đã ghé thăm. Hẹn gặp bạn ở bài học đầu tiên nhé!",
+    "DingDong Kids bắt đầu từ trải nghiệm rất thật: đứng trước hàng nghìn từ mới và cách phát âm lạ tai, học chữ rồi quên, nói thì sợ sai, luyện thi Cambridge mà chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng người học cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải.",
+    "Vì thế chúng mình gói tất cả vào DingDong Kids: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình, cùng một chú gấu Ding dễ thương để bạn mỉm cười mỗi khi mở app. Cảm ơn bạn đã ghé thăm. Hẹn gặp bạn ở bài học đầu tiên nhé!",
   ],
-  sign: "— Đội ngũ DingDong HSK 🥟",
+  sign: "— Đội ngũ DingDong Kids 🥟",
 };
 
 const anchor = { scrollMarginTop: "96px" } as const;
@@ -155,17 +155,17 @@ export default async function AboutPage() {
           <div className={styles.heroContent}>
             <div className={styles.heroBadge}>
               <span className={styles.dot} />
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Câu chuyện DingDong HSK
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Câu chuyện DingDong Kids
             </div>
             <h1 id="gioi-thieu-hero-title" className={styles.heroTitle}>
-              Học tiếng Trung cho người Việt:<br />
+              Học tiếng Anh cho người Việt:<br />
               tử tế, thông minh<br />
-              <span className={styles.highlight}>và ấm như bánh bao</span>
+              <span className={styles.highlight}>và ấm như gấu Ding</span>
             </h1>
             <p className={styles.heroDesc}>
-              DingDong HSK là nền tảng học tiếng Trung toàn diện, thiết kế riêng cho người Việt.
-              Một nơi duy nhất để học từ vựng, ngữ pháp, viết chữ Hán và luyện đọc, nghe, viết, nói
-              theo chuẩn HSK 1–6 và HSKK, có AI chấm điểm từng bài.
+              DingDong Kids là nền tảng học tiếng Anh toàn diện, thiết kế riêng cho người Việt.
+              Một nơi duy nhất để học từ vựng, ghép vần, ngữ pháp và luyện đọc, nghe, viết, nói
+              theo chuẩn Cambridge Young Learners, có AI chấm điểm từng bài.
             </p>
             <div className={styles.heroButtons}>
               {isAuthed ? (
@@ -204,21 +204,21 @@ export default async function AboutPage() {
         <div className={styles.container}>
           <Reveal>
             <div className={styles.sectionHeader}>
-              <div className={styles.sectionLabel}>📖 DingDong HSK là gì?</div>
+              <div className={styles.sectionLabel}>📖 DingDong Kids là gì?</div>
               <h2 id="cau-chuyen-title" className={styles.sectionTitle}>
-                Một nền tảng, trọn hành trình tiếng Trung
+                Một nền tảng, trọn hành trình tiếng Anh
               </h2>
               <p className={styles.sectionSubtitle}>
                 Không còn cảnh nhảy giữa năm ứng dụng khác nhau. Tất cả những gì người Việt cần để
-                học tiếng Trung nghiêm túc, gói gọn trong một nơi ấm áp.
+                học tiếng Anh nghiêm túc, gói gọn trong một nơi ấm áp.
               </p>
             </div>
           </Reveal>
 
           <Reveal>
             <p className={`${styles.aboutProse} ${styles.aboutProseLead}`}>
-              Cái tên DingDong là tiếng chuông lảnh lót báo một điều vui sắp đến, còn chú bánh bao
-              mũm mĩm là lời nhắc rằng học tiếng Trung có thể ấm áp và dễ như ăn bánh bao. DingDong
+              Cái tên DingDong là tiếng chuông lảnh lót báo một điều vui sắp đến, còn chú gấu Ding
+              mũm mĩm là lời nhắc rằng học tiếng Anh có thể ấm áp và nhẹ nhàng như một trò chơi. DingDong
               ra đời để bạn không phải học một mình nữa.
             </p>
           </Reveal>
@@ -226,7 +226,7 @@ export default async function AboutPage() {
           <div className={styles.aboutSplit}>
             <Reveal className="h-full">
               <div className={`${styles.aboutSplitCard} ${styles.aboutSplitProblem}`}>
-                <h3>Học tiếng Trung kiểu cũ thật mệt</h3>
+                <h3>Học tiếng Anh kiểu cũ thật mệt</h3>
                 <ul className={styles.aboutList}>
                   {painPoints.map((p) => (
                     <li key={p}>
@@ -262,8 +262,8 @@ export default async function AboutPage() {
                 Điều khiến DingDong khác biệt
               </h2>
               <p className={styles.sectionSubtitle}>
-                Bốn nguyên tắc định hình mọi bài học, mọi dòng phản hồi và mọi nét vẽ bánh bao trên
-                DingDong HSK.
+                Bốn nguyên tắc định hình mọi bài học, mọi dòng phản hồi và mọi nét vẽ gấu Ding trên
+                DingDong Kids.
               </p>
             </div>
           </Reveal>
@@ -287,7 +287,7 @@ export default async function AboutPage() {
       <section className={styles.statsSection} aria-label="Những con số của DingDong">
         <div className={styles.container}>
           <Reveal>
-            <h2 className={styles.statsBandHeading}>Những con số làm nên DingDong HSK</h2>
+            <h2 className={styles.statsBandHeading}>Những con số làm nên DingDong Kids</h2>
           </Reveal>
           <div className={styles.statsGrid}>
             {stats.map((s) => (
@@ -304,7 +304,7 @@ export default async function AboutPage() {
           </div>
           <Reveal>
             <p className={styles.statsBandNote}>
-              Viết · Nói được AI chấm chi tiết; Đọc · Nghe chấm tự động theo đáp án đề HSK.
+              Viết · Nói được AI chấm chi tiết; Đọc · Nghe chấm tự động theo đáp án đề Cambridge.
             </p>
           </Reveal>
         </div>
@@ -317,10 +317,10 @@ export default async function AboutPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>🏆 Cột mốc &amp; hành trình</div>
               <h2 id="thanh-tich-title" className={styles.sectionTitle}>
-                Hành trình DingDong HSK
+                Hành trình DingDong Kids
               </h2>
               <p className={styles.sectionSubtitle}>
-                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Trung tử tế cho người
+                Những dấu mốc trên chặng đường xây một nền tảng học tiếng Anh tử tế cho người
                 Việt.
               </p>
             </div>
@@ -359,10 +359,10 @@ export default async function AboutPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>👋 Đội ngũ</div>
               <h2 id="doi-ngu-title" className={styles.sectionTitle}>
-                Những người đứng sau chú bánh bao
+                Những người đứng sau chú gấu Ding
               </h2>
               <p className={styles.sectionSubtitle}>
-                Những người Việt từng tự học tiếng Trung, nay muốn con đường ấy nhẹ nhàng hơn cho
+                Những người Việt từng tự học tiếng Anh, nay muốn con đường ấy nhẹ nhàng hơn cho
                 người đi sau.
               </p>
             </div>
@@ -405,7 +405,7 @@ export default async function AboutPage() {
               {isAuthed ? (
                 <>
                   <h2 id="cta-title">Tiếp tục học cùng DingDong nhé!</h2>
-                  <p>Quay lại lộ trình của bạn và học tiếp bài tiếng Trung dang dở cùng bạn bánh bao.</p>
+                  <p>Quay lại lộ trình của bạn và học tiếp bài tiếng Anh dang dở cùng bạn gấu Ding.</p>
                   <Link href="/dashboard" className={styles.btnWhite}>
                     <GraduationCap className="h-[18px] w-[18px]" aria-hidden="true" /> Vào học ngay
                   </Link>
@@ -415,8 +415,8 @@ export default async function AboutPage() {
                 <>
                   <h2 id="cta-title">Cùng DingDong bắt đầu hôm nay nhé!</h2>
                   <p>
-                    Tạo tài khoản miễn phí trong 30 giây và học bài tiếng Trung đầu tiên cùng bạn
-                    bánh bao DingDong.
+                    Tạo tài khoản miễn phí trong 30 giây và học bài tiếng Anh đầu tiên cùng bạn
+                    gấu Ding DingDong.
                   </p>
                   <Link href="/register" className={styles.btnWhite}>
                     <Rocket className="h-[18px] w-[18px]" aria-hidden="true" /> Đăng ký miễn phí ngay

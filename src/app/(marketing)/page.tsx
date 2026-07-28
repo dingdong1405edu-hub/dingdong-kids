@@ -14,32 +14,32 @@ import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
   // absolute: trang chủ tự mang tên thương hiệu, không để template root nối đuôi lần nữa.
-  title: { absolute: "DingDong HSK — Học tiếng Trung cùng AI cho người Việt" },
+  title: { absolute: "DingDong Kids — Học tiếng Anh cùng AI cho người Việt" },
   description:
-    "Học tiếng Trung online theo chuẩn HSK 1–6 và HSKK: từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói. AI chấm bài viết và luyện nói, lộ trình hoàn toàn bằng tiếng Việt. Bắt đầu miễn phí.",
+    "Học tiếng Anh online cho trẻ theo chuẩn Cambridge: từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói. AI chấm bài viết và luyện nói, lộ trình hoàn toàn bằng tiếng Việt. Bắt đầu miễn phí.",
   keywords: [
-    "học tiếng Trung",
-    "học tiếng Trung online",
-    "app học tiếng Trung",
-    "luyện thi HSK",
-    "luyện thi HSKK",
-    "học tiếng Trung cho người Việt",
-    "DingDong HSK",
+    "học tiếng Anh",
+    "học tiếng Anh online",
+    "app học tiếng Anh",
+    "luyện thi Cambridge",
+    "luyện thi CambridgeK",
+    "học tiếng Anh cho người Việt",
+    "DingDong Kids",
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "DingDong HSK — Học tiếng Trung cùng AI cho người Việt",
+    title: "DingDong Kids — Học tiếng Anh cùng AI cho người Việt",
     description:
-      "Từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói theo chuẩn HSK 1–6 và HSKK. AI chấm điểm từng bài. Bắt đầu miễn phí.",
+      "Từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói theo chuẩn Cambridge Young Learners. AI chấm điểm từng bài. Bắt đầu miễn phí.",
     url: "/",
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong HSK — Học tiếng Trung chuẩn HSK" }],
+    images: [{ url: "/bao-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
   },
 };
 
-// JSON-LD giúp Google liên kết entity DingDong HSK với website + các kênh chính thức.
+// JSON-LD giúp Google liên kết entity DingDong Kids với website + các kênh chính thức.
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -48,10 +48,10 @@ const jsonLd = {
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      logo: `${SITE_URL}/logo-hsk.png`,
+      logo: `${SITE_URL}/logo-kids.png`,
       email: SUPPORT_EMAIL,
       description:
-        "Nền tảng học tiếng Trung trực tuyến cho người Việt theo chuẩn HSK 1–6 và HSKK, có AI chấm bài viết và luyện nói.",
+        "Nền tảng học tiếng Anh trực tuyến cho trẻ em Việt theo chuẩn Cambridge Young Learners, có AI chấm bài viết và luyện nói.",
       sameAs: SOCIAL_LINKS.map((s) => s.href),
     },
     {
@@ -70,7 +70,7 @@ const audiences = [
   { icon: "💼", label: "Người đi làm" },
   { icon: "✈️", label: "Du học sinh" },
   { icon: "🀄", label: "Người mất gốc" },
-  { icon: "🏆", label: "Luyện thi HSK" },
+  { icon: "🏆", label: "Luyện thi Cambridge" },
 ];
 
 const features = [
@@ -78,44 +78,45 @@ const features = [
     icon: "🤖",
     cls: styles.iconAi,
     title: "AI chấm điểm chi tiết",
-    desc: "AI chấm bài viết luận và bài nói của bạn: ngữ pháp, từ vựng, thanh điệu, độ lưu loát, kèm bản sửa lỗi cụ thể.",
+    desc: "AI chấm bài viết luận và bài nói của bạn: ngữ pháp, từ vựng, trọng âm, độ lưu loát, kèm bản sửa lỗi cụ thể.",
   },
   {
     icon: "📚",
     cls: styles.iconVocab,
     title: "Từ vựng & ngữ pháp",
-    desc: "Học như chơi game: nhận XP, giữ chuỗi ngày học, có tim. Chạm vào từ là thấy ngay pinyin, nghĩa và thanh điệu tô màu.",
+    desc: "Học như chơi game: nhận XP, giữ chuỗi ngày học, có tim. Chạm vào từ là nghe phát âm, thấy ngay ảnh và nghĩa tiếng Việt.",
   },
   {
     icon: "✍️",
     cls: styles.iconWriting,
-    title: "Chữ cái, phát âm & viết chữ Hán",
-    desc: "Học pinyin từ đầu qua flashcard (thanh mẫu, vận mẫu, thanh điệu, âm dễ lẫn) và xem thứ tự nét bút trên ô 田字格.",
+    title: "Ghép vần & phát âm (Phonics)",
+    desc: "Học âm chữ cái, phụ âm ghép (sh/ch/th) và nguyên âm ghép (ai/ee/oa) qua flashcard, rồi ghép vần thành từ.",
   },
   {
     icon: "🎙️",
     cls: styles.iconSpeaking,
-    title: "Luyện nói HSKK",
-    desc: "Ghi âm ngay trên trình duyệt; AI phân tích phát âm, thanh điệu và độ lưu loát theo đúng 3 phần của bài thi HSKK.",
+    title: "Luyện nói",
+    desc: "Ghi âm ngay trên trình duyệt; AI phân tích phát âm, ngữ điệu và độ lưu loát, luôn khen trước khi sửa.",
   },
   {
     icon: "📖",
     cls: styles.iconHsk,
     title: "Đọc & nghe hiểu",
-    desc: "Đoạn văn và audio theo format đề HSK: bật/tắt pinyin, nhấn vào từ để tra nghĩa, chấm điểm tự động sau khi nộp bài.",
+    desc: "Đoạn văn và audio theo format đề Cambridge: nghe đọc mẫu, nhấn vào từ để tra nghĩa, chấm điểm tự động sau khi nộp bài.",
   },
   {
     icon: "🏆",
     cls: styles.iconCommunity,
-    title: "Lộ trình thi HSK 1–6",
-    desc: "Mở khóa bài học theo thứ tự, thấy rõ mình tiến bộ tới đâu trên con đường tới mục tiêu HSK của bạn.",
+    title: "Lộ trình thi Pre-Starters → B1",
+    desc: "Mở khóa bài học theo thứ tự, thấy rõ mình tiến bộ tới đâu trên con đường tới mục tiêu Cambridge của bé.",
   },
 ];
 
 // SỐ LIỆU THẬT của nền tảng — đã đối chiếu với dữ liệu bài học, đừng phóng đại.
+// (Đã bỏ "3000+ từ vựng" của bản HSK: kho từ tiếng Anh chưa dựng nên con số đó
+//  không còn đúng. Thêm lại khi đã đếm được số từ thật.)
 const stats = [
-  { to: 6, suffix: "", label: "Cấp độ HSK" },
-  { to: 3000, suffix: "+", label: "Từ vựng & mẫu câu" },
+  { to: 6, suffix: "", label: "Cấp độ Cambridge" },
   { to: 7, suffix: "", label: "Module kỹ năng" },
   { to: 2, suffix: "", label: "Kỹ năng AI chấm chi tiết" },
 ];
@@ -124,40 +125,44 @@ const steps = [
   {
     n: 1,
     title: "Đăng ký miễn phí",
-    desc: "Tạo tài khoản trong 30 giây và chọn cấp độ HSK mục tiêu của bạn.",
+    desc: "Tạo tài khoản trong 30 giây và chọn cấp độ phù hợp với tuổi của bé.",
   },
   {
     n: 2,
     title: "Học theo lộ trình",
-    desc: "Từ vựng, ngữ pháp, chữ Hán, đọc, nghe, viết, nói được sắp xếp sẵn theo từng bài.",
+    desc: "Từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói được sắp xếp sẵn theo từng bài.",
   },
   {
     n: 3,
     title: "Luyện tập & tiến bộ",
-    desc: "Làm bài được chấm tự động, giữ chuỗi ngày học và theo dõi XP qua từng mốc HSK.",
+    desc: "Làm bài được chấm tự động, giữ chuỗi ngày học và theo dõi XP qua từng mốc Cambridge.",
   },
 ];
 
-const levels = ["HSK 1", "HSK 2", "HSK 3", "HSK 4", "HSK 5", "HSK 6"];
+const levels = ["Pre-Starters", "Starters", "Movers", "Flyers", "Key A2", "Preliminary B1"];
 
+// ⚠️ CHƯA PHẢI PHẢN HỒI THẬT — chỗ giữ sẵn, THAY TRƯỚC KHI MỞ BÁN.
+// Ba lời chứng thực cũ (Minh Anh / Hoàng Long / Thu Hà) là của bản HSK dạy
+// tiếng Trung cho người lớn nên đã gỡ. Điền lời thật của phụ huynh vào đây;
+// đừng bịa — đây là trang bán hàng của một doanh nghiệp thật.
 const testimonials = [
   {
-    text: "“Mình mất gốc tiếng Trung, nhờ lộ trình chia nhỏ và AI sửa lỗi bài viết mà sau 3 tháng đã tự tin nhắn tin với đối tác.”",
-    name: "Minh Anh",
-    role: "Nhân viên xuất nhập khẩu",
-    initial: "M",
-  },
-  {
-    text: "“Phần luyện nói HSKK chấm phát âm cực chi tiết, chỉ ra mình hay sai thanh 3. Giao diện dễ thương như đang chơi game vậy.”",
-    name: "Hoàng Long",
-    role: "Sinh viên năm 2",
-    initial: "H",
-  },
-  {
-    text: "“Tính năng viết chữ Hán theo từng nét giúp con mình nhớ mặt chữ nhanh hẳn. Cả nhà cùng học mỗi tối, vui lắm.”",
-    name: "Thu Hà",
+    text: "“Phần cảm nhận của phụ huynh sẽ được cập nhật tại đây.”",
+    name: "Đang cập nhật",
     role: "Phụ huynh",
-    initial: "T",
+    initial: "•",
+  },
+  {
+    text: "“Phần cảm nhận của phụ huynh sẽ được cập nhật tại đây.”",
+    name: "Đang cập nhật",
+    role: "Phụ huynh",
+    initial: "•",
+  },
+  {
+    text: "“Phần cảm nhận của phụ huynh sẽ được cập nhật tại đây.”",
+    name: "Đang cập nhật",
+    role: "Phụ huynh",
+    initial: "•",
   },
 ];
 
@@ -208,13 +213,13 @@ export default async function LandingPage() {
       name: "Gói Lộ trình",
       price: `từ ${formatVnd(roadmapFrom)}`,
       note: "/ 6 tháng",
-      desc: "Mở khóa toàn bộ lộ trình một cấp HSK, học bài bản từ bài đầu đến bài cuối.",
+      desc: "Mở khóa toàn bộ lộ trình một cấp độ Cambridge, học bài bản từ bài đầu đến bài cuối.",
       features: [
         "Toàn bộ bài học lộ trình cấp bạn chọn",
         "Tim không giới hạn",
-        "Từ HSK 3: tặng kèm Gói Tự do",
+        "Từ Movers: tặng kèm Gói Tự do",
       ],
-      cta: { label: "Chọn cấp HSK", href: "/payment", primary: false },
+      cta: { label: "Chọn cấp độ", href: "/payment", primary: false },
       highlighted: false,
     },
   ];
@@ -240,12 +245,12 @@ export default async function LandingPage() {
                 : "Có AI chấm bài cho bạn"}
             </div>
             <h1 id="hero-title" className={styles.heroTitle}>
-              Học tiếng Trung cùng AI,<br />
-              <span className={styles.highlight}>dễ như ăn bánh bao!</span>
+              Học tiếng Anh cùng AI,<br />
+              <span className={styles.highlight}>nhẹ nhàng như một trò chơi!</span>
             </h1>
             <p className={styles.heroDesc}>
-              DingDong HSK là nền tảng học tiếng Trung toàn diện cho người Việt: từ vựng, ngữ pháp,
-              chữ Hán, đọc, nghe, viết, nói theo chuẩn HSK 1–6 và HSKK. AI chấm điểm và sửa lỗi cho
+              DingDong Kids là nền tảng học tiếng Anh toàn diện cho người Việt: từ vựng, ngữ pháp,
+              ghép vần, đọc, nghe, viết, nói theo chuẩn Cambridge Young Learners. AI chấm điểm và sửa lỗi cho
               bạn từng bài.
             </p>
             <div className={styles.heroButtons}>
@@ -264,16 +269,16 @@ export default async function LandingPage() {
             </div>
             <div className={styles.heroStatsRow}>
               <div className={styles.heroStatItem}>
-                <div className={styles.heroStatNum}>HSK 1–6</div>
-                <div className={styles.heroStatLbl}>+ HSKK</div>
+                <div className={styles.heroStatNum}>6</div>
+                <div className={styles.heroStatLbl}>Cấp độ Cambridge</div>
               </div>
               <div className={styles.heroStatItem}>
                 <div className={styles.heroStatNum}>7</div>
                 <div className={styles.heroStatLbl}>Kỹ năng</div>
               </div>
               <div className={styles.heroStatItem}>
-                <div className={styles.heroStatNum}>3000+</div>
-                <div className={styles.heroStatLbl}>Từ vựng & mẫu câu</div>
+                <div className={styles.heroStatNum}>4–15</div>
+                <div className={styles.heroStatLbl}>Tuổi phù hợp</div>
               </div>
             </div>
           </div>
@@ -289,7 +294,7 @@ export default async function LandingPage() {
       {/* ============ AUDIENCE STRIP ============ */}
       <section className={styles.trusted} aria-label="Phù hợp với">
         <div className={styles.container}>
-          <div className={styles.trustedLabel}>Phù hợp với mọi người học tiếng Trung</div>
+          <div className={styles.trustedLabel}>Phù hợp với mọi người học tiếng Anh</div>
           <div className={styles.trustedLogos}>
             {audiences.map((a) => (
               <span key={a.label} className={styles.trustedLogo}>
@@ -307,10 +312,10 @@ export default async function LandingPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>✨ Tính năng nổi bật</div>
               <h2 id="features-title" className={styles.sectionTitle}>
-                Học tiếng Trung chưa bao giờ dễ đến thế
+                Học tiếng Anh chưa bao giờ dễ đến thế
               </h2>
               <p className={styles.sectionSubtitle}>
-                Bảy kỹ năng luyện tập bám sát đề thi HSK và HSKK, có AI chấm điểm, tất cả bằng tiếng
+                Bảy kỹ năng luyện tập bám sát đề thi Cambridge YLE, có AI chấm điểm, tất cả bằng tiếng
                 Việt.
               </p>
             </div>
@@ -364,7 +369,7 @@ export default async function LandingPage() {
                 3 bước đơn giản để bắt đầu
               </h2>
               <p className={styles.sectionSubtitle}>
-                Lộ trình học được cá nhân hóa cho từng người, từ con số 0 đến HSK 6.
+                Lộ trình học được cá nhân hóa cho từng người, từ những chữ cái đầu tiên đến trình độ B1.
               </p>
             </div>
           </Reveal>
@@ -389,10 +394,10 @@ export default async function LandingPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>📈 Lộ trình</div>
               <h2 id="levels-title" className={styles.sectionTitle}>
-                Từ HSK 1 đến HSK 6
+                Từ Pre-Starters đến Preliminary B1
               </h2>
               <p className={styles.sectionSubtitle}>
-                Từ 150 từ đầu tiên đến hơn 5000 từ theo chuẩn HSK, DingDong đi cùng bạn suốt hành
+                Từ những từ đầu tiên đến trình độ B1, DingDong đi cùng bé suốt hành
                 trình.
               </p>
             </div>
@@ -451,7 +456,7 @@ export default async function LandingPage() {
           </div>
           <Reveal>
             <p className={styles.pricingMore}>
-              <Link href="/payment">Xem bảng giá chi tiết theo từng cấp HSK →</Link>
+              <Link href="/payment">Xem bảng giá chi tiết theo từng cấp độ Cambridge →</Link>
             </p>
           </Reveal>
         </div>
@@ -469,7 +474,7 @@ export default async function LandingPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>💬 Cảm nhận học viên</div>
               <h2 id="testimonials-title" className={styles.sectionTitle}>
-                Người học nói gì về DingDong HSK
+                Người học nói gì về DingDong Kids
               </h2>
               <p className={styles.sectionSubtitle}>
                 Một vài chia sẻ từ những người học đầu tiên của DingDong.
@@ -508,14 +513,14 @@ export default async function LandingPage() {
               {isAuthed ? (
                 <>
                   <h2 id="cta-title">Tiếp tục hành trình của bạn!</h2>
-                  <p>Quay lại bài học, giữ chuỗi ngày học và bước tiếp tới mốc HSK kế tiếp.</p>
+                  <p>Quay lại bài học, giữ chuỗi ngày học và bước tiếp tới mốc Cambridge kế tiếp.</p>
                   <Link href="/dashboard" className={styles.btnWhite}>
                     <GraduationCap className="h-[18px] w-[18px]" aria-hidden="true" /> Vào học ngay
                   </Link>
                 </>
               ) : (
                 <>
-                  <h2 id="cta-title">Sẵn sàng chinh phục tiếng Trung?</h2>
+                  <h2 id="cta-title">Sẵn sàng chinh phục tiếng Anh?</h2>
                   <p>Tạo tài khoản miễn phí và học bài đầu tiên cùng DingDong ngay hôm nay.</p>
                   <Link href="/register" className={styles.btnWhite}>
                     <Rocket className="h-[18px] w-[18px]" aria-hidden="true" /> Đăng ký miễn phí ngay

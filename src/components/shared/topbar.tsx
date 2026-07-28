@@ -41,7 +41,7 @@ export function Topbar({ user, onMenu }: { user: TopbarUser; onMenu: () => void 
       <Button variant="ghost" size="icon" className="-ml-1 shrink-0 lg:hidden" onClick={onMenu} aria-label="Mở menu">
         <Menu className="h-5 w-5" />
       </Button>
-      <Link href="/" className="flex shrink-0 items-center gap-2 lg:hidden" aria-label="DingDong HSK — về trang chủ">
+      <Link href="/" className="flex shrink-0 items-center gap-2 lg:hidden" aria-label="DingDong Kids — về trang chủ">
         <Logo className="h-8 w-8" />
         {/* Ẩn chữ trên điện thoại rất nhỏ để chừa chỗ cho dải chỉ số (streak/tim/XP) */}
         <span className="hidden font-extrabold tracking-tight min-[380px]:inline">DingDong</span>

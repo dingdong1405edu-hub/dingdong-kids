@@ -29,7 +29,7 @@ const learnLinks = [
 const exploreLinks = [
   { label: "Tính năng", href: "/#features" },
   { label: "Cách học", href: "/#how" },
-  { label: "Lộ trình HSK", href: "/#levels" },
+  { label: "Lộ trình Cambridge", href: "/#levels" },
   { label: "Bảng giá", href: "/payment" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ];
@@ -67,12 +67,12 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
       <div className={styles.container}>
         <div className={styles.footerGrid}>
           <div className={styles.footerBrand}>
-            <Link href="/" className={styles.footerLogo} aria-label="DingDong HSK — về trang chủ">
+            <Link href="/" className={styles.footerLogo} aria-label="DingDong Kids — về trang chủ">
               <Logo className={styles.footerLogoIcon} />
-              DingDong HSK
+              DingDong Kids
             </Link>
             <p>
-              Nền tảng học tiếng Trung cho người Việt: lộ trình HSK 1–6, luyện thi HSKK, AI chấm
+              Nền tảng học tiếng Anh cho người Việt: lộ trình Cambridge 1–6, luyện thi CambridgeK, AI chấm
               bài viết và luyện nói.
             </p>
             <div className={styles.footerSocial}>
@@ -82,7 +82,7 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${s.label} của DingDong HSK (mở tab mới)`}
+                  aria-label={`${s.label} của DingDong Kids (mở tab mới)`}
                   title={s.label}
                 >
                   {SOCIAL_ICONS[s.key]}
@@ -111,7 +111,7 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
             <span aria-hidden>·</span>
             <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
           </div>
-          © 2026 DingDong HSK · Thanh toán an toàn qua PayOS
+          © 2026 DingDong Kids · Thanh toán an toàn qua PayOS
         </div>
       </div>
     </footer>

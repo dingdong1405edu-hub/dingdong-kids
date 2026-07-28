@@ -48,7 +48,7 @@ export default async function PaymentSuccessPage({
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {paid
-            ? "Cảm ơn bạn đã ủng hộ DingDong HSK. Đơn hàng của bạn đã được ghi nhận."
+            ? "Cảm ơn bạn đã ủng hộ DingDong Kids. Đơn hàng của bạn đã được ghi nhận."
             : "Chúng tôi đã nhận yêu cầu và đang chờ xác nhận từ ngân hàng. Trạng thái sẽ cập nhật trong giây lát."}
         </p>
 
