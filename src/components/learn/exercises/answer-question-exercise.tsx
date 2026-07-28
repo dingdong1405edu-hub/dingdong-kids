@@ -39,16 +39,13 @@ export function AnswerQuestionExerciseUI({ exercise, onAnswer, disabled }: Props
             <LookupText text={exercise.question} className="text-xl font-semibold" />
             <button
               type="button"
-              onClick={() => playWord({ hanzi: exercise.question })}
+              onClick={() => playWord({ word: exercise.question })}
               aria-label="Nghe câu hỏi"
               className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
             >
               <Volume2 className="h-4 w-4" />
             </button>
           </div>
-          {exercise.questionPinyin && (
-            <p className="mt-1 text-sm text-muted-foreground">{exercise.questionPinyin}</p>
-          )}
         </div>
         {exercise.hint && (
           <p className="text-sm italic text-muted-foreground">Gợi ý: {exercise.hint}</p>
@@ -69,7 +66,7 @@ export function AnswerQuestionExerciseUI({ exercise, onAnswer, disabled }: Props
         disabled={locked}
         placeholder="Gõ câu trả lời bằng tiếng Trung…"
         lang="zh"
-        className={cn("h-12 text-center font-chinese text-lg", submitted && "opacity-100")}
+        className={cn("h-12 text-center font-primer text-lg", submitted && "opacity-100")}
       />
 
       <Button className="w-full" disabled={!value.trim() || locked} onClick={submit}>

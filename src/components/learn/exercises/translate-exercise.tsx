@@ -24,18 +24,15 @@ export function TranslateExerciseUI({ exercise, onAnswer, disabled }: Props) {
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <p className="text-sm text-muted-foreground">
-          {exercise.direction === "vi_to_zh" ? "Dịch sang tiếng Trung" : "Dịch sang tiếng Việt"}
+          {exercise.direction === "vi_to_en" ? "Dịch sang tiếng Anh" : "Dịch sang tiếng Việt"}
         </p>
-        <div className="text-3xl font-chinese font-bold bg-muted/50 rounded-xl p-4">
-          {exercise.direction === "zh_to_vi" ? (
+        <div className="text-3xl font-primer font-bold bg-muted/50 rounded-xl p-4">
+          {exercise.direction === "en_to_vi" ? (
             <LookupText text={exercise.prompt} />
           ) : (
             exercise.prompt
           )}
         </div>
-        {exercise.pinyin && (
-          <p className="font-pinyin text-muted-foreground text-sm">{exercise.pinyin}</p>
-        )}
       </div>
       <div className="grid grid-cols-1 gap-2">
         {exercise.options.map((opt) => (
@@ -45,7 +42,7 @@ export function TranslateExerciseUI({ exercise, onAnswer, disabled }: Props) {
             onClick={() => handleSelect(opt)}
             disabled={disabled}
             className={cn(
-              "w-full p-3 rounded-xl border-2 text-left font-chinese transition-all",
+              "w-full p-3 rounded-xl border-2 text-left font-primer transition-all",
               selected === null && "hover:border-primary/50 hover:bg-primary/5",
               selected === opt && opt === exercise.answer && "border-green-500 bg-green-50 dark:bg-green-500/15",
               selected === opt && opt !== exercise.answer && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15",

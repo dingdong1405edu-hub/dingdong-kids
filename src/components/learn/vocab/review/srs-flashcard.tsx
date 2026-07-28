@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Volume2, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getTone } from "@/lib/pinyin";
-import { toneColor, cn, markWord } from "@/lib/utils";
+import { cn, markWord } from "@/lib/utils";
 import { playWord } from "@/lib/speech";
 import { WordReportButton } from "@/components/learn/vocab/word-report-button";
 import type { SrsRating } from "@/lib/srs";
@@ -27,7 +26,7 @@ const RATINGS: { rating: SrsRating; label: string; hint: string; cls: string }[]
 ];
 
 /**
- * Flashcard có lặp lại ngắt quãng: lật thẻ (hiệu ứng 3D) để xem pinyin + nghĩa +
+ * Flashcard có lặp lại ngắt quãng: lật thẻ (hiệu ứng 3D) để xem phiên âm + nghĩa +
  * câu ví dụ, rồi TỰ ĐÁNH GIÁ mức nhớ (Quên/Khó/Tốt/Dễ). Mức này quy đổi thành
  * điểm chất lượng để xếp lịch ôn (src/lib/srs.ts).
  */
@@ -44,7 +43,7 @@ export function SrsFlashcard({ word, isNew, allowReport = true, onRate }: Props)
   function reveal() {
     if (revealed) return;
     setRevealed(true);
-    playWord({ hanzi: word.hanzi, audioUrl: word.audioUrl });
+    playWord({ word: word.word, audioUrl: word.audioUrl });
   }
 
   // Chặn bấm 2 lần (tránh chấm/đi tiếp 2 lần, bỏ sót thẻ kế).
@@ -54,7 +53,6 @@ export function SrsFlashcard({ word, isNew, allowReport = true, onRate }: Props)
     onRate(r);
   }
 
-  const tone = getTone(word.pinyin);
   const example = word.examples[0];
 
   return (
@@ -72,18 +70,18 @@ export function SrsFlashcard({ word, isNew, allowReport = true, onRate }: Props)
           className={cn("relative h-[19rem] w-full", !revealed && "cursor-pointer select-none")}
           style={{ transformStyle: "preserve-3d" }}
         >
-          {/* MẶT TRƯỚC — chữ Hán */}
+          {/* MẶT TRƯỚC — từ tiếng Anh */}
           <div
             className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border bg-card p-6 text-center shadow-soft"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
-            <div className={cn("font-chinese text-7xl font-bold", toneColor(tone))}>{word.hanzi}</div>
+            <div className="font-primer text-6xl font-bold">{word.word}</div>
             <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
               <RotateCw className="h-3.5 w-3.5" /> Chạm để lật thẻ &amp; nghe
             </div>
           </div>
 
-          {/* MẶT SAU — pinyin + nghĩa + ví dụ (luôn hiển thị) */}
+          {/* MẶT SAU — phiên âm + nghĩa + ví dụ (luôn hiển thị) */}
           <div
             className="absolute inset-0 flex flex-col items-center justify-center gap-2 overflow-y-auto rounded-2xl border bg-card p-5 text-center shadow-soft"
             style={{
@@ -92,19 +90,18 @@ export function SrsFlashcard({ word, isNew, allowReport = true, onRate }: Props)
               transform: "rotateY(180deg)",
             }}
           >
-            <div className={cn("font-chinese text-5xl font-bold", toneColor(tone))}>{word.hanzi}</div>
-            <div className="font-pinyin text-xl text-muted-foreground">{word.pinyin}</div>
+            <div className="font-primer text-4xl font-bold">{word.word}</div>
+            {word.ipa && <div className="text-xl text-muted-foreground">{word.ipa}</div>}
             <div className="text-lg font-medium">{word.meaning}</div>
             {example ? (
               <div className="mt-1 w-full border-t pt-2 text-sm">
-                <div className="font-chinese text-base">
-                  {markWord(example.hanzi, word.hanzi).map((seg, i) => (
+                <div className="font-primer text-base">
+                  {markWord(example.sentence, word.word).map((seg, i) => (
                     <span key={i} className={seg.match ? "font-bold text-primary" : "text-foreground"}>
                       {seg.text}
                     </span>
                   ))}
                 </div>
-                {example.pinyin && <div className="font-pinyin text-xs text-muted-foreground">{example.pinyin}</div>}
                 <div className="text-xs text-muted-foreground">— {example.meaning}</div>
               </div>
             ) : (
@@ -135,7 +132,7 @@ export function SrsFlashcard({ word, isNew, allowReport = true, onRate }: Props)
               </button>
             ))}
           </div>
-          {allowReport && <WordReportButton wordId={word.id} hanzi={word.hanzi} />}
+          {allowReport && <WordReportButton wordId={word.id} word={word.word} />}
         </>
       ) : (
         <Button variant="outline" onClick={reveal}>

@@ -22,11 +22,11 @@ import {
 type Kind = "ERROR" | "COMMENT";
 
 /**
- * Nút "Phản ánh" trên thẻ từ: học viên báo lỗi (từ/nghĩa/pinyin sai) hoặc bình
+ * Nút "Phản ánh" trên thẻ từ: học viên báo lỗi (từ/nghĩa/phát âm sai) hoặc bình
  * luận. Gửi đi ở trạng thái chờ duyệt; admin duyệt thì bình luận mới hiện công
  * khai. Dialog cũng hiển thị các bình luận đã được duyệt của từ này.
  */
-export function WordReportButton({ wordId, hanzi }: { wordId: string; hanzi: string }) {
+export function WordReportButton({ wordId, word }: { wordId: string; word: string }) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<Kind>("ERROR");
   const [content, setContent] = useState("");
@@ -71,10 +71,10 @@ export function WordReportButton({ wordId, hanzi }: { wordId: string; hanzi: str
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            Phản ánh về từ <span className="font-chinese">{hanzi}</span>
+            Phản ánh về từ <span className="font-primer">{word}</span>
           </DialogTitle>
           <DialogDescription>
-            Báo lỗi nếu từ/nghĩa/pinyin sai, hoặc để lại bình luận. Nội dung được admin duyệt trước khi hiển thị.
+            Báo lỗi nếu từ/nghĩa/phát âm sai, hoặc để lại bình luận. Nội dung được admin duyệt trước khi hiển thị.
           </DialogDescription>
         </DialogHeader>
 
@@ -86,7 +86,7 @@ export function WordReportButton({ wordId, hanzi }: { wordId: string; hanzi: str
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder={kind === "ERROR" ? "Mô tả lỗi (vd: nghĩa sai, pinyin sai…)" : "Bình luận của bạn về từ này…"}
+          placeholder={kind === "ERROR" ? "Mô tả lỗi (vd: nghĩa sai, phát âm sai…)" : "Bình luận của bạn về từ này…"}
           className="min-h-24"
           maxLength={1000}
         />

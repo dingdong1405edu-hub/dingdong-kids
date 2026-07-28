@@ -24,7 +24,7 @@ import {
   Shield,
   type LucideIcon,
 } from "lucide-react";
-import { cn, hskLevelLabel } from "@/lib/utils";
+import { cn, levelLabel } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -79,7 +79,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
 interface SidebarUser {
   role: string;
-  hskLevel: string;
+  level: string;
 }
 
 function NavLink({
@@ -209,7 +209,7 @@ function NavContent({ user, onNavigate }: { user: SidebarUser; onNavigate?: () =
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-card text-base shadow-sm">🎓</div>
           <div className="leading-tight">
             <div className="text-[10px] text-muted-foreground">Cấp độ mục tiêu</div>
-            <div className="text-[13px] font-bold text-primary">{hskLevelLabel(user.hskLevel)}</div>
+            <div className="text-[13px] font-bold text-primary">{levelLabel(user.level)}</div>
           </div>
         </div>
       </div>

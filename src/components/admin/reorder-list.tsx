@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { GripVertical, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -26,24 +26,24 @@ export interface ReorderItem {
 // Khai báo phạm vi đổi chỗ — toàn bộ là dữ liệu thuần (serializable) nên truyền
 // được từ server component sang client. ReorderList tự gọi đúng server action.
 export type ReorderSpec =
-  | { kind: "units"; skill: "vocab" | "grammar"; hskLevel: HSKLevel }
+  | { kind: "units"; skill: "vocab" | "grammar"; level: EnglishLevel }
   | { kind: "lessons"; skill: "vocab" | "grammar"; unitId: string }
   | {
       kind: "content";
-      model: "reading" | "listening" | "writing" | "speaking" | "hanzi";
-      hskLevel: HSKLevel;
+      model: "reading" | "listening" | "writing" | "speaking";
+      level: EnglishLevel;
     }
-  | { kind: "mockExam"; hskLevel: HSKLevel }
+  | { kind: "mockExam"; level: EnglishLevel }
   | { kind: "roadmapLessons"; courseId: string }
   | { kind: "roadmapChapters"; courseId: string };
 
 function persist(spec: ReorderSpec, orderedIds: string[]) {
-  if (spec.kind === "units") return reorderUnitsAction(spec.skill, spec.hskLevel, orderedIds);
+  if (spec.kind === "units") return reorderUnitsAction(spec.skill, spec.level, orderedIds);
   if (spec.kind === "lessons") return reorderLessonsAction(spec.skill, spec.unitId, orderedIds);
-  if (spec.kind === "mockExam") return reorderMockExamsAction(spec.hskLevel, orderedIds);
+  if (spec.kind === "mockExam") return reorderMockExamsAction(spec.level, orderedIds);
   if (spec.kind === "roadmapLessons") return reorderRoadmapLessonsAction(spec.courseId, orderedIds);
   if (spec.kind === "roadmapChapters") return reorderRoadmapChaptersAction(spec.courseId, orderedIds);
-  return reorderContentAction(spec.model, spec.hskLevel, orderedIds);
+  return reorderContentAction(spec.model, spec.level, orderedIds);
 }
 
 export function ReorderList({

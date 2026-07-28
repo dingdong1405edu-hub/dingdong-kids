@@ -26,7 +26,7 @@ export function FillBlankExerciseUI({ exercise, onAnswer, disabled }: Props) {
     <div className="space-y-6">
       <div className="text-center space-y-3">
         <p className="text-sm text-muted-foreground">Điền từ còn thiếu</p>
-        <div className="text-2xl font-chinese font-semibold bg-muted/50 rounded-xl p-4">
+        <div className="text-2xl font-primer font-semibold bg-muted/50 rounded-xl p-4">
           <LookupText text={parts[0]} />
           <span
             className={cn(
@@ -48,7 +48,7 @@ export function FillBlankExerciseUI({ exercise, onAnswer, disabled }: Props) {
             onClick={() => handleSelect(opt)}
             disabled={disabled}
             className={cn(
-              "p-3 rounded-xl border-2 font-chinese font-semibold text-lg transition-all",
+              "p-3 rounded-xl border-2 font-primer font-semibold text-lg transition-all",
               selected === null && "hover:border-primary/50 hover:bg-primary/5",
               selected === opt && opt === exercise.blank && "border-green-500 bg-green-50 dark:bg-green-500/15",
               selected === opt && opt !== exercise.blank && "border-red-400 bg-red-50 dark:bg-red-500/15",

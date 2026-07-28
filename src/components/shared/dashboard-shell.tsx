@@ -15,7 +15,7 @@ interface ShellUser {
   unlimitedHearts: boolean;
   streakDays: number;
   role: string;
-  hskLevel: string;
+  level: string;
 }
 
 export function DashboardShell({ user, children }: { user: ShellUser; children: React.ReactNode }) {

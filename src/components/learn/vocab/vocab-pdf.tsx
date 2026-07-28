@@ -3,30 +3,29 @@ import { PdfDocument, PdfSection, PdfNumChip } from "@/components/learn/pdf/pdf-
 import { PDF, PDF_FONT } from "@/lib/pdf/theme";
 
 interface PdfExample {
-  hanzi: string;
-  pinyin: string;
+  sentence: string;
   meaning: string;
 }
 interface PdfWord {
   id: string;
-  hanzi: string;
-  pinyin: string;
+  word: string;
+  ipa: string;
   meaning: string;
+  partOfSpeech?: string;
   examples: PdfExample[];
 }
 
 interface Props {
   lessonTitle: string;
   unitTitle: string;
-  unitTitleZh?: string | null;
-  hskLevel: string;
+  level: string;
   words: PdfWord[];
 }
 
-/** PDF từ vựng: danh sách từ (Hán · pinyin · nghĩa) kèm câu ví dụ. */
-export function VocabPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, words }: Props) {
+/** PDF từ vựng: danh sách từ (từ · IPA · nghĩa) kèm câu ví dụ. */
+export function VocabPdf({ lessonTitle, unitTitle, level, words }: Props) {
   return (
-    <PdfDocument kicker="Từ vựng · 词汇" title={lessonTitle} subtitle={unitTitle} titleZh={unitTitleZh} hskLevel={hskLevel}>
+    <PdfDocument kicker="Từ vựng" title={lessonTitle} subtitle={unitTitle} level={level}>
       <PdfSection title={`Danh sách từ (${words.length})`}>
         {words.length === 0 ? (
           <p style={{ fontSize: 13, color: PDF.muted }}>Bài này chưa có từ.</p>
@@ -45,16 +44,15 @@ export function VocabPdf({ lessonTitle, unitTitle, unitTitleZh, hskLevel, words 
               >
                 <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                   <PdfNumChip n={i + 1} size={20} />
-                  <span style={{ fontFamily: PDF_FONT.chinese, fontSize: 22, fontWeight: 700, color: PDF.ink }}>{w.hanzi}</span>
-                  <span style={{ fontFamily: PDF_FONT.pinyin, fontSize: 14, color: PDF.brand }}>{w.pinyin}</span>
+                  <span style={{ fontFamily: PDF_FONT.word, fontSize: 22, fontWeight: 700, color: PDF.ink }}>{w.word}</span>
+                  {w.ipa && <span style={{ fontFamily: PDF_FONT.ipa, fontSize: 14, color: PDF.brand }}>{w.ipa}</span>}
                   <span style={{ fontSize: 14, color: PDF.ink2 }}>{w.meaning}</span>
                 </div>
                 {w.examples.length > 0 && (
                   <ul style={{ marginTop: 6, paddingLeft: 30, display: "flex", flexDirection: "column", gap: 3 }}>
                     {w.examples.map((ex, j) => (
                       <li key={j} style={{ fontSize: 13 }}>
-                        <span style={{ fontFamily: PDF_FONT.chinese, color: PDF.ink }}>{ex.hanzi}</span>
-                        {ex.pinyin && <span style={{ marginLeft: 6, fontFamily: PDF_FONT.pinyin, fontSize: 11.5, color: PDF.brand }}>{ex.pinyin}</span>}
+                        <span style={{ fontFamily: PDF_FONT.english, color: PDF.ink }}>{ex.sentence}</span>
                         {ex.meaning && <span style={{ marginLeft: 6, color: PDF.muted }}>— {ex.meaning}</span>}
                       </li>
                     ))}

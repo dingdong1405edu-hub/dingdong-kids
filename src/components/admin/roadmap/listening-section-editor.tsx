@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2, FileAudio, Wand2, Plus, Trash2, FileJson, Headphones } from "lucide-react";
-import type { HSKLevel } from "@prisma/client";
+import type { EnglishLevel } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -42,11 +42,11 @@ type ClipState = ListeningState["clips"][number];
 export function ListeningSectionEditor({
   value,
   onChange,
-  hskLevel,
+  level,
 }: {
   value: unknown;
   onChange: (v: unknown) => void;
-  hskLevel: HSKLevel;
+  level: EnglishLevel;
 }) {
   const v = normalizeListeningContent(value);
   if (v.clips.length === 0) v.clips = [{ audioUrl: "", transcript: "", questions: [] }];
@@ -91,7 +91,7 @@ export function ListeningSectionEditor({
       return;
     }
     setBusy({ kind: "translate", i });
-    const res = await generateRoadmapTranscriptExplanationAction({ transcript: clip.transcript, hskLevel });
+    const res = await generateRoadmapTranscriptExplanationAction({ transcript: clip.transcript, level });
     setBusy(null);
     if (res.ok && res.data) {
       setClip(i, { transcriptExplanation: res.data.text });
@@ -203,7 +203,7 @@ export function ListeningSectionEditor({
                 value={c.transcript ?? ""}
                 onChange={(e) => setClip(i, { transcript: e.target.value || null })}
                 placeholder={"A: 你好！你想买什么？\nB: 我想买一斤苹果。"}
-                className="min-h-20 font-chinese text-sm"
+                className="min-h-20 font-primer text-sm"
               />
             </div>
 
@@ -233,7 +233,7 @@ export function ListeningSectionEditor({
               <RoadmapQuestionsImporter
                 skill="LISTENING"
                 source={c.transcript ?? ""}
-                hskLevel={hskLevel}
+                level={level}
                 onImport={(qs) => setClip(i, { questions: [...(c.questions as RoadmapQuestion[]), ...qs] })}
               />
               <QuestionRows

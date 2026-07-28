@@ -6,9 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { HeartBar } from "./heart-bar";
 import { MatchExerciseUI } from "./exercises/match-exercise";
 import { TranslateExerciseUI } from "./exercises/translate-exercise";
-import { ToneSelectExerciseUI } from "./exercises/tone-select-exercise";
 import { SentenceOrderExerciseUI } from "./exercises/sentence-order-exercise";
-import { PinyinMatchExerciseUI } from "./exercises/pinyin-match-exercise";
 import { FillBlankExerciseUI } from "./exercises/fill-blank-exercise";
 import type { Exercise } from "@/types";
 import { X, CheckCircle2, XCircle } from "lucide-react";
@@ -100,14 +98,8 @@ export function LessonEngine({
             {exercise.type === "translate" && (
               <TranslateExerciseUI exercise={exercise as never} onAnswer={handleAnswer} disabled={feedback !== null} />
             )}
-            {exercise.type === "toneSelect" && (
-              <ToneSelectExerciseUI exercise={exercise as never} onAnswer={handleAnswer} disabled={feedback !== null} />
-            )}
             {(exercise.type === "sentenceOrder" || exercise.type === "sentence_order") && (
               <SentenceOrderExerciseUI exercise={exercise as never} onAnswer={handleAnswer} disabled={feedback !== null} />
-            )}
-            {exercise.type === "pinyinMatch" && (
-              <PinyinMatchExerciseUI exercise={exercise as never} onAnswer={handleAnswer} disabled={feedback !== null} />
             )}
             {exercise.type === "fill_blank" && (
               <FillBlankExerciseUI exercise={exercise as never} onAnswer={handleAnswer} disabled={feedback !== null} />
@@ -142,7 +134,7 @@ export function LessonEngine({
                   </div>
                   {correctAnswer && (
                     <div className="text-sm text-muted-foreground">
-                      Đáp án đúng: <span className="font-chinese font-semibold">{correctAnswer}</span>
+                      Đáp án đúng: <span className="font-primer font-semibold">{correctAnswer}</span>
                     </div>
                   )}
                 </div>

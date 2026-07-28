@@ -213,7 +213,7 @@ export async function loadGrammarPayload(lessonId: string): Promise<PdfLoadResul
     fileName: `${FILE_PREFIX} - Ngu phap - ${title}`,
     payload: {
       kind: "grammar",
-      props: { lessonTitle: title, unitTitle: lesson.unit.title, unitTheme: lesson.unit.theme, level: lesson.unit.level, content: parseGrammarContent(lesson.exercises) },
+      props: { lessonTitle: title, unitTitle: lesson.unit.title, level: lesson.unit.level, content: parseGrammarContent(lesson.exercises) },
     },
   };
 }

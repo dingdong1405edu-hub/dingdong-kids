@@ -11,10 +11,9 @@ import { Progress } from "@/components/ui/progress";
 import { completeLessonAction } from "@/server/actions/lesson";
 import { saveVocabPositionAction } from "@/server/actions/vocab-review";
 import { WordCard } from "./word-card";
-import { StrokeQuiz } from "./stroke-quiz";
 import { FlashcardDeck } from "./flashcard-deck";
 import { playWord } from "@/lib/speech";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { PassStatus } from "@/components/learn/roadmap/pass-status";
 import type { VocabWordCard } from "@/types";
@@ -45,7 +44,7 @@ interface Props {
 }
 
 type Phase = "learn" | "flashcards" | "done";
-const STEP_LABELS = ["Học từ", "Viết theo nét", "Tự viết"] as const;
+const STEP_LABELS = ["Học từ"] as const;
 
 export function WordFlow({
   lesson,
@@ -65,7 +64,7 @@ export function WordFlow({
   const clampStep = Math.min(Math.max(0, startStep), STEP_LABELS.length - 1);
   const [phase, setPhase] = useState<Phase>("learn");
   const [wordIndex, setWordIndex] = useState(clampIdx);
-  const [step, setStep] = useState(clampStep); // 0 card · 1 trace · 2 recall
+  const [step, setStep] = useState(clampStep); // chỉ còn bước 0 (thẻ từ)
   const [xpEarned, setXpEarned] = useState<number | null>(null);
   const [resultPct, setResultPct] = useState<number | null>(null);
   const [startTime] = useState(Date.now());
@@ -84,19 +83,6 @@ export function WordFlow({
     if (wordIndex === 0 && step === 0) return;
     void saveVocabPositionAction({ lessonId: lesson.id, wordIndex, step }).catch(() => {});
   }, [phase, wordIndex, step, lesson.id, words.length, disablePositionSave]);
-
-  // Tự đọc từ khi vào bước viết chữ Hán ("Viết theo nét" / "Tự viết") — giống
-  // bước "Học từ" đã tự đọc — để người học vừa viết vừa nghe, dễ nhớ hơn.
-  // Phụ thuộc theo trường nguyên thuỷ (không phải object `word`) vì lộ trình
-  // dựng lại mảng `words` mỗi lần render → tránh phát lại liên tục.
-  const wordHanzi = word?.hanzi;
-  const wordAudioUrl = word?.audioUrl;
-  useEffect(() => {
-    if (phase !== "learn" || !wordHanzi) return;
-    if (step === 1 || step === 2) {
-      playWord({ hanzi: wordHanzi, audioUrl: wordAudioUrl });
-    }
-  }, [phase, step, wordHanzi, wordAudioUrl]);
 
   // Empty lesson — nothing authored yet.
   if (words.length === 0) {
@@ -125,7 +111,7 @@ export function WordFlow({
       setStep((s) => s + 1);
       return;
     }
-    // finished the write step of this word
+    // học xong từ này → sang từ kế tiếp
     if (wordIndex < words.length - 1) {
       setWordIndex((i) => i + 1);
       setStep(0);
@@ -164,7 +150,7 @@ export function WordFlow({
       toast.error("Lỗi lưu kết quả");
       setXpEarned(0);
     }
-    emitBao("complete");
+    emitDing("complete");
     setPhase("done");
   }
 
@@ -192,7 +178,7 @@ export function WordFlow({
       <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md text-center">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
-            <BaoBuddy size={104} pose="cheer" message="做得好!" className="mx-auto" />
+            <BaoBuddy size={104} pose="cheer" message="Giỏi lắm!" className="mx-auto" />
             <h2 className="text-2xl font-bold">Hoàn thành bài học!</h2>
             <p className="text-sm text-muted-foreground">
               Bạn đã học {words.length} từ trong bài “{lesson.title || "Từ vựng"}”.
@@ -260,7 +246,7 @@ export function WordFlow({
       ) : (
         <>
           <div className="pb-2 text-center text-sm text-muted-foreground">
-            Từ {wordIndex + 1}/{words.length} · {STEP_LABELS[step]}
+            Từ {wordIndex + 1}/{words.length}
           </div>
           <div className="flex flex-1 flex-col justify-center py-4">
             <AnimatePresence mode="wait">
@@ -271,13 +257,7 @@ export function WordFlow({
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                {step === 0 && <WordCard word={word} />}
-                {step === 1 && (
-                  <StrokeQuiz key={`${word.id}-trace`} mode="trace" character={word.hanzi} />
-                )}
-                {step === 2 && (
-                  <StrokeQuiz key={`${word.id}-recall`} mode="recall" character={word.hanzi} />
-                )}
+                <WordCard word={word} />
               </motion.div>
             </AnimatePresence>
           </div>

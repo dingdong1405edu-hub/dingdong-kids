@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { BaoArt, type BaoPose } from "./bao-art";
-import { onBao, type BaoReaction } from "@/lib/bao-bus";
+import { onDing, type DingReaction } from "@/lib/ding-bus";
 import styles from "./bao-companion.module.css";
 
 type Fx = "" | "pop" | "shake";
@@ -16,14 +16,14 @@ interface ReactionLook {
 }
 
 /** Ánh xạ tín hiệu bus → biểu cảm + lời thoại mặc định (có thể bị message ghi đè). */
-function look(reaction: BaoReaction): ReactionLook {
+function look(reaction: DingReaction): ReactionLook {
   switch (reaction) {
     case "correct":
-      return { pose: "proud", fx: "pop", bubble: "好! 👍", hold: 1500 };
+      return { pose: "proud", fx: "pop", bubble: "Giỏi quá! 👍", hold: 1500 };
     case "wrong":
       return { pose: "sad", fx: "shake", bubble: "Cố lên nhé!", hold: 1600 };
     case "complete":
-      return { pose: "cheer", fx: "pop", bubble: "做得好!", hold: 2000 };
+      return { pose: "cheer", fx: "pop", bubble: "Làm tốt lắm!", hold: 2000 };
     case "celebrate":
       return { pose: "cheer", fx: "pop", bubble: "Tuyệt vời! 🎉", hold: 2200 };
     case "streak":
@@ -33,7 +33,7 @@ function look(reaction: BaoReaction): ReactionLook {
     case "heartLost":
       return { pose: "sad", fx: "shake", bubble: "Tiếc quá 💔", hold: 1600 };
     case "thinking":
-      return { pose: "think", fx: "", bubble: "Để Bao xem…", hold: 5000 };
+      return { pose: "think", fx: "", bubble: "Để Ding xem…", hold: 5000 };
     case "wave":
       return { pose: "wave", fx: "", bubble: null, hold: 1500 };
   }
@@ -72,7 +72,7 @@ export function BaoCompanion({ onOpen }: { onOpen: () => void }) {
       }, l.hold);
     };
 
-    const unsub = onBao(({ reaction, message }) => play(look(reaction), message));
+    const unsub = onDing(({ reaction, message }) => play(look(reaction), message));
 
     return () => {
       unsub();

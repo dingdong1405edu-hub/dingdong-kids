@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { Volume2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { getTone } from "@/lib/pinyin";
-import { toneColor, markWord } from "@/lib/utils";
+import { markWord } from "@/lib/utils";
 import { playWord } from "@/lib/speech";
 import type { VocabWordCard } from "@/types";
 
@@ -15,13 +14,13 @@ interface Props {
 }
 
 /**
- * Step 5: review the lesson's words as flashcards. Tap a card to flip between
- * Hán tự and pinyin + meaning; the front side is switchable in both directions.
+ * Bước 5: ôn lại các từ của bài bằng flashcard. Chạm vào thẻ để lật giữa mặt TỪ
+ * tiếng Anh và mặt NGHĨA; chiều lật đổi được cả hai hướng.
  */
 export function FlashcardDeck({ words, onDone }: Props) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [hanziFront, setHanziFront] = useState(true);
+  const [wordFront, setWordFront] = useState(true);
 
   const word = words[index];
   const isLast = index === words.length - 1;
@@ -33,34 +32,31 @@ export function FlashcardDeck({ words, onDone }: Props) {
     setIndex((i) => Math.min(words.length - 1, Math.max(0, i + delta)));
   }
 
-  const hanziFace = (
+  const wordFace = (
     <div className="flex flex-col items-center gap-2">
-      <div className={`font-chinese text-7xl font-bold ${toneColor(getTone(word.pinyin))}`}>
-        {word.hanzi}
-      </div>
+      <div className="font-primer text-6xl font-bold">{word.word}</div>
+      {word.ipa && <div className="text-lg text-muted-foreground">{word.ipa}</div>}
     </div>
   );
   const meaningFace = (
     <div className="flex flex-col items-center gap-1.5 px-4 text-center">
-      <div className="font-pinyin text-2xl text-muted-foreground">{word.pinyin}</div>
       <div className="text-xl font-medium">{word.meaning}</div>
       {example && (
         <div className="mt-1 w-full border-t pt-2 text-sm">
-          <div className="font-chinese text-base">
-            {markWord(example.hanzi, word.hanzi).map((seg, i) => (
+          <div className="font-primer text-base">
+            {markWord(example.sentence, word.word).map((seg, i) => (
               <span key={i} className={seg.match ? "font-bold text-primary" : "text-foreground"}>
                 {seg.text}
               </span>
             ))}
           </div>
-          {example.pinyin && <div className="font-pinyin text-xs text-muted-foreground">{example.pinyin}</div>}
           <div className="text-xs text-muted-foreground">— {example.meaning}</div>
         </div>
       )}
     </div>
   );
-  const front = hanziFront ? hanziFace : meaningFace;
-  const back = hanziFront ? meaningFace : hanziFace;
+  const front = wordFront ? wordFace : meaningFace;
+  const back = wordFront ? meaningFace : wordFace;
 
   return (
     <div className="flex flex-col items-center gap-5">
@@ -73,13 +69,13 @@ export function FlashcardDeck({ words, onDone }: Props) {
           <button
             type="button"
             onClick={() => {
-              setHanziFront((v) => !v);
+              setWordFront((v) => !v);
               setFlipped(false);
             }}
             className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors hover:bg-muted"
           >
             <RefreshCw className="h-3 w-3" />
-            {hanziFront ? "Hán → Nghĩa" : "Nghĩa → Hán"}
+            {wordFront ? "Từ → Nghĩa" : "Nghĩa → Từ"}
           </button>
         </div>
         <Progress value={pct} className="h-2.5" />
@@ -119,7 +115,7 @@ export function FlashcardDeck({ words, onDone }: Props) {
           variant="outline"
           onClick={(e) => {
             e.stopPropagation();
-            playWord({ hanzi: word.hanzi, audioUrl: word.audioUrl });
+            playWord({ word: word.word, audioUrl: word.audioUrl });
           }}
         >
           <Volume2 className="mr-1.5 h-4 w-4" /> Nghe

@@ -19,10 +19,9 @@ const TASK_TYPES = [
 
 const FULL_JSON_PLACEHOLDER = `{
   "taskType": "GUIDED",
-  "prompt": "Viết một đoạn văn giới thiệu gia đình của bạn.",
-  "promptZh": "请写一段话介绍你的家庭。",
+  "prompt": "Write about your family.",
   "outline": "Mở bài: gia đình có mấy người\\nThân bài: nghề nghiệp từng người\\nKết bài: cảm nghĩ",
-  "minChars": 80,
+  "minWords": 30,
   "timeLimit": 900
 }`;
 
@@ -71,9 +70,9 @@ export function WritingSectionEditor({
           />
           <p className="text-[11px] text-muted-foreground">
             Một object: <code>taskType</code> (FREE | GUIDED | PICTURE_DESCRIPTION) ·{" "}
-            <code>prompt</code> (đề bài VI, bắt buộc) · tuỳ chọn <code>promptZh</code> ·{" "}
+            <code>prompt</code> (đề bài tiếng Anh, bắt buộc) ·{" "}
             <code>outline</code> (dàn ý, mỗi ý một dòng) · <code>imageUrl</code> ·{" "}
-            <code>minChars</code> · <code>timeLimit</code> (giây). Dán sẽ <b>thay toàn bộ</b> nội dung phần Viết bên dưới.
+            <code>minWords</code> · <code>timeLimit</code> (giây). Dán sẽ <b>thay toàn bộ</b> nội dung phần Viết bên dưới.
           </p>
           <Button type="button" size="sm" variant="outline" onClick={applyJson} className="gap-1.5">
             <FileJson className="h-4 w-4" /> Áp dụng JSON
@@ -97,12 +96,12 @@ export function WritingSectionEditor({
           </select>
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Số chữ tối thiểu</Label>
+          <Label className="text-xs">Số từ tối thiểu</Label>
           <Input
             type="number"
             min={0}
-            value={v.minChars ?? 50}
-            onChange={(e) => set({ minChars: Number(e.target.value) || 0 })}
+            value={v.minWords ?? 30}
+            onChange={(e) => set({ minWords: Number(e.target.value) || 0 })}
             className="h-9"
           />
         </div>
@@ -124,15 +123,6 @@ export function WritingSectionEditor({
           onChange={(e) => set({ prompt: e.target.value })}
           placeholder="Viết một đoạn văn giới thiệu gia đình của bạn..."
           className="min-h-16 text-sm"
-        />
-      </div>
-      <div className="space-y-1">
-        <Label className="text-xs">Đề bài (tiếng Trung, tuỳ chọn)</Label>
-        <Textarea
-          value={v.promptZh ?? ""}
-          onChange={(e) => set({ promptZh: e.target.value || null })}
-          placeholder="请写一段话介绍你的家庭。"
-          className="min-h-12 font-chinese text-sm"
         />
       </div>
       <div className="space-y-1">

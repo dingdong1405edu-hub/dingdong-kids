@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BaoBuddy } from "@/components/marketing/bao-buddy";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { countChineseChars } from "@/lib/utils";
-import { getTone } from "@/lib/pinyin";
+import { countWords } from "@/lib/utils";
 import {
   isDue,
   ratingToQuality,
@@ -15,7 +14,7 @@ import {
   type SrsRating,
 } from "@/lib/srs";
 import { reviewWordAction } from "@/server/actions/vocab-review";
-import { emitBao } from "@/lib/bao-bus";
+import { emitDing } from "@/lib/ding-bus";
 import { McqCard, type OptionKind } from "./mcq-card";
 import { SrsFlashcard } from "./srs-flashcard";
 import { MatchGame } from "./match-game";
@@ -32,7 +31,7 @@ interface Props {
   /**
    * Ghi nhận lượt ôn (cập nhật lịch SRS). Mặc định ghi vào VocabReview theo
    * `word.id` (từ vựng Luyện kỹ năng). Lộ trình truyền hàm riêng để ghi vào
-   * RoadmapWordReview theo `word.hanzi`. Gọi nền (fire-and-forget).
+   * RoadmapWordReview theo `word.word`. Gọi nền (fire-and-forget).
    */
   persist?: (word: VocabWordCard, quality: number) => void;
   /** Cho phép "Phản ánh từ này" trên flashcard — tắt ở lộ trình (từ là JSON). */
@@ -47,8 +46,8 @@ function defaultPersist(word: VocabWordCard, quality: number) {
 
 // ── Mô tả task trong hàng đợi ──────────────────────────────────────────────────
 
-type PromptType = "hanzi" | "meaning" | "listen";
-type Variant = "meaning" | "hanzi" | "pinyin" | "tone" | "listen";
+type PromptType = "word" | "meaning" | "listen";
+type Variant = "meaning" | "word" | "ipa" | "listen";
 
 interface BuiltMcq {
   question: string;
@@ -76,40 +75,31 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Dựng "giải thích đáp án" cho MCQ ôn từ ngay từ dữ liệu của từ (chữ + pinyin +
+/** Dựng "giải thích đáp án" cho MCQ ôn từ ngay từ dữ liệu của từ (từ + IPA +
  *  nghĩa + 1 ví dụ) — để câu trắc nghiệm nào cũng có nút giải thích, kể cả khi đúng. */
 function wordExplanation(word: VocabWordCard): string {
-  let s = `${word.hanzi} (${word.pinyin}) — ${word.meaning}`;
+  let s = `${word.word}${word.ipa ? ` (${word.ipa})` : ""} — ${word.meaning}`;
   const ex = word.examples?.[0];
-  if (ex) s += `. Ví dụ: ${ex.hanzi} (${ex.pinyin}) — ${ex.meaning}`;
+  if (ex) s += `. Ví dụ: ${ex.sentence} — ${ex.meaning}`;
   return s;
 }
 
 function feasibleVariants(word: VocabWordCard, poolSize: number): Variant[] {
   const v: Variant[] = [];
-  if (poolSize >= 2) v.push("meaning", "hanzi", "pinyin", "listen");
-  if (countChineseChars(word.hanzi) === 1) v.push("tone");
+  if (poolSize >= 2) {
+    v.push("meaning", "word", "listen");
+    // Chỉ hỏi IPA khi cả kho từ đều có phiên âm, nếu không đáp án sẽ rỗng.
+    if (word.ipa) v.push("ipa");
+  }
   return v;
 }
 
 function buildMcq(word: VocabWordCard, variant: Variant, pool: VocabWordCard[]): BuiltMcq | null {
-  if (variant === "tone") {
-    const tone = getTone(word.pinyin);
-    return {
-      question: "Từ này mang thanh điệu nào?",
-      prompt: { type: "hanzi", word },
-      options: ["Thanh 1", "Thanh 2", "Thanh 3", "Thanh 4", "Thanh nhẹ"],
-      optionKind: "text",
-      correctIndex: tone === 0 ? 4 : tone - 1,
-      audioWord: word,
-    };
-  }
-
   const valueOf = (w: VocabWordCard) =>
-    variant === "hanzi" || variant === "listen" ? w.hanzi : variant === "pinyin" ? w.pinyin : w.meaning;
+    variant === "word" || variant === "listen" ? w.word : variant === "ipa" ? w.ipa : w.meaning;
   const correctVal = valueOf(word);
   // Khử trùng đáp án theo GIÁ TRỊ HIỂN THỊ (không chỉ so với đáp án đúng): tránh
-  // hai nút giống hệt nhau khi gặp đồng âm (pinyin) hoặc nghĩa trùng.
+  // hai nút giống hệt nhau khi gặp từ đồng âm (IPA) hoặc nghĩa trùng.
   const seenValues = new Set<string>([correctVal]);
   const distractors: VocabWordCard[] = [];
   for (const w of shuffle(pool.filter((x) => x.id !== word.id))) {
@@ -123,21 +113,21 @@ function buildMcq(word: VocabWordCard, variant: Variant, pool: VocabWordCard[]):
   if (optionWords.length < 2) return null;
 
   const optionKind: OptionKind =
-    variant === "hanzi" || variant === "listen" ? "hanzi" : variant === "pinyin" ? "pinyin" : "text";
+    variant === "word" || variant === "listen" ? "word" : variant === "ipa" ? "ipa" : "text";
   const question =
-    variant === "hanzi"
-      ? "Chọn chữ Hán đúng"
-      : variant === "pinyin"
-        ? "Chọn pinyin đúng"
+    variant === "word"
+      ? "Chọn từ tiếng Anh đúng"
+      : variant === "ipa"
+        ? "Chọn phiên âm đúng"
         : variant === "listen"
           ? "Nghe và chọn từ đúng"
           : "Từ này nghĩa là gì?";
   const prompt: { type: PromptType; word: VocabWordCard } =
-    variant === "hanzi"
+    variant === "word"
       ? { type: "meaning", word }
       : variant === "listen"
         ? { type: "listen", word }
-        : { type: "hanzi", word };
+        : { type: "word", word };
 
   return {
     question,
@@ -220,7 +210,7 @@ export function ReviewFlow({
       setRemembered((r) => {
         if (finishing && !finishedRef.current) {
           finishedRef.current = true;
-          emitBao(r / total >= 0.8 ? "celebrate" : "complete");
+          emitDing(r / total >= 0.8 ? "celebrate" : "complete");
         }
         return r;
       });
@@ -248,7 +238,7 @@ export function ReviewFlow({
     advance();
   }
   function onMcqAnswered(task: Extract<Task, { kind: "mcq" }>, correct: boolean) {
-    emitBao(correct ? "correct" : "wrong");
+    emitDing(correct ? "correct" : "wrong");
     const q = correctnessToQuality(correct);
     if (!correct) requeue(task.word);
     grade(task.word, q);
@@ -359,7 +349,7 @@ export function ReviewFlow({
   );
 }
 
-/** Vùng đề bài cho MCQ. Chữ Hán để màu trung tính để không lộ thanh điệu/pinyin. */
+/** Vùng đề bài cho MCQ. */
 function PromptNode({ prompt }: { prompt: { type: PromptType; word: VocabWordCard } }) {
   if (prompt.type === "meaning") {
     return <div className="px-4 text-center text-3xl font-bold">{prompt.word.meaning}</div>;
@@ -367,5 +357,5 @@ function PromptNode({ prompt }: { prompt: { type: PromptType; word: VocabWordCar
   if (prompt.type === "listen") {
     return <div className="text-6xl">🔊</div>;
   }
-  return <div className="font-chinese text-6xl font-bold">{prompt.word.hanzi}</div>;
+  return <div className="font-primer text-6xl font-bold">{prompt.word.word}</div>;
 }

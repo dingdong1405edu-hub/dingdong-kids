@@ -5,9 +5,7 @@
 // `{ exercise, onAnswer, disabled }` contract.
 import { MatchExerciseUI } from "./match-exercise";
 import { TranslateExerciseUI } from "./translate-exercise";
-import { ToneSelectExerciseUI } from "./tone-select-exercise";
 import { SentenceOrderExerciseUI } from "./sentence-order-exercise";
-import { PinyinMatchExerciseUI } from "./pinyin-match-exercise";
 import { FillBlankExerciseUI } from "./fill-blank-exercise";
 import { AnswerQuestionExerciseUI } from "./answer-question-exercise";
 import { TypeSentenceExerciseUI } from "./type-sentence-exercise";
@@ -26,13 +24,9 @@ export function ExerciseRenderer({ exercise, onAnswer, disabled }: Props) {
       return <MatchExerciseUI exercise={exercise as never} {...common} />;
     case "translate":
       return <TranslateExerciseUI exercise={exercise as never} {...common} />;
-    case "toneSelect":
-      return <ToneSelectExerciseUI exercise={exercise as never} {...common} />;
     case "sentenceOrder":
     case "sentence_order":
       return <SentenceOrderExerciseUI exercise={exercise as never} {...common} />;
-    case "pinyinMatch":
-      return <PinyinMatchExerciseUI exercise={exercise as never} {...common} />;
     case "fill_blank":
       return <FillBlankExerciseUI exercise={exercise as never} {...common} />;
     case "answer_question":

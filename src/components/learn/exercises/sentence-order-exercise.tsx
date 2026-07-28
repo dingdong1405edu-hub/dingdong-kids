@@ -54,7 +54,7 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
               key={`${w}-${i}`}
               layout
               onClick={() => removeWord(w, i)}
-              className="px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 font-chinese font-semibold hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-500/15 dark:hover:border-red-500/40"
+              className="px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 font-primer font-semibold hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-500/15 dark:hover:border-red-500/40"
             >
               {w}
             </motion.button>
@@ -69,7 +69,7 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
             key={`bank-${w}-${i}`}
             layout
             onClick={() => pickWord(w, i)}
-            className="px-3 py-2 rounded-lg border-2 font-chinese font-semibold hover:border-primary/50 hover:bg-primary/5"
+            className="px-3 py-2 rounded-lg border-2 font-primer font-semibold hover:border-primary/50 hover:bg-primary/5"
           >
             {w}
           </motion.button>

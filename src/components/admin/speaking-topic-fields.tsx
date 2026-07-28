@@ -26,17 +26,16 @@ import { transcribeListeningAudioAction } from "@/server/actions/admin";
 
 export interface TopicHint {
   text?: string;
-  pinyin?: string;
   vi?: string;
 }
 
-const HSK_LEVELS = ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"];
+const LEVELS = ["PRE_STARTERS", "STARTERS", "MOVERS", "FLYERS", "KET", "PET"];
 
 export interface TopicFormDefaults {
   title?: string;
-  hskLevel?: string;
+  level?: string;
   topic?: string;
-  questionZh?: string;
+  question?: string;
   questionPinyin?: string | null;
   questionVi?: string | null;
   outline?: string | null;
@@ -45,7 +44,7 @@ export interface TopicFormDefaults {
   hints?: TopicHint[];
   sampleAnswer?: string | null;
   sampleAnswerPinyin?: string | null;
-  minChars?: number;
+  minWords?: number;
   prepSeconds?: number;
   order?: number;
   imageUrl?: string | null;
@@ -54,20 +53,20 @@ export interface TopicFormDefaults {
 // Mẫu JSON dùng cho cả phần hướng dẫn lẫn nút "Chép mẫu". MP3 + ảnh KHÔNG nằm
 // trong JSON — admin tải tệp riêng ở dưới.
 const TEMPLATE = {
-  title: "HSKK HSK3 — Sở thích",
-  hskLevel: "HSK3",
+  title: "Movers — Sở thích của bé",
+  level: "MOVERS",
   topic: "爱好 — Sở thích",
-  questionZh: "请谈谈你的爱好，并说明原因。",
+  question: "Tell me about your favourite hobby. Why do you like it?",
   questionPinyin: "Qǐng tántan nǐ de àihào, bìng shuōmíng yuányīn.",
   questionVi: "Hãy nói về sở thích của bạn và giải thích lý do.",
   transcript: "请谈谈你的爱好，并说明原因。",
   outline: "1. Sở thích của bạn là gì\n2. Vì sao bạn thích\n3. Tần suất / một kỷ niệm\n4. Cảm nghĩ, kết luận",
   hints: [
-    { text: "旅游", pinyin: "lǚyóu", vi: "du lịch" },
-    { text: "放松心情", pinyin: "fàngsōng xīnqíng", vi: "thư giãn tinh thần" },
+    { text: "I like swimming.", vi: "Tớ thích bơi." },
+    { text: "It makes me happy.", vi: "Nó làm tớ vui." },
   ],
   sampleAnswer: "我的爱好是旅游。每次旅游我都觉得很放松，也能认识新朋友。我每年都会去旅游一两次。",
-  minChars: 80,
+  minWords: 80,
   prepSeconds: 10,
   order: 1,
 };
@@ -95,20 +94,20 @@ export function SpeakingTopicForm({
 }) {
   const d = defaults;
   const [title, setTitle] = useState(d?.title ?? "");
-  const [hskLevel, setHskLevel] = useState(d?.hskLevel ?? "HSK3");
+  const [level, setLevel] = useState(d?.level ?? "MOVERS");
   const [topic, setTopic] = useState(d?.topic ?? "");
-  const [questionZh, setQuestionZh] = useState(d?.questionZh ?? "");
+  const [question, setQuestion] = useState(d?.question ?? "");
   const [questionPinyin, setQuestionPinyin] = useState(d?.questionPinyin ?? "");
   const [questionVi, setQuestionVi] = useState(d?.questionVi ?? "");
   const [outline, setOutline] = useState(d?.outline ?? "");
   const [transcript, setTranscript] = useState(d?.transcript ?? "");
   const [audioUrl, setAudioUrl] = useState(d?.audioUrl ?? "");
   const [hints, setHints] = useState<TopicHint[]>(
-    d?.hints && d.hints.length ? d.hints : [{ text: "", pinyin: "", vi: "" }],
+    d?.hints && d.hints.length ? d.hints : [{ text: "", vi: "" }],
   );
   const [sampleAnswer, setSampleAnswer] = useState(d?.sampleAnswer ?? "");
   const [sampleAnswerPinyin, setSampleAnswerPinyin] = useState(d?.sampleAnswerPinyin ?? "");
-  const [minChars, setMinChars] = useState(String(d?.minChars ?? 0));
+  const [minWords, setMinChars] = useState(String(d?.minWords ?? 0));
   const [prepSeconds, setPrepSeconds] = useState(String(d?.prepSeconds ?? 0));
   const [order, setOrder] = useState(String(d?.order ?? 0));
 
@@ -123,18 +122,18 @@ export function SpeakingTopicForm({
   const busy = uploading || transcribing;
 
   const cleanHints = hints.filter(
-    (h) => (h.text || "").trim() || (h.pinyin || "").trim() || (h.vi || "").trim(),
+    (h) => (h.text || "").trim() || (h.vi || "").trim(),
   );
 
   function setHint(i: number, patch: Partial<TopicHint>) {
     setHints((prev) => prev.map((h, idx) => (idx === i ? { ...h, ...patch } : h)));
   }
   function addHint() {
-    setHints((prev) => [...prev, { text: "", pinyin: "", vi: "" }]);
+    setHints((prev) => [...prev, { text: "", vi: "" }]);
   }
   function removeHint(i: number) {
     setHints((prev) =>
-      prev.length <= 1 ? [{ text: "", pinyin: "", vi: "" }] : prev.filter((_, idx) => idx !== i),
+      prev.length <= 1 ? [{ text: "", vi: "" }] : prev.filter((_, idx) => idx !== i),
     );
   }
 
@@ -161,11 +160,11 @@ export function SpeakingTopicForm({
     };
 
     if (str("title") !== undefined) setTitle(str("title")!);
-    if (typeof p.hskLevel === "string" && HSK_LEVELS.includes(p.hskLevel)) setHskLevel(p.hskLevel);
+    if (typeof p.level === "string" && LEVELS.includes(p.level)) setLevel(p.level);
     if (str("topic") !== undefined) setTopic(str("topic")!);
-    // chấp nhận cả "question" làm bí danh của questionZh
-    if (str("questionZh") !== undefined) setQuestionZh(str("questionZh")!);
-    else if (str("question") !== undefined) setQuestionZh(str("question")!);
+    // chấp nhận cả "questionEn" làm bí danh của question
+    if (str("question") !== undefined) setQuestion(str("question")!);
+    else if (str("questionEn") !== undefined) setQuestion(str("questionEn")!);
     if (str("questionPinyin") !== undefined) setQuestionPinyin(str("questionPinyin")!);
     if (str("questionVi") !== undefined) setQuestionVi(str("questionVi")!);
     if (str("outline") !== undefined) setOutline(str("outline")!);
@@ -173,7 +172,7 @@ export function SpeakingTopicForm({
     if (str("audioUrl") !== undefined) setAudioUrl(str("audioUrl")!);
     if (str("sampleAnswer") !== undefined) setSampleAnswer(str("sampleAnswer")!);
     if (str("sampleAnswerPinyin") !== undefined) setSampleAnswerPinyin(str("sampleAnswerPinyin")!);
-    if (numStr("minChars") !== undefined) setMinChars(numStr("minChars")!);
+    if (numStr("minWords") !== undefined) setMinChars(numStr("minWords")!);
     if (numStr("prepSeconds") !== undefined) setPrepSeconds(numStr("prepSeconds")!);
     if (numStr("order") !== undefined) setOrder(numStr("order")!);
     if (Array.isArray(p.hints)) {
@@ -181,11 +180,10 @@ export function SpeakingTopicForm({
         .filter((h): h is Record<string, unknown> => !!h && typeof h === "object")
         .map((h) => ({
           text: typeof h.text === "string" ? h.text : "",
-          pinyin: typeof h.pinyin === "string" ? h.pinyin : "",
           vi: typeof h.vi === "string" ? h.vi : "",
         }))
-        .filter((h) => h.text || h.pinyin || h.vi);
-      setHints(hs.length ? hs : [{ text: "", pinyin: "", vi: "" }]);
+        .filter((h) => h.text || h.vi);
+      setHints(hs.length ? hs : [{ text: "", vi: "" }]);
     }
     toast.success("Đã điền JSON vào form. Kiểm tra lại rồi tải MP3 và bấm lưu.");
   }
@@ -267,7 +265,7 @@ export function SpeakingTopicForm({
             <Textarea
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
-              placeholder='Dán JSON vào đây, ví dụ: {"title":"...","hskLevel":"HSK3","questionZh":"...", ...}'
+              placeholder='Dán JSON vào đây, ví dụ: {"title":"...","level":"MOVERS","question":"...", ...}'
               className="min-h-32 font-mono text-xs"
             />
             <div className="flex flex-wrap gap-2">
@@ -287,17 +285,17 @@ export function SpeakingTopicForm({
               <summary className="cursor-pointer font-medium text-violet-700 dark:text-violet-300">Hướng dẫn viết JSON</summary>
               <div className="mt-2 space-y-2 text-muted-foreground">
                 <p>
-                  Dán một <b>object</b> JSON. Các khoá hỗ trợ (đều không bắt buộc trừ <code>questionZh</code>):
+                  Dán một <b>object</b> JSON. Các khoá hỗ trợ (đều không bắt buộc trừ <code>question</code>):
                 </p>
                 <ul className="ml-4 list-disc space-y-0.5">
                   <li><code>title</code>, <code>topic</code> — chuỗi (tiêu đề nội bộ, nhãn chủ đề).</li>
-                  <li><code>hskLevel</code> — một trong HSK1…HSK6.</li>
-                  <li><code>questionZh</code> (bắt buộc), <code>questionPinyin</code>, <code>questionVi</code> — câu hỏi + pinyin + dịch.</li>
+                  <li><code>level</code> — một trong PRE_STARTERS…PET.</li>
+                  <li><code>question</code> (bắt buộc), <code>questionVi</code> — câu hỏi tiếng Anh + dịch tiếng Việt.</li>
                   <li><code>transcript</code> — lời giám khảo (tiếng Trung); cũng có thể bấm “Tạo transcript từ audio”.</li>
                   <li><code>outline</code> — dàn ý gợi ý, mỗi ý một dòng (dùng <code>\n</code> trong JSON).</li>
-                  <li><code>hints</code> — mảng <code>{`[{ "text": "旅游", "pinyin": "lǚyóu", "vi": "du lịch" }]`}</code>.</li>
-                  <li><code>sampleAnswer</code>, <code>sampleAnswerPinyin</code> — bài mẫu (tiếng Trung) + pinyin.</li>
-                  <li><code>minChars</code>, <code>prepSeconds</code>, <code>order</code> — số.</li>
+                  <li><code>hints</code> — mảng <code>{`[{ "text": "I like swimming.", "vi": "Tớ thích bơi." }]`}</code>.</li>
+                  <li><code>sampleAnswer</code> — bài nói mẫu (tiếng Anh).</li>
+                  <li><code>minWords</code>, <code>prepSeconds</code>, <code>order</code> — số.</li>
                 </ul>
                 <p>
                   <b>MP3</b> giám khảo hỏi và <b>ảnh</b> đại diện <u>không</u> nằm trong JSON — tải tệp riêng ở dưới.
@@ -315,17 +313,17 @@ export function SpeakingTopicForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
           <Label>Tiêu đề (nội bộ)</Label>
-          <Input name="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="HSKK HSK3 — Sở thích" />
+          <Input name="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Movers — Sở thích của bé" />
         </div>
         <div className="space-y-1">
-          <Label>Cấp độ HSK</Label>
+          <Label>Cấp độ</Label>
           <select
-            name="hskLevel"
-            value={hskLevel}
-            onChange={(e) => setHskLevel(e.target.value)}
+            name="level"
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
             className="flex h-9 w-full rounded-md border px-3 py-1 text-sm"
           >
-            {HSK_LEVELS.map((l) => (
+            {LEVELS.map((l) => (
               <option key={l} value={l}>
                 {l}
               </option>
@@ -347,7 +345,7 @@ export function SpeakingTopicForm({
           </div>
           <div className="space-y-1">
             <Label>Tối thiểu (chữ)</Label>
-            <Input name="minChars" type="number" value={minChars} onChange={(e) => setMinChars(e.target.value)} />
+            <Input name="minWords" type="number" value={minWords} onChange={(e) => setMinChars(e.target.value)} />
           </div>
         </div>
       </div>
@@ -355,10 +353,10 @@ export function SpeakingTopicForm({
       <div className="space-y-1">
         <Label>Câu hỏi (tiếng Trung) *</Label>
         <Textarea
-          name="questionZh"
-          value={questionZh}
-          onChange={(e) => setQuestionZh(e.target.value)}
-          className="font-chinese min-h-16"
+          name="question"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          className="font-primer min-h-16"
           placeholder="请谈谈你的爱好，并说明原因。"
           required
         />
@@ -370,7 +368,7 @@ export function SpeakingTopicForm({
             name="questionPinyin"
             value={questionPinyin ?? ""}
             onChange={(e) => setQuestionPinyin(e.target.value)}
-            className="font-pinyin"
+            className=""
             placeholder="Qǐng tántan nǐ de àihào…"
           />
         </div>
@@ -497,7 +495,7 @@ export function SpeakingTopicForm({
           name="transcript"
           value={transcript}
           onChange={(e) => setTranscript(e.target.value)}
-          className="font-chinese min-h-16"
+          className="font-primer min-h-16"
           placeholder="请说说你的爱好。"
         />
         <button
@@ -525,13 +523,7 @@ export function SpeakingTopicForm({
                   value={h.text ?? ""}
                   onChange={(e) => setHint(i, { text: e.target.value })}
                   placeholder="Chữ Hán (旅游)"
-                  className="font-chinese text-sm"
-                />
-                <Input
-                  value={h.pinyin ?? ""}
-                  onChange={(e) => setHint(i, { pinyin: e.target.value })}
-                  placeholder="Pinyin (lǚyóu)"
-                  className="font-pinyin text-sm"
+                  className="font-primer text-sm"
                 />
                 <Input
                   value={h.vi ?? ""}
@@ -567,7 +559,7 @@ export function SpeakingTopicForm({
           name="sampleAnswer"
           value={sampleAnswer ?? ""}
           onChange={(e) => setSampleAnswer(e.target.value)}
-          className="font-chinese min-h-20"
+          className="font-primer min-h-20"
           placeholder="我的爱好是旅游。我觉得旅游可以让我放松，还能认识新朋友…"
         />
       </div>
@@ -577,7 +569,7 @@ export function SpeakingTopicForm({
           name="sampleAnswerPinyin"
           value={sampleAnswerPinyin ?? ""}
           onChange={(e) => setSampleAnswerPinyin(e.target.value)}
-          className="font-pinyin min-h-16"
+          className=" min-h-16"
         />
       </div>
 

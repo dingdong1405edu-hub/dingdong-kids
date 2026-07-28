@@ -13,7 +13,6 @@ export type PublishModel =
   | "vocabLesson"
   | "grammarUnit"
   | "grammarLesson"
-  | "hanzi"
   | "reading"
   | "listening"
   | "writing"

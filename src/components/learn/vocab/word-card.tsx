@@ -1,9 +1,9 @@
 "use client";
 import { useEffect } from "react";
+import Image from "next/image";
 import { Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getTone } from "@/lib/pinyin";
-import { toneColor, markWord } from "@/lib/utils";
+import { markWord } from "@/lib/utils";
 import { playWord } from "@/lib/speech";
 import { WordReportButton } from "@/components/learn/vocab/word-report-button";
 import type { VocabWordCard } from "@/types";
@@ -13,32 +13,45 @@ interface Props {
 }
 
 /**
- * Step 1 of the per-word flow: show the word and auto-read it aloud, with
- * pinyin, Vietnamese meaning, and example sentences that bold the target word.
+ * Bước 1 của luồng học từng-từ: hiện từ và tự đọc to, kèm ảnh minh hoạ, phiên âm
+ * IPA, nghĩa tiếng Việt và câu ví dụ có in đậm từ đang học.
  */
 export function WordCard({ word }: Props) {
-  // Auto-read on open. Keyed by word.id so it re-fires when the flow advances.
+  // Tự đọc khi mở. Khoá theo word.id để phát lại mỗi khi luồng sang từ mới.
   useEffect(() => {
-    playWord({ hanzi: word.hanzi, audioUrl: word.audioUrl });
-  }, [word.id, word.hanzi, word.audioUrl]);
+    playWord({ word: word.word, audioUrl: word.audioUrl });
+  }, [word.id, word.word, word.audioUrl]);
 
   return (
     <div className="flex flex-col items-center gap-6 text-center">
       <div className="flex flex-col items-center gap-2">
-        <div className={`font-chinese text-7xl font-bold sm:text-8xl ${toneColor(getTone(word.pinyin))}`}>
-          {word.hanzi}
-        </div>
-        <div className="font-pinyin text-2xl text-muted-foreground">{word.pinyin}</div>
+        {/* Với trẻ chưa đọc thạo, ảnh là kênh truyền đạt chính (CLAUDE.md §6). */}
+        {word.imageUrl && (
+          <Image
+            src={word.imageUrl}
+            alt={word.meaning}
+            width={220}
+            height={220}
+            className="sticker mb-2 h-44 w-44 object-cover sm:h-52 sm:w-52"
+          />
+        )}
+        <div className="font-primer text-6xl font-bold sm:text-7xl">{word.word}</div>
+        {word.ipa && <div className="text-2xl text-muted-foreground">{word.ipa}</div>}
         <div className="text-lg font-medium">{word.meaning}</div>
+        {word.partOfSpeech && (
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            {word.partOfSpeech}
+          </div>
+        )}
         <Button
           variant="outline"
           size="sm"
           className="mt-1"
-          onClick={() => playWord({ hanzi: word.hanzi, audioUrl: word.audioUrl })}
+          onClick={() => playWord({ word: word.word, audioUrl: word.audioUrl })}
         >
           <Volume2 className="mr-1.5 h-4 w-4" /> Nghe lại
         </Button>
-        <WordReportButton wordId={word.id} hanzi={word.hanzi} />
+        <WordReportButton wordId={word.id} word={word.word} />
       </div>
 
       {word.examples.length > 0 && (
@@ -50,11 +63,11 @@ export function WordCard({ word }: Props) {
             <button
               key={i}
               type="button"
-              onClick={() => playWord({ hanzi: ex.hanzi })}
+              onClick={() => playWord({ word: ex.sentence, audioUrl: ex.audioUrl })}
               className="block w-full rounded-lg border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-accent"
             >
-              <div className="font-chinese text-xl">
-                {markWord(ex.hanzi, word.hanzi).map((seg, j) =>
+              <div className="font-primer text-xl">
+                {markWord(ex.sentence, word.word).map((seg, j) =>
                   seg.match ? (
                     <span key={j} className="font-bold text-primary">
                       {seg.text}
@@ -64,9 +77,6 @@ export function WordCard({ word }: Props) {
                   )
                 )}
               </div>
-              {ex.pinyin && (
-                <div className="font-pinyin text-sm text-muted-foreground">{ex.pinyin}</div>
-              )}
               {ex.meaning && <div className="mt-0.5 text-sm">{ex.meaning}</div>}
             </button>
           ))}
