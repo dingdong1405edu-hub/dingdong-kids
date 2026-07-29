@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { BookOpen, Sparkles, Play, ArrowLeft, Volume2 } from "lucide-react";
+import { BookOpen, Sparkles, Play, ArrowLeft, Volume2, Ear } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isDue } from "@/lib/srs";
 import { playWord } from "@/lib/speech";
 import { WordFlow } from "@/components/learn/vocab/word-flow";
+import { ListenRepeatFlow } from "@/components/learn/vocab/listen-repeat-flow";
 import { ReviewFlow } from "@/components/learn/vocab/review/review-flow";
 import { persistRoadmapReview } from "@/lib/roadmap-review-persist";
 import type { VocabWordCard, WordReviewState } from "@/types";
@@ -22,6 +23,11 @@ interface Props {
   completed: boolean;
   passThreshold: number;
   backHref: string;
+  /**
+   * Cấp nhỏ (Pre-Starters / Starters) → mở sẵn mức "Nghe & nhắc lại" thay vì
+   * "Học từ". Bé 4–6 tuổi chưa đọc được nên phải nghe – nói trước, ghép chữ sau.
+   */
+  simpleFirst?: boolean;
   /** Ghi hoàn thành phần Từ vựng cho bài lộ trình (cộng XP, đánh dấu skillsDone). */
   onComplete: (stats: {
     correct: number;
@@ -30,7 +36,7 @@ interface Props {
   }) => Promise<{ ok: boolean; xpEarned?: number }>;
 }
 
-type View = "menu" | "learn" | "review";
+type View = "menu" | "listen" | "learn" | "review";
 
 /** Số thẻ từ hiện trong ô "xem trước" — đủ để bé tò mò, không rối mắt. */
 const PREVIEW_LIMIT = 6;
@@ -49,6 +55,7 @@ export function RoadmapVocabPlayer({
   completed,
   passThreshold,
   backHref,
+  simpleFirst = false,
   onComplete,
 }: Props) {
   const [view, setView] = useState<View>("menu");
@@ -58,6 +65,18 @@ export function RoadmapVocabPlayer({
     const byId = new Map(reviews.map((r) => [r.wordId, r]));
     return words.filter((w) => isDue(byId.get(w.id)?.dueAt ?? null, now)).length;
   }, [words, reviews]);
+
+  if (view === "listen") {
+    return (
+      <ListenRepeatFlow
+        title={title}
+        words={words}
+        onExit={() => setView("menu")}
+        onNextLevel={() => setView("learn")}
+        onComplete={onComplete}
+      />
+    );
+  }
 
   if (view === "learn") {
     return (
@@ -145,15 +164,59 @@ export function RoadmapVocabPlayer({
         </div>
       )}
 
-      <Tabs defaultValue={completed ? "review" : "learn"} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 rounded-2xl">
-          <TabsTrigger value="learn" className="rounded-xl font-display font-extrabold">
-            <BookOpen className="mr-1.5 h-4 w-4" /> Học từ
+      <Tabs
+        defaultValue={completed ? "review" : simpleFirst ? "listen" : "learn"}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-3 rounded-2xl">
+          <TabsTrigger value="listen" className="rounded-xl font-display text-[13px] font-extrabold">
+            <Ear className="mr-1 h-4 w-4" /> Nghe &amp; nhắc lại
           </TabsTrigger>
-          <TabsTrigger value="review" className="rounded-xl font-display font-extrabold">
-            <Sparkles className="mr-1.5 h-4 w-4" /> Ôn từ
+          <TabsTrigger value="learn" className="rounded-xl font-display text-[13px] font-extrabold">
+            <BookOpen className="mr-1 h-4 w-4" /> Học từ
+          </TabsTrigger>
+          <TabsTrigger value="review" className="rounded-xl font-display text-[13px] font-extrabold">
+            <Sparkles className="mr-1 h-4 w-4" /> Ôn từ
           </TabsTrigger>
         </TabsList>
+
+        {/* NGHE & NHẮC LẠI — mức dễ nhất, không chấm điểm */}
+        <TabsContent value="listen">
+          <Card className="rounded-3xl">
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sunny/20 text-2xl">
+                  <span aria-hidden>👂</span>
+                </div>
+                <div>
+                  <div className="font-display text-lg font-extrabold">
+                    Nghe rồi nói theo
+                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 align-middle text-[11px] font-extrabold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                      Dễ nhất
+                    </span>
+                  </div>
+                  <p className="text-[15px] text-muted-foreground">
+                    Nhìn hình, nghe từ rồi nói theo. Chưa cần ghép chữ, không chấm điểm —
+                    bé cứ nói thoải mái nhé!
+                  </p>
+                </div>
+              </div>
+
+              {words.length === 0 ? (
+                <p className="rounded-2xl border-2 border-dashed py-6 text-center text-[15px] text-muted-foreground">
+                  Phần này cô đang soạn từ vựng — bé quay lại sau nhé ✨
+                </p>
+              ) : (
+                <Button
+                  className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                  onClick={() => setView("listen")}
+                >
+                  <Play className="mr-1.5 h-5 w-5" /> Bắt đầu nghe
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* HỌC TỪ */}
         <TabsContent value="learn">
@@ -164,9 +227,15 @@ export function RoadmapVocabPlayer({
                   <span aria-hidden>🖼️</span>
                 </div>
                 <div>
-                  <div className="font-display text-lg font-extrabold">Học {words.length} từ mới</div>
+                  <div className="font-display text-lg font-extrabold">
+                    Học {words.length} từ mới
+                    <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 align-middle text-[11px] font-extrabold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                      Vừa
+                    </span>
+                  </div>
                   <p className="text-[15px] text-muted-foreground">
-                    Nhìn ảnh &amp; nghe từ → ghép chữ cái thành từ → ôn nhanh bằng thẻ từ.
+                    Xem thẻ từ đầy đủ: ảnh, phiên âm, nghĩa và câu ví dụ — rồi ôn nhanh bằng
+                    thẻ lật.
                   </p>
                 </div>
               </div>

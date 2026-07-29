@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import type { EnglishLevel, QuestionType, WritingTaskType } from "@prisma/client";
-import type { SkillKey } from "@/lib/roadmap";
+import { LEVEL_ORDER, type SkillKey } from "@/lib/roadmap";
 import { GrammarFlow } from "@/components/learn/grammar/grammar-flow";
 import { RoadmapPhonicsPlayer } from "./roadmap-phonics-player";
 import { RoadmapVocabPlayer } from "./roadmap-vocab-player";
@@ -75,6 +75,9 @@ export function RoadmapSectionPlayer({
           completed={vocabCompleted}
           passThreshold={ROADMAP_PASS_THRESHOLD}
           backHref={backHref}
+          // Hai cấp nhỏ nhất mở sẵn mức "Nghe & nhắc lại": bé 4–6 tuổi chưa đọc
+          // được chữ nên phải nghe – nói trước, ghép chữ để sau.
+          simpleFirst={LEVEL_ORDER[level] <= LEVEL_ORDER.STARTERS}
           onComplete={async (s) => {
             const r = await completeRoadmapSectionAction({
               lessonId,

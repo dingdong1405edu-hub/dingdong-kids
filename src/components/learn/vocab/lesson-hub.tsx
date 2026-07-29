@@ -1,12 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Sparkles, RotateCcw, Play, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles, RotateCcw, Play, CheckCircle2, Ear } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isDue } from "@/lib/srs";
 import { WordFlow } from "./word-flow";
+import { ListenRepeatFlow } from "./listen-repeat-flow";
 import { ReviewFlow } from "./review/review-flow";
 import type { VocabWordCard, WordReviewState } from "@/types";
 
@@ -21,12 +22,15 @@ interface Props {
   nextLessonId: string | null;
 }
 
-type View = "menu" | "learn" | "review";
+type View = "menu" | "listen" | "learn" | "review";
 
 /**
- * Trang vào một bài từ vựng: 2 chế độ dưới dạng tab — "Học từ" (luồng học theo
- * từng từ, có Học tiếp/Học lại) và "Ôn từ" (flashcard SRS + mini-game). Chọn chế
- * độ → mở luồng tương ứng toàn màn hình, thoát thì quay lại menu này.
+ * Trang vào một bài từ vựng: 3 mức khó tăng dần dưới dạng tab —
+ *  1. "Nghe & nhắc lại": nhìn hình, nghe, nói theo. Không chấm điểm. Dành cho bé
+ *     chưa đọc được chữ.
+ *  2. "Học từ": thẻ từ đầy đủ (phiên âm, nghĩa, ví dụ), có Học tiếp/Học lại.
+ *  3. "Ôn từ": flashcard lặp lại ngắt quãng + mini-game.
+ * Chọn mức → mở luồng tương ứng toàn màn hình, thoát thì quay lại menu này.
  */
 export function LessonHub({ lesson, unitId, words, reviews, resume, completed, nextLessonId }: Props) {
   const [view, setView] = useState<View>("menu");
@@ -38,6 +42,17 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
     const due = words.filter((w) => isDue(byId.get(w.id)?.dueAt ?? null, now)).length;
     return { dueCount: due };
   }, [words, reviews]);
+
+  if (view === "listen") {
+    return (
+      <ListenRepeatFlow
+        title={lesson.title}
+        words={words}
+        onExit={() => setView("menu")}
+        onNextLevel={() => setView("learn")}
+      />
+    );
+  }
 
   if (view === "learn") {
     return (
@@ -81,15 +96,51 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
         )}
       </div>
 
-      <Tabs defaultValue={completed ? "review" : "learn"} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="learn">
-            <BookOpen className="mr-1.5 h-4 w-4" /> Học từ
+      <Tabs defaultValue={completed ? "review" : "listen"} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="listen" className="text-[13px]">
+            <Ear className="mr-1 h-4 w-4" /> Nghe &amp; nhắc lại
           </TabsTrigger>
-          <TabsTrigger value="review">
-            <Sparkles className="mr-1.5 h-4 w-4" /> Ôn từ
+          <TabsTrigger value="learn" className="text-[13px]">
+            <BookOpen className="mr-1 h-4 w-4" /> Học từ
+          </TabsTrigger>
+          <TabsTrigger value="review" className="text-[13px]">
+            <Sparkles className="mr-1 h-4 w-4" /> Ôn từ
           </TabsTrigger>
         </TabsList>
+
+        {/* NGHE & NHẮC LẠI — mức dễ nhất, không chấm điểm */}
+        <TabsContent value="listen">
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sunny/20 text-xl">
+                  <span aria-hidden>👂</span>
+                </div>
+                <div>
+                  <div className="font-semibold">
+                    Nghe rồi nói theo
+                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 align-middle text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                      Dễ nhất
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Nhìn hình, nghe từ rồi nói theo. Chưa cần ghép chữ, không chấm điểm.
+                  </p>
+                </div>
+              </div>
+              {words.length === 0 ? (
+                <p className="rounded-xl border-2 border-dashed py-6 text-center text-sm text-muted-foreground">
+                  Bài này chưa có từ vựng.
+                </p>
+              ) : (
+                <Button className="btn-chunky w-full" onClick={() => setView("listen")}>
+                  <Play className="mr-1.5 h-4 w-4" /> Bắt đầu nghe
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* HỌC TỪ */}
         <TabsContent value="learn">

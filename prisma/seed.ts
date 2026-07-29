@@ -19,6 +19,21 @@
  */
 import { PrismaClient, EnglishLevel, Skill } from "@prisma/client";
 import bcrypt from "bcryptjs";
+// Câu hỏi bên dưới viết ở "định dạng tác giả" (dễ gõ: options là mảng chuỗi,
+// đáp án là `answer: 0`). Player và validator lại đòi định dạng RoadmapQuestion
+// (options là mảng object, đáp án là `correctAnswer: { index }`). PHẢI chuyển
+// đổi trước khi ghi DB — ghi thẳng định dạng tác giả sẽ làm mọi phần Đọc/Nghe
+// trượt validate và bài học hiện ra lỗi.
+import { authoringToRoadmapQuestions } from "@/lib/roadmap-content";
+// Nội dung bài học tách theo cấp — mỗi file một cấp để soạn độc lập.
+// Xem hợp đồng ở prisma/content/types.ts.
+import type { ChapterSeed as ContentChapter } from "./content/types";
+import { CHAPTERS as PRE_STARTERS_CHAPTERS } from "./content/pre-starters";
+import { CHAPTERS as STARTERS_CHAPTERS } from "./content/starters";
+import { CHAPTERS as MOVERS_CHAPTERS } from "./content/movers";
+import { CHAPTERS as FLYERS_CHAPTERS } from "./content/flyers";
+import { CHAPTERS as KET_CHAPTERS } from "./content/ket";
+import { CHAPTERS as PET_CHAPTERS } from "./content/pet";
 
 const prisma = new PrismaClient();
 
@@ -414,7 +429,13 @@ const tf = (prompt: string, promptVi: string, answer: boolean, explanation: stri
   explanation,
 });
 
-const ROADMAP: Partial<Record<EnglishLevel, ChapterSeed[]>> = {
+/**
+ * Nội dung gốc viết thẳng trong file này (bản đầu, 2 cấp).
+ * Kể từ khi tách `prisma/content/<cấp>.ts`, đây chỉ còn là DỰ PHÒNG: cấp nào có
+ * file nội dung riêng (mảng không rỗng) thì file đó THẮNG, cấp nào chưa soạn thì
+ * rơi về bảng này. Xoá hẳn khi cả 6 cấp đã có file nội dung đầy đủ.
+ */
+const FALLBACK_ROADMAP: Partial<Record<EnglishLevel, ChapterSeed[]>> = {
   PRE_STARTERS: [
     {
       title: "Chương 1 · Bé và gia đình",
@@ -1247,7 +1268,7 @@ function sectionContent(l: LessonSeed, skill: Skill): unknown {
             title: l.reading.title,
             passage: l.reading.passage,
             passageTranslation: l.reading.translation,
-            questions: l.reading.questions,
+            questions: authoringToRoadmapQuestions(l.reading.questions),
           },
         ],
       };
@@ -1255,7 +1276,14 @@ function sectionContent(l: LessonSeed, skill: Skill): unknown {
       return {
         title: l.listening.title,
         timeLimit: 480,
-        clips: [{ title: l.listening.title, audioUrl: "", transcript: l.listening.transcript, questions: l.listening.questions }],
+        clips: [
+          {
+            title: l.listening.title,
+            audioUrl: "",
+            transcript: l.listening.transcript,
+            questions: authoringToRoadmapQuestions(l.listening.questions),
+          },
+        ],
       };
     case "WRITING":
       return {
@@ -1277,6 +1305,26 @@ function sectionContent(l: LessonSeed, skill: Skill): unknown {
       return null;
   }
 }
+
+/** Nội dung theo cấp: file riêng thắng, chưa soạn thì rơi về bảng dự phòng. */
+const CONTENT_BY_LEVEL: Partial<Record<EnglishLevel, ContentChapter[]>> = {
+  PRE_STARTERS: PRE_STARTERS_CHAPTERS,
+  STARTERS: STARTERS_CHAPTERS,
+  MOVERS: MOVERS_CHAPTERS,
+  FLYERS: FLYERS_CHAPTERS,
+  KET: KET_CHAPTERS,
+  PET: PET_CHAPTERS,
+};
+
+const ROADMAP: Partial<Record<EnglishLevel, ChapterSeed[]>> = Object.fromEntries(
+  (Object.keys({ ...FALLBACK_ROADMAP, ...CONTENT_BY_LEVEL }) as EnglishLevel[])
+    .map((lv) => {
+      const authored = CONTENT_BY_LEVEL[lv];
+      const chapters = authored && authored.length > 0 ? authored : FALLBACK_ROADMAP[lv];
+      return [lv, chapters] as const;
+    })
+    .filter((e): e is readonly [EnglishLevel, ChapterSeed[]] => !!e[1] && e[1].length > 0),
+) as Partial<Record<EnglishLevel, ChapterSeed[]>>;
 
 const ROADMAP_SKILLS: Skill[] = [
   Skill.VOCAB,
@@ -1341,10 +1389,13 @@ async function seedRoadmap(courseIds: Map<EnglishLevel, string>): Promise<void> 
     }
   }
 
-  // --- 4 cấp còn lại: khung "Sắp có" ---
+  // --- Cấp CHƯA có nội dung: dựng khung "Sắp có" ---
   for (const [level, lessons] of Object.entries(COMING_SOON) as Array<
     [EnglishLevel, Array<{ topic: string; topicVi: string; icon: string }>]
   >) {
+    // Cấp đã có bài thật ở trên rồi thì bỏ qua khung tạm, nếu không sẽ ghi đè
+    // bài thật bằng bài rỗng (id `seed-lesson-<level>-<i>` trùng nhau).
+    if (ROADMAP[level]?.length) continue;
     const courseId = courseIds.get(level);
     if (!courseId) continue;
     const chapterId = `seed-chapter-${level}-0`;

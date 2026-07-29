@@ -50,3 +50,6 @@ prisma/migrations/dev.db
 
 # Claude Code local workspace
 /.claude/
+
+# Scratch scripts tạm khi soạn nội dung
+/.tmp/
