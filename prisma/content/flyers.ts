@@ -48,7 +48,7 @@ export const CHAPTERS: ChapterSeed[] = [
         reading: {
           title: "Our Holiday by the Sea",
           passage:
-            "Every summer my family takes a holiday together. This year we are going to Da Nang, and I am already packing my suitcase.\n\n" +
+            "Every summer my family goes on holiday together. This year we are going to Da Nang, and I am already packing my suitcase.\n\n" +
             "The journey will be long. We will travel by train for fifteen hours, so I will bring books and a card game. My little brother thinks the train is more exciting than the plane, because he can watch the rice fields go past the window. At the beach we will swim every morning while the sunshine is still soft. In the afternoon I will look for shells and buy a small souvenir for my grandmother. In the evening we will walk along the quiet seaside road. I have promised to send my grandmother a postcard too.\n\n" +
             "We will come home tired, but that is not important. The best holidays are the ones you remember for years.",
           translation:
@@ -210,11 +210,11 @@ export const CHAPTERS: ChapterSeed[] = [
           letters: "-tion",
           sound: "/ʃən/",
           hint:
-            "Đuôi -tion luôn đọc là /ʃən/ ('sh-ơn'), KHÔNG bao giờ đọc là 'ti-on' hay 'x-ân'. Trẻ Việt rất hay đổi /ʃ/ thành /s/ vì tiếng Việt không có âm này: station phải là 'x-TÂY-sh(ơ)n' chứ không phải 'x-tây-sân'. Mẹo: chu môi tròn ra trước rồi đẩy hơi dài như khi bảo em bé 'suỵt'. Nhớ trọng âm luôn rơi vào âm ngay TRƯỚC -tion.",
+            "Đuôi -tion luôn đọc là /ʃən/ ('sh-ơn'), KHÔNG bao giờ đọc là 'ti-on' hay 'x-ân'. Trẻ Việt rất hay đổi /ʃ/ thành /s/ vì tiếng Việt không có âm này: station phải là 'x-TÂY-sh(ơ)n' chứ không phải 'x-tây-sân'. Mẹo: chu môi tròn ra trước rồi đẩy hơi dài như khi bảo em bé 'suỵt'. Nhớ trọng âm luôn rơi vào âm ngay TRƯỚC -tion. Một ngoại lệ bé hay gặp: question viết là -stion chứ không phải -tion, nên đọc là /ˈkwestʃən/ ('quét-chân') — có âm 'ch' chứ không phải 'sh'.",
           words: [
             { word: "station", meaning: "nhà ga", emoji: "🚉" },
             { word: "nation", meaning: "quốc gia", emoji: "🏳️" },
-            { word: "question", meaning: "câu hỏi", emoji: "❓" },
+            { word: "invention", meaning: "phát minh", emoji: "💡" },
             { word: "direction", meaning: "phương hướng", emoji: "🧭" },
             { word: "population", meaning: "dân số", emoji: "👨‍👩‍👧‍👦" },
           ],
@@ -223,11 +223,11 @@ export const CHAPTERS: ChapterSeed[] = [
           title: "Countries Are Not the Same",
           passage:
             "There are almost two hundred countries in the world, and no two of them are the same.\n\n" +
-            "Every country has its own flag, its own capital city and often its own language. Some countries are enormous. Russia is the largest country on Earth, but China has a bigger population. Other countries are tiny: Singapore is a small island, and you can drive across it in one hour. The land is different too. Egypt has a hot desert, Nepal has the highest mountain in the world, and Viet Nam has long beaches and green rice fields. People wear different traditional clothes, eat different food and celebrate different days.\n\n" +
+            "Every country has its own flag, its own capital city and often its own language. Some countries are enormous. Russia is the largest country on Earth, but China has a much bigger population than Russia. Other countries are tiny: Singapore is a small island, and you can drive across it in one hour. The land is different too. Egypt has a hot desert, Nepal has the highest mountain in the world, and Viet Nam has long beaches and green rice fields. People wear different traditional clothes, eat different food and celebrate different days.\n\n" +
             "I have never been abroad, but one day I will visit three countries: Japan, Australia and Egypt. I am going to learn ten words in each language before I go.",
           translation:
             "Trên thế giới có gần hai trăm quốc gia, và không có hai nước nào giống hệt nhau.\n\n" +
-            "Nước nào cũng có lá cờ riêng, thủ đô riêng và thường là ngôn ngữ riêng. Có nước rộng mênh mông. Nga là nước lớn nhất Trái Đất, nhưng Trung Quốc lại đông dân hơn. Có nước lại bé xíu: Singapore là một hòn đảo nhỏ, lái xe một tiếng là hết chiều ngang. Đất đai cũng mỗi nơi một khác. Ai Cập có sa mạc nóng bỏng, Nepal có ngọn núi cao nhất thế giới, còn Việt Nam có bãi biển dài và những cánh đồng lúa xanh. Người ở mỗi nơi mặc trang phục truyền thống khác nhau, ăn món khác nhau và mừng những ngày lễ khác nhau.\n\n" +
+            "Nước nào cũng có lá cờ riêng, thủ đô riêng và thường là ngôn ngữ riêng. Có nước rộng mênh mông. Nga là nước lớn nhất Trái Đất, nhưng Trung Quốc lại đông dân hơn Nga rất nhiều. Có nước lại bé xíu: Singapore là một hòn đảo nhỏ, lái xe một tiếng là hết chiều ngang. Đất đai cũng mỗi nơi một khác. Ai Cập có sa mạc nóng bỏng, Nepal có ngọn núi cao nhất thế giới, còn Việt Nam có bãi biển dài và những cánh đồng lúa xanh. Người ở mỗi nơi mặc trang phục truyền thống khác nhau, ăn món khác nhau và mừng những ngày lễ khác nhau.\n\n" +
             "Tớ chưa từng ra nước ngoài, nhưng một ngày nào đó tớ sẽ đi thăm ba nước: Nhật Bản, Úc và Ai Cập. Trước khi đi, tớ sẽ học mười từ trong mỗi thứ tiếng.",
           questions: [
             mcq(
@@ -575,11 +575,11 @@ export const CHAPTERS: ChapterSeed[] = [
           title: "Looking Up at the Stars",
           passage:
             "Look up on a clear night and you will see hundreds of stars. Each one is a sun, and some of them are far bigger than our own.\n\n" +
-            "People have always wanted to know what is up there. Four hundred years ago Galileo built a telescope and discovered four moons around the planet Jupiter. In 1969 a huge rocket carried two astronauts to the Moon, and they walked there for the first time. Today astronauts live in a space station high above the Earth. Their work is dangerous, but they are brave. Inside the station nothing is heavy, so the astronauts float from wall to wall, and their food floats too.\n\n" +
+            "People have always wanted to know what is up there. More than four hundred years ago, Galileo built a telescope and discovered four moons around the planet Jupiter. In 1969 a huge rocket carried two astronauts to the Moon, and they walked there for the first time. Today astronauts live in a space station high above the Earth. Their work is dangerous, but they are brave. Inside the station nothing is heavy, so the astronauts float from wall to wall, and their food floats too.\n\n" +
             "Scientists say people will land on Mars one day. Perhaps a child who is reading this page will be the first one to walk there.",
           translation:
             "Hãy ngước lên vào một đêm trời quang, bé sẽ thấy hàng trăm ngôi sao. Mỗi ngôi sao là một mặt trời, và có những ngôi to hơn mặt trời của chúng ta rất nhiều.\n\n" +
-            "Con người luôn muốn biết trên đó có gì. Bốn trăm năm trước, Galileo chế ra kính thiên văn và phát hiện bốn mặt trăng quay quanh sao Mộc. Năm 1969, một tên lửa khổng lồ đưa hai phi hành gia lên Mặt Trăng, và họ đã đặt chân lên đó lần đầu tiên. Ngày nay, các phi hành gia sống trong một trạm vũ trụ bay cao trên Trái Đất. Công việc của họ nguy hiểm, nhưng họ rất dũng cảm. Trong trạm, chẳng có gì nặng cả, nên các phi hành gia cứ trôi bồng bềnh từ vách này sang vách kia, và đồ ăn của họ cũng bay lơ lửng.\n\n" +
+            "Con người luôn muốn biết trên đó có gì. Hơn bốn trăm năm trước, Galileo tự làm một chiếc kính thiên văn và phát hiện ra bốn mặt trăng quay quanh sao Mộc. Năm 1969, một tên lửa khổng lồ đưa hai phi hành gia lên Mặt Trăng, và họ đã đặt chân lên đó lần đầu tiên. Ngày nay, các phi hành gia sống trong một trạm vũ trụ bay cao trên Trái Đất. Công việc của họ nguy hiểm, nhưng họ rất dũng cảm. Trong trạm, chẳng có gì nặng cả, nên các phi hành gia cứ trôi bồng bềnh từ vách này sang vách kia, và đồ ăn của họ cũng bay lơ lửng.\n\n" +
             "Các nhà khoa học nói rồi sẽ có ngày con người đặt chân lên sao Hoả. Biết đâu chính bạn nhỏ đang đọc trang này lại là người đầu tiên bước đi ở đó.",
           questions: [
             mcq(
@@ -920,10 +920,10 @@ export const CHAPTERS: ChapterSeed[] = [
           letters: "g mềm (ge / gi / dge)",
           sound: "/dʒ/",
           hint:
-            "Khi sau chữ g là e, i hoặc y, g thường đọc mềm thành /dʒ/ — giống âm 'ch' hơi nặng, có rung cổ họng: danger, giant, orange, bridge. Bé Việt hay đọc thành 'g' cứng ('đây-ngơ') hoặc thành /z/ ('đây-dơ'). Mẹo: đặt đầu lưỡi chạm lợi trên rồi bật ra như nói 'giơ' trong tiếng Việt. Nhớ so sánh: go /ɡəʊ/ là g cứng, còn gentle /ˈdʒentl/ là g mềm.",
+            "Khi sau chữ g là e, i hoặc y, g thường đọc mềm thành /dʒ/ — giống âm 'ch' hơi nặng, có rung cổ họng: danger, giraffe, giant, orange, bridge. Bé Việt hay đọc thành 'g' cứng ('đây-ngơ') hoặc thành /z/ ('đây-dơ'). Mẹo: đặt đầu lưỡi chạm lợi trên rồi bật ra như nói 'giơ' trong tiếng Việt. Nhớ so sánh: go /ɡəʊ/ là g cứng, còn gentle /ˈdʒentl/ là g mềm.",
           words: [
             { word: "danger", meaning: "nguy hiểm", emoji: "⚠️" },
-            { word: "cage", meaning: "cái lồng", emoji: "🪤" },
+            { word: "giraffe", meaning: "hươu cao cổ", emoji: "🦒" },
             { word: "giant", meaning: "khổng lồ", emoji: "🦕" },
             { word: "orange", meaning: "quả cam", emoji: "🍊" },
             { word: "bridge", meaning: "cây cầu", emoji: "🌉" },
@@ -1082,6 +1082,563 @@ export const CHAPTERS: ChapterSeed[] = [
               question: "Have you ever visited a zoo or a national park?",
               sampleAnswer:
                 "Yes, I have. Last year I went to a national park with my class and I saw many birds and monkeys.",
+            },
+          ],
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // CHƯƠNG 3 · EM VÀ TƯƠNG LAI
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    title: "Chương 3 · Em và tương lai",
+    subtitle: "Nghề mơ ước, thói quen sống khoẻ và lời hứa với Trái Đất.",
+    lessons: [
+      // ───────────────────────── Bài 7 · Jobs I Want ─────────────────────────
+      {
+        topic: "Jobs I Want",
+        topicVi: "Nghề tớ mơ ước",
+        icon: "👩‍⚕️",
+        words: [
+          word("job", "/dʒɒb/", "nghề nghiệp, công việc", "💼"),
+          word("doctor", "/ˈdɒktə/", "bác sĩ", "👩‍⚕️"),
+          word("engineer", "/ˌendʒɪˈnɪə/", "kỹ sư", "👷"),
+          word("vet", "/vet/", "bác sĩ thú y", "🐕"),
+          word("pilot", "/ˈpaɪlət/", "phi công", "✈️"),
+          word("farmer", "/ˈfɑːmə/", "nông dân", "🧑‍🌾"),
+          word("uniform", "/ˈjuːnɪfɔːm/", "đồng phục", "🥼"),
+          word("patient", "/ˈpeɪʃnt/", "bệnh nhân", "🤒"),
+          word("practise", "/ˈpræktɪs/", "luyện tập", "📚"),
+          word("helpful", "/ˈhelpfl/", "hay giúp đỡ người khác", "🤝"),
+          word("difficult", "/ˈdɪfɪkəlt/", "khó", "😅"),
+          word("dream", "/driːm/", "ước mơ", "🌈"),
+        ],
+        sound: {
+          letters: "-ed đọc /t/",
+          sound: "/t/",
+          hint:
+            "Đuôi -ed đọc là /t/ khi âm ngay trước nó là âm CÂM (không rung cổ họng): /k/, /p/, /s/, /f/, /ʃ/, /tʃ/. walked = 'wóo-kt', helped = 'help-t' — vẫn chỉ MỘT âm tiết, tuyệt đối không thêm 'ơ' thành 'wóc-kịt'. Lỗi lớn nhất của trẻ Việt là NUỐT LUÔN đuôi -ed (walked → 'wóoc'), làm người nghe tưởng là hiện tại. Hãy bật lưỡi chạm lợi trên rồi nhả hơi thật gọn ở cuối từ.",
+          words: [
+            { word: "walked", meaning: "đã đi bộ", emoji: "🚶" },
+            { word: "helped", meaning: "đã giúp", emoji: "🤝" },
+            { word: "watched", meaning: "đã xem", emoji: "📺" },
+            { word: "jumped", meaning: "đã nhảy", emoji: "🤸" },
+            { word: "worked", meaning: "đã làm việc", emoji: "🛠️" },
+          ],
+        },
+        reading: {
+          title: "When I Grow Up",
+          passage:
+            "Grown-ups always ask children the same question: what are you going to be?\n\n" +
+            "In my class everybody has a different dream. Minh wants to be a pilot, because he loves the idea of flying above the clouds. Lan is going to be a vet. She has three cats at home and she is the most helpful person I know. Duc wants to be a farmer like his grandfather, because good food is more important than money. Hoa wants to be an engineer and build bridges. And me? I want to be a doctor. My aunt is a doctor in a small hospital, and last week she showed me her white uniform. She talks kindly to every patient, even when she is tired.\n\n" +
+            "The road is long and quite difficult. I will study hard and practise English, because doctors read books from many countries.",
+          translation:
+            "Người lớn lúc nào cũng hỏi bọn trẻ đúng một câu: lớn lên con làm nghề gì?\n\n" +
+            "Lớp tớ mỗi bạn một ước mơ. Minh muốn làm phi công, vì cậu ấy mê cảm giác bay trên những đám mây. Lan thì sẽ làm bác sĩ thú y. Nhà bạn ấy nuôi ba con mèo, và bạn ấy là người hay giúp đỡ nhất mà tớ biết. Đức thì muốn làm nông dân giống ông nội, vì với cậu ấy, thức ăn sạch còn quan trọng hơn tiền. Hoa muốn làm kỹ sư và xây những cây cầu. Còn tớ thì sao? Tớ muốn làm bác sĩ. Cô tớ là bác sĩ ở một bệnh viện nhỏ, tuần trước cô còn cho tớ xem chiếc áo blouse trắng của cô. Cô nói chuyện dịu dàng với từng bệnh nhân, kể cả lúc cô đã rất mệt.\n\n" +
+            "Con đường phía trước dài và khá khó. Tớ sẽ học chăm và luyện tiếng Anh, vì bác sĩ phải đọc sách từ nhiều nước lắm.",
+          questions: [
+            mcq(
+              "What does Minh want to be?",
+              "Minh muốn làm nghề gì?",
+              ["A vet", "A pilot", "A farmer", "A doctor"],
+              1,
+              "Bài viết 'Minh wants to be a pilot' — Minh muốn làm phi công vì thích bay trên mây.",
+              "Minh wants to be a pilot",
+            ),
+            mcq(
+              "Why does Duc want to be a farmer?",
+              "Vì sao Đức muốn làm nông dân?",
+              [
+                "Because farmers earn a lot of money",
+                "Because he thinks good food matters more than money",
+                "Because he does not like school",
+                "Because he wants to live in the city",
+              ],
+              1,
+              "Đức giải thích trong bài: 'because good food is more important than money' — với cậu ấy, thức ăn tốt quan trọng hơn tiền.",
+              "because good food is more important than money",
+            ),
+            mcq(
+              "Who works in a hospital?",
+              "Ai là người làm việc trong bệnh viện?",
+              ["The writer's aunt", "The writer's grandfather", "Lan", "Hoa"],
+              0,
+              "Bài đọc viết 'My aunt is a doctor in a small hospital' — cô của bạn nhỏ là bác sĩ ở một bệnh viện nhỏ.",
+              "My aunt is a doctor in a small hospital",
+            ),
+            tf(
+              "The writer thinks becoming a doctor will be easy.",
+              "Bạn nhỏ nghĩ làm bác sĩ là chuyện dễ.",
+              false,
+              "Sai nhé. Bạn nhỏ viết 'The road is long and quite difficult.' — con đường trở thành bác sĩ dài và khá khó.",
+              "The road is long and quite difficult.",
+            ),
+            mcq(
+              "Why does the writer tell us about the aunt's white uniform and kind words?",
+              "Vì sao bạn nhỏ lại kể về chiếc áo blouse trắng và lời nói dịu dàng của cô mình?",
+              [
+                "To show that hospitals are cold places",
+                "To show why the writer wants that job too",
+                "To show that the aunt has a lot of money",
+                "To show that the aunt should rest more",
+              ],
+              1,
+              "Bài không nói thẳng — bé phải đoán ý tác giả. Ngay sau câu 'I want to be a doctor', bạn nhỏ mới kể về cô: chiếc áo trắng và cách cô đối xử với bệnh nhân chính là hình mẫu khiến bạn ấy chọn nghề này.",
+            ),
+          ],
+        },
+        listening: {
+          title: "Talking About Jobs",
+          transcript:
+            "Dad: You look busy, Mai. What are you writing?\n" +
+            "Mai: A list of jobs, Dad. I cannot choose between doctor and engineer.\n" +
+            "Dad: Both are good jobs. Which one do you dream about at night?\n" +
+            "Mai: The hospital, I think. I helped Grandma with her medicine last month, and I liked it.\n" +
+            "Dad: Then study science and work hard. It takes many years.\n" +
+            "Mai: I know. I have already started reading a book about the human body.",
+          questions: [
+            mcq(
+              "What is Mai writing?",
+              "Mai đang viết gì?",
+              ["A letter to Grandma", "A list of jobs", "A science test", "A story about a hospital"],
+              1,
+              "Mai trả lời bố: 'A list of jobs, Dad.' — một danh sách các nghề.",
+              "A list of jobs, Dad.",
+            ),
+            mcq(
+              "Which two jobs is Mai choosing between?",
+              "Mai đang phân vân giữa hai nghề nào?",
+              ["Doctor and vet", "Pilot and engineer", "Doctor and engineer", "Farmer and doctor"],
+              2,
+              "Mai nói 'I cannot choose between doctor and engineer.' — bạn ấy chưa chọn được giữa bác sĩ và kỹ sư.",
+              "I cannot choose between doctor and engineer.",
+            ),
+            mcq(
+              "What did Mai do last month?",
+              "Tháng trước Mai đã làm gì?",
+              [
+                "She visited a hospital",
+                "She helped her grandmother with her medicine",
+                "She built a small bridge",
+                "She read a book about planes",
+              ],
+              1,
+              "Mai kể 'I helped Grandma with her medicine last month' — bạn ấy giúp bà uống thuốc và thấy thích công việc đó.",
+              "I helped Grandma with her medicine last month",
+            ),
+            tf(
+              "Mai has already started reading a book about the human body.",
+              "Mai đã bắt đầu đọc một quyển sách về cơ thể người.",
+              true,
+              "Đúng! Mai nói 'I have already started reading a book about the human body.' — 'have already started' nghĩa là bạn ấy đã bắt đầu rồi.",
+              "I have already started reading a book about the human body.",
+            ),
+          ],
+        },
+        writingPrompt:
+          "Viết 6–8 câu về nghề bé mơ ước: đó là nghề gì, vì sao bé thích, ai đã truyền cảm hứng cho bé, và bé sẽ chuẩn bị thế nào từ bây giờ.",
+        writingOutline:
+          "1. Mở bài: When I grow up, I want to be a …\n" +
+          "2. Công việc: A … helps people by …\n" +
+          "3. Lý do: I want this job because …\n" +
+          "4. Người truyền cảm hứng: My … is a … and he/she …\n" +
+          "5. Điểm mạnh của bé: I am good at … and I am very …\n" +
+          "6. Chuẩn bị: I will study … and I will practise …\n" +
+          "7. Kết bài: It will be difficult, but I will try my best.",
+        speaking: {
+          sentences: [
+            "In my class everybody has a different dream.",
+            "Minh wants to be a pilot because he loves flying.",
+            "My aunt is a doctor in a small hospital.",
+            "She talks kindly to every patient.",
+            "I will study hard and practise English.",
+          ],
+          questions: [
+            {
+              question: "What job would you like to do when you grow up?",
+              sampleAnswer:
+                "I would like to be a vet, because I love animals and I want to make sick pets better.",
+            },
+            {
+              question: "Which job in your family do you find interesting?",
+              sampleAnswer:
+                "My mother is a teacher. I think her job is interesting because she meets many children every day.",
+            },
+            {
+              question: "What do you need to do now to get your dream job?",
+              sampleAnswer:
+                "I need to study hard at school, read a lot of books and practise English every day.",
+            },
+          ],
+        },
+      },
+
+      // ───────────────────────── Bài 8 · Healthy Living ─────────────────────────
+      {
+        topic: "Healthy Living",
+        topicVi: "Sống khoẻ mỗi ngày",
+        icon: "🥗",
+        words: [
+          word("healthy", "/ˈhelθi/", "khoẻ mạnh", "💪"),
+          word("habit", "/ˈhæbɪt/", "thói quen", "🔁"),
+          word("exercise", "/ˈeksəsaɪz/", "tập thể dục", "🏃"),
+          word("vegetable", "/ˈvedʒtəbl/", "rau củ", "🥦"),
+          word("fruit", "/fruːt/", "trái cây", "🍎"),
+          word("sugar", "/ˈʃʊɡə/", "đường", "🍬"),
+          word("energy", "/ˈenədʒi/", "năng lượng, sức lực", "⚡"),
+          word("breakfast", "/ˈbrekfəst/", "bữa sáng", "🍳"),
+          word("sleep", "/sliːp/", "giấc ngủ, ngủ", "😴"),
+          word("screen", "/skriːn/", "màn hình", "📱"),
+          word("teeth", "/tiːθ/", "răng (số nhiều)", "🦷"),
+          word("strong", "/strɒŋ/", "khoẻ, chắc khoẻ", "🦾"),
+        ],
+        sound: {
+          letters: "-ed đọc /d/",
+          sound: "/d/",
+          hint:
+            "Đuôi -ed đọc là /d/ khi âm trước nó CÓ RUNG cổ họng — nguyên âm hoặc /l/, /n/, /m/, /r/, /v/, /z/, /ɡ/: played = 'pleɪd', cleaned = 'kliːnd'. Vẫn chỉ MỘT âm tiết, đừng thành 'pờ-lây-đờ'. Trẻ Việt hay bỏ hẳn đuôi này vì tiếng Việt không có phụ âm /d/ cuối từ — hãy đặt lưỡi lên lợi trên và rung nhẹ cổ họng ở cuối. So sánh với bài trước: /t/ không rung, /d/ có rung.",
+          words: [
+            { word: "played", meaning: "đã chơi", emoji: "⚽" },
+            { word: "cleaned", meaning: "đã lau dọn", emoji: "🧹" },
+            { word: "listened", meaning: "đã lắng nghe", emoji: "👂" },
+            { word: "called", meaning: "đã gọi", emoji: "📞" },
+            { word: "opened", meaning: "đã mở", emoji: "🚪" },
+          ],
+        },
+        reading: {
+          title: "Small Habits, Strong Body",
+          passage:
+            "You do not need a gym to be healthy. You only need a few good habits.\n\n" +
+            "Start with breakfast. Children who eat breakfast have more energy at school, and they listen better in class. Next, put something green on your plate: vegetables and fruit give your body the vitamins it needs. Sugar is not a monster, but too much of it is bad for your teeth, so keep sweet drinks for special days. Exercise matters as well. Football, swimming or a bicycle ride will make your heart strong, and thirty minutes a day is enough. Finally, do not forget sleep. A screen at midnight steals the sleep your brain needs to grow.\n\n" +
+            "None of these things is difficult. Choose one today, and in a month it will be a habit.",
+          translation:
+            "Bé không cần phòng tập gym mới khoẻ được đâu. Bé chỉ cần vài thói quen tốt thôi.\n\n" +
+            "Hãy bắt đầu từ bữa sáng. Bạn nào ăn sáng thì có nhiều sức hơn ở trường và nghe giảng tốt hơn trong lớp. Tiếp theo, hãy để chút gì đó màu xanh lên đĩa: rau và trái cây cho cơ thể bé những vitamin cần thiết. Đường không phải là con quái vật, nhưng ăn nhiều quá thì hại răng, nên hãy để dành nước ngọt cho những dịp đặc biệt. Tập thể dục cũng quan trọng. Đá bóng, bơi lội hay đạp xe sẽ làm trái tim bé khoẻ lên, và mỗi ngày ba mươi phút là đủ. Cuối cùng, đừng quên giấc ngủ. Chiếc màn hình lúc nửa đêm sẽ lấy mất giấc ngủ mà bộ não bé cần để lớn.\n\n" +
+            "Chẳng việc nào trong số này khó cả. Hôm nay bé chọn lấy một việc thôi, một tháng sau nó sẽ thành thói quen.",
+          questions: [
+            mcq(
+              "What happens to children who eat breakfast?",
+              "Điều gì xảy ra với những bạn ăn sáng đầy đủ?",
+              [
+                "They have more energy and listen better in class",
+                "They feel sleepy all morning",
+                "They grow taller than everybody",
+                "They do not need to exercise",
+              ],
+              0,
+              "Bài viết 'Children who eat breakfast have more energy at school, and they listen better in class.' — có nhiều sức hơn và nghe giảng tốt hơn.",
+              "Children who eat breakfast have more energy at school, and they listen better in class.",
+            ),
+            mcq(
+              "How much exercise a day does the writer say is enough?",
+              "Theo bài, mỗi ngày tập thể dục bao lâu là đủ?",
+              ["Ten minutes", "Thirty minutes", "One hour", "Two hours"],
+              1,
+              "Bài đọc viết 'thirty minutes a day is enough' — ba mươi phút mỗi ngày là đủ rồi.",
+              "thirty minutes a day is enough",
+            ),
+            mcq(
+              "Why should you keep sweet drinks for special days?",
+              "Vì sao chỉ nên uống nước ngọt vào dịp đặc biệt?",
+              [
+                "Because sweet drinks are very expensive",
+                "Because too much sugar is bad for your teeth",
+                "Because sugar makes you sleepy",
+                "Because sweet drinks taste bad in the morning",
+              ],
+              1,
+              "Bài giải thích 'too much of it is bad for your teeth' — quá nhiều đường sẽ hại răng.",
+              "too much of it is bad for your teeth",
+            ),
+            tf(
+              "The writer says you must go to a gym to be healthy.",
+              "Tác giả nói phải tới phòng tập gym mới khoẻ được.",
+              false,
+              "Sai nhé. Ngay câu đầu bài đã viết 'You do not need a gym to be healthy.' — không cần phòng gym, chỉ cần vài thói quen tốt.",
+              "You do not need a gym to be healthy.",
+            ),
+            mcq(
+              "Why does the writer say 'Choose one today'?",
+              "Vì sao tác giả khuyên 'Choose one today' (hôm nay chọn lấy một việc)?",
+              [
+                "Because all the other habits are impossible",
+                "Because starting with one small habit is easier than changing everything at once",
+                "Because the writer only knows one habit",
+                "Because tomorrow is a holiday",
+              ],
+              1,
+              "Bài không nói thẳng lý do — bé phải suy ra. Tác giả vừa kể bốn thói quen rồi khẳng định 'None of these things is difficult', sau đó chỉ xin bé chọn MỘT việc: đổi từng chút một thì dễ giữ hơn là đổi hết cùng lúc.",
+            ),
+          ],
+        },
+        listening: {
+          title: "At the Doctor's",
+          transcript:
+            "Doctor: Well, Bao, you are growing fast. How do you feel in the morning?\n" +
+            "Bao: Tired, Doctor. I often fall asleep in the first lesson.\n" +
+            "Doctor: What time do you go to bed?\n" +
+            "Bao: About eleven. I watch videos on my phone in bed.\n" +
+            "Doctor: There is your answer. Put the phone in another room and go to sleep at nine thirty.\n" +
+            "Bao: Only nine thirty? That is early!\n" +
+            "Doctor: Try it for two weeks. I promise you will feel much stronger.",
+          questions: [
+            mcq(
+              "How does Bao feel in the morning?",
+              "Buổi sáng Bảo cảm thấy thế nào?",
+              ["Hungry", "Tired", "Happy", "Cold"],
+              1,
+              "Bảo trả lời 'Tired, Doctor.' — bạn ấy mệt, còn hay ngủ gật trong tiết đầu.",
+              "Tired, Doctor.",
+            ),
+            mcq(
+              "What does Bao do in bed?",
+              "Bảo làm gì khi đã lên giường?",
+              [
+                "He reads a book",
+                "He watches videos on his phone",
+                "He listens to music",
+                "He does his homework",
+              ],
+              1,
+              "Bảo kể 'I watch videos on my phone in bed.' — nằm trên giường xem video bằng điện thoại.",
+              "I watch videos on my phone in bed.",
+            ),
+            mcq(
+              "What time does the doctor want Bao to go to sleep?",
+              "Bác sĩ muốn Bảo đi ngủ lúc mấy giờ?",
+              ["At eight o'clock", "At nine thirty", "At eleven", "At midnight"],
+              1,
+              "Bác sĩ dặn 'Put the phone in another room and go to sleep at nine thirty.' — chín giờ rưỡi. Mốc 'About eleven' là giờ Bảo đang đi ngủ, không phải giờ bác sĩ khuyên.",
+              "go to sleep at nine thirty",
+            ),
+            tf(
+              "The doctor thinks the phone is the reason why Bao is tired.",
+              "Bác sĩ cho rằng chiếc điện thoại là lý do khiến Bảo mệt.",
+              true,
+              "Đúng! Ngay khi nghe Bảo kể xem video trên giường, bác sĩ nói 'There is your answer.' rồi bảo để điện thoại sang phòng khác.",
+              "There is your answer.",
+            ),
+          ],
+        },
+        writingPrompt:
+          "Viết 6–8 câu về một ngày sống khoẻ của bé: bé ăn gì, vận động thế nào, ngủ mấy giờ, và bé muốn thay đổi thói quen nào từ tuần này.",
+        writingOutline:
+          "1. Mở bài: I want to be healthy and strong, so I have a plan.\n" +
+          "2. Bữa sáng: For breakfast I eat … It gives me energy for …\n" +
+          "3. Rau và trái cây: I eat … vegetables and … fruit every day.\n" +
+          "4. Đồ ngọt: I only drink sweet drinks when …\n" +
+          "5. Vận động: I play … for thirty minutes …\n" +
+          "6. Giấc ngủ: I go to bed at … and I leave my phone …\n" +
+          "7. Kết bài: From this week I will change one habit: I will …",
+        speaking: {
+          sentences: [
+            "You do not need a gym to be healthy.",
+            "Children who eat breakfast have more energy at school.",
+            "Vegetables and fruit give your body the vitamins it needs.",
+            "Thirty minutes of exercise a day is enough.",
+            "A screen at midnight steals the sleep your brain needs.",
+          ],
+          questions: [
+            {
+              question: "What do you usually eat for breakfast?",
+              sampleAnswer:
+                "I usually eat a bowl of pho or a boiled egg with bread, and I drink a glass of milk.",
+            },
+            {
+              question: "What exercise do you like doing?",
+              sampleAnswer:
+                "I like riding my bicycle in the park with my brother. We ride for about half an hour after school.",
+            },
+            {
+              question: "What time do you go to bed, and is that healthy?",
+              sampleAnswer:
+                "I go to bed at ten, but that is a bit late. I will try to sleep at nine thirty from now on.",
+            },
+          ],
+        },
+      },
+
+      // ───────────────────────── Bài 9 · Saving the Planet ─────────────────────────
+      {
+        topic: "Saving the Planet",
+        topicVi: "Giữ gìn Trái Đất",
+        icon: "🌱",
+        words: [
+          word("environment", "/ɪnˈvaɪrənmənt/", "môi trường", "🌏"),
+          word("pollution", "/pəˈluːʃn/", "sự ô nhiễm", "🏭"),
+          word("plastic", "/ˈplæstɪk/", "nhựa", "🧴"),
+          word("bottle", "/ˈbɒtl/", "cái chai", "🍶"),
+          word("recycle", "/ˌriːˈsaɪkl/", "tái chế", "♻️"),
+          word("reuse", "/ˌriːˈjuːz/", "dùng lại nhiều lần", "🔁"),
+          word("bin", "/bɪn/", "thùng rác", "🗑️"),
+          word("waste", "/weɪst/", "lãng phí", "🚱"),
+          word("plant", "/plɑːnt/", "trồng cây", "🌱"),
+          word("tree", "/triː/", "cái cây", "🌳"),
+          word("clean", "/kliːn/", "sạch sẽ", "🧼"),
+          word("proud", "/praʊd/", "tự hào", "😊"),
+        ],
+        sound: {
+          letters: "-ed đọc /ɪd/",
+          sound: "/ɪd/",
+          hint:
+            "Chỉ khi từ gốc đã kết thúc bằng /t/ hoặc /d/ thì đuôi -ed mới đọc thành MỘT ÂM TIẾT RIÊNG /ɪd/: want → wanted ('won-tịd'), need → needed ('nii-địd'). Đây là trường hợp DUY NHẤT được thêm âm; ba trường hợp còn lại (/t/ và /d/) tuyệt đối không thêm. Trẻ Việt hay làm ngược: thêm 'ịd' vào mọi từ (walked → 'wóc-kịd') rồi lại nuốt mất ở chính chỗ cần đọc. Mẹo kiểm tra: đặt tay lên cổ, đọc âm cuối của từ gốc — nếu nghe thấy /t/ hoặc /d/ thì mới thêm /ɪd/.",
+          words: [
+            { word: "wanted", meaning: "đã muốn", emoji: "🙋" },
+            { word: "needed", meaning: "đã cần", emoji: "🙏" },
+            { word: "painted", meaning: "đã sơn, đã vẽ", emoji: "🎨" },
+            { word: "visited", meaning: "đã tới thăm", emoji: "🚶" },
+            { word: "planted", meaning: "đã trồng", emoji: "🌱" },
+          ],
+        },
+        reading: {
+          title: "Our Green Promise",
+          passage:
+            "Our planet gives us everything, so this year our class decided to do something for the environment.\n\n" +
+            "First we looked at our own rubbish. Every day we threw away forty plastic bottles, and that shocked us. Now each of us brings a metal bottle from home and we reuse it. We painted three bins for our classroom: green for paper, yellow for plastic and blue for food, so it is easy to recycle. In March we planted twelve small trees behind the school, and last week we visited them again. They have all grown.\n\n" +
+            "We cannot stop pollution alone, and we do not waste time being sad about it. But a clean corner of the world is a good start, and our teacher says she has never been so proud of us.",
+          translation:
+            "Trái Đất cho chúng ta mọi thứ, nên năm nay lớp tớ quyết định làm một việc gì đó cho môi trường.\n\n" +
+            "Đầu tiên, cả lớp nhìn lại chỗ rác của chính mình. Mỗi ngày lớp tớ vứt đi bốn mươi cái chai nhựa, con số ấy làm ai cũng giật mình. Bây giờ mỗi đứa mang một bình kim loại từ nhà đi và dùng đi dùng lại. Cả lớp sơn ba cái thùng rác cho phòng học: xanh lá cho giấy, vàng cho nhựa và xanh dương cho thức ăn thừa, thế là phân loại tái chế dễ hẳn. Tháng Ba, tụi tớ trồng mười hai cây con phía sau trường, và tuần trước cả lớp ra thăm lại. Cây nào cũng lớn lên rồi.\n\n" +
+            "Một mình lớp tớ thì không chặn được ô nhiễm, và tụi tớ cũng không phí thời gian ngồi buồn vì chuyện đó. Nhưng giữ sạch được một góc nhỏ của thế giới đã là khởi đầu tốt, và cô giáo bảo chưa bao giờ cô tự hào về tụi tớ đến thế.",
+          questions: [
+            mcq(
+              "How many plastic bottles did the class throw away every day?",
+              "Mỗi ngày cả lớp vứt đi bao nhiêu chai nhựa?",
+              ["Twelve", "Twenty", "Forty", "One hundred"],
+              2,
+              "Bài viết 'Every day we threw away forty plastic bottles' — bốn mươi cái chai mỗi ngày, con số làm cả lớp giật mình.",
+              "Every day we threw away forty plastic bottles",
+            ),
+            mcq(
+              "Which bin is for paper?",
+              "Thùng rác nào dùng cho giấy?",
+              ["The green one", "The yellow one", "The blue one", "The red one"],
+              0,
+              "Bài đọc ghi rõ 'green for paper, yellow for plastic and blue for food' — thùng xanh lá là để bỏ giấy.",
+              "green for paper, yellow for plastic and blue for food",
+            ),
+            mcq(
+              "What did the class do in March?",
+              "Tháng Ba cả lớp đã làm gì?",
+              [
+                "They painted the classroom",
+                "They planted twelve small trees",
+                "They visited a factory",
+                "They bought forty bottles",
+              ],
+              1,
+              "Bài viết 'In March we planted twelve small trees behind the school' — trồng mười hai cây con sau trường.",
+              "In March we planted twelve small trees behind the school",
+            ),
+            tf(
+              "The teacher is very proud of the class.",
+              "Cô giáo rất tự hào về cả lớp.",
+              true,
+              "Đúng! Câu cuối bài viết 'our teacher says she has never been so proud of us' — cô chưa bao giờ tự hào đến thế.",
+              "our teacher says she has never been so proud of us",
+            ),
+            mcq(
+              "Why did the children start bringing metal bottles from home?",
+              "Vì sao các bạn nhỏ bắt đầu mang bình kim loại từ nhà đi?",
+              [
+                "Because metal bottles are cheaper than water",
+                "Because a metal bottle can be used again and again, so they throw away less plastic",
+                "Because their teacher gave everybody a free bottle",
+                "Because metal bottles keep water warm",
+              ],
+              1,
+              "Bài không giải thích thẳng — bé phải nối hai ý. Ngay trước đó lớp phát hiện mỗi ngày vứt bốn mươi chai nhựa; bình kim loại thì 'reuse' được nên lượng nhựa thải ra giảm hẳn.",
+            ),
+          ],
+        },
+        listening: {
+          title: "The Green Club Meeting",
+          transcript:
+            "Teacher: Before we finish, who has an idea for next month?\n" +
+            "Mai: I want to make posters about plastic and put them in the market.\n" +
+            "Teacher: Lovely. Who will help Mai?\n" +
+            "Nam: I will. My father has a printer, so we can print them at home.\n" +
+            "Teacher: Wonderful. And Linh, you visited the recycling centre last week. What did you learn?\n" +
+            "Linh: They showed us how old bottles become new chairs. I was really surprised.",
+          questions: [
+            mcq(
+              "What does Mai want to make?",
+              "Mai muốn làm gì?",
+              [
+                "Posters about plastic",
+                "New chairs from bottles",
+                "A rubbish bin for the market",
+                "A book about trees",
+              ],
+              0,
+              "Mai nói 'I want to make posters about plastic and put them in the market.' — làm áp phích về rác nhựa rồi dán ở chợ.",
+              "I want to make posters about plastic and put them in the market.",
+            ),
+            mcq(
+              "Why can Nam help with the posters?",
+              "Vì sao Nam giúp làm áp phích được?",
+              [
+                "Because he draws very well",
+                "Because his father has a printer",
+                "Because he lives near the market",
+                "Because he works at the recycling centre",
+              ],
+              1,
+              "Nam giải thích 'My father has a printer, so we can print them at home.' — nhà bạn ấy có máy in.",
+              "My father has a printer, so we can print them at home.",
+            ),
+            mcq(
+              "Where did Linh go last week?",
+              "Tuần trước Linh đã đi đâu?",
+              ["To the market", "To a tree farm", "To the recycling centre", "To a printing shop"],
+              2,
+              "Cô giáo nhắc 'you visited the recycling centre last week' — Linh đã tới thăm nhà máy tái chế.",
+              "you visited the recycling centre last week",
+            ),
+            tf(
+              "Linh learned that old bottles can become new chairs.",
+              "Linh học được rằng chai cũ có thể thành ghế mới.",
+              true,
+              "Đúng! Linh kể 'They showed us how old bottles become new chairs.' — và bạn ấy còn rất ngạc nhiên nữa.",
+              "They showed us how old bottles become new chairs.",
+            ),
+          ],
+        },
+        writingPrompt:
+          "Viết 6–8 câu về một việc bé và lớp bé có thể làm để bảo vệ môi trường: vấn đề là gì, kế hoạch ra sao, ai tham gia và bé mong điều gì sẽ thay đổi.",
+        writingOutline:
+          "1. Mở bài: I want to help the environment, so I have a plan.\n" +
+          "2. Vấn đề: In my school we throw away a lot of …\n" +
+          "3. Việc thứ nhất: First, I will bring a … from home and reuse it.\n" +
+          "4. Việc thứ hai: Next, my class will put … bins in the classroom, so it is easy to recycle.\n" +
+          "5. Việc thứ ba: We will also plant … trees behind …\n" +
+          "6. Người cùng làm: My friends and my teacher will help because …\n" +
+          "7. Kết bài: We cannot stop pollution alone, but I think we will …",
+        speaking: {
+          sentences: [
+            "Our planet gives us everything.",
+            "Every day our class threw away forty plastic bottles.",
+            "Now we bring a metal bottle from home and we reuse it.",
+            "In March we planted twelve small trees behind the school.",
+            "A clean corner of the world is a good start.",
+          ],
+          questions: [
+            {
+              question: "What do you do with your rubbish at school?",
+              sampleAnswer:
+                "I put paper in the green bin and plastic in the yellow bin. I never leave rubbish on the playground.",
+            },
+            {
+              question: "How can your family use less plastic?",
+              sampleAnswer:
+                "We can take a cloth bag to the market and use metal bottles instead of buying water in plastic ones.",
+            },
+            {
+              question: "Have you ever planted a tree? Tell me about it.",
+              sampleAnswer:
+                "Yes, I have. Last spring I planted a small mango tree in my grandmother's garden, and now it has ten leaves.",
             },
           ],
         },
