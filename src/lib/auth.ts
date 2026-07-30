@@ -7,6 +7,7 @@ import type { Provider } from "next-auth/providers";
 import { db } from "@/lib/db";
 import { authConfig } from "@/lib/auth.config";
 import { GOOGLE_LOGIN_ENABLED, CREDENTIALS_LOGIN_ENABLED } from "@/lib/auth-flags";
+import { isPrimaryAdmin } from "@/lib/admin-emails";
 
 // Provider được lắp theo CỜ trong src/lib/auth-flags.ts — cùng nguồn với các nút
 // trên trang đăng nhập, nên giao diện và server không bao giờ lệch nhau (nút
@@ -98,13 +99,50 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       try {
         const existing = await db.user.findUnique({
           where: { email: user.email },
-          select: { banned: true },
+          select: { banned: true, role: true },
         });
         if (existing?.banned) return false;
+
+        void existing;
       } catch (err) {
         console.error("[auth] kiểm tra khoá tài khoản lỗi, vẫn cho đăng nhập:", err);
       }
       return true;
+    },
+
+    /**
+     * Thăng quyền ADMIN CHÍNH ở đây chứ không ở `signIn`, vì với Google thì
+     * Prisma adapter tạo bản ghi User SAU callback `signIn` — cập nhật ở đó sẽ
+     * không tìm thấy người dùng mới. Callback `jwt` có `user` đúng một lần, ngay
+     * lúc đăng nhập, khi bản ghi chắc chắn đã tồn tại.
+     *
+     * Ghi cả vào DB (cho `requireAdmin()` — nó đọc role tươi từ DB) lẫn vào token
+     * (cho các trang đọc role từ phiên), nên quyền có hiệu lực NGAY, không phải
+     * đăng xuất rồi vào lại.
+     */
+    async jwt(params) {
+      const token = await authConfig.callbacks!.jwt!(params);
+      // Auth.js cho phép callback jwt trả null (= huỷ phiên). Ta không bao giờ
+      // làm thế, nhưng kiểu dữ liệu thì có, nên phải chặn trước khi dùng.
+      if (!token) return token;
+
+      const email = (params.user?.email ?? token.email) as string | undefined;
+      if (!isPrimaryAdmin(email)) return token;
+
+      token.role = "ADMIN";
+      // Chỉ ghi DB đúng lúc đăng nhập (`user` có mặt), không ghi mỗi lần làm mới
+      // token — nếu không sẽ thành một lượt ghi thừa trên mọi request.
+      if (params.user && email) {
+        try {
+          await db.user.updateMany({
+            where: { email, role: { not: "ADMIN" } },
+            data: { role: "ADMIN" },
+          });
+        } catch (err) {
+          console.error("[auth] không thăng được quyền quản trị chính:", err);
+        }
+      }
+      return token;
     },
   },
 });

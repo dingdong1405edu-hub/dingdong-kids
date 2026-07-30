@@ -41,19 +41,51 @@ import { CHAPTERS as PET_CHAPTERS } from "./content/pet";
 const prisma = new PrismaClient();
 
 /**
- * Tài khoản ADMIN để đăng nhập thử bằng email + mật khẩu.
+ * Bảo đảm QUẢN TRỊ CHÍNH luôn vào được, chạy mỗi lần deploy.
  *
- * CHỈ tạo khi CẢ HAI biến môi trường được đặt. Cố tình KHÔNG có mật khẩu mặc
- * định: seed chạy trên mỗi lần deploy, một mật khẩu mặc định nằm sẵn trong mã
- * nguồn sẽ thành cửa sau công khai trên production.
+ * Hai việc, độc lập nhau:
  *
- *   SEED_ADMIN_EMAIL=ban@example.com SEED_ADMIN_PASSWORD='...' npm run db:seed
+ *  1. THĂNG QUYỀN — mọi email trong `ADMIN_EMAILS` (cách nhau bằng dấu phẩy) mà
+ *     đã có tài khoản thì được đặt về ADMIN. Không cần mật khẩu. Cùng danh sách
+ *     mà src/lib/admin-emails.ts dùng khi đăng nhập, nên không bao giờ lệch.
+ *
+ *  2. ĐẶT MẬT KHẨU — nếu có `SEED_ADMIN_PASSWORD` thì tạo/cập nhật mật khẩu cho
+ *     `SEED_ADMIN_EMAIL` (bỏ trống thì lấy email đầu trong ADMIN_EMAILS). Bước
+ *     này CẦN THIẾT khi đăng nhập Google đang tắt — không có mật khẩu thì không
+ *     có đường nào vào.
+ *
+ * Cố tình KHÔNG có mật khẩu mặc định trong mã nguồn: seed chạy mỗi lần deploy,
+ * một mật khẩu mặc định sẽ thành cửa sau công khai trên production.
+ *
+ *   ADMIN_EMAILS=chu@gmail.com SEED_ADMIN_PASSWORD='...' npm run db:seed
  */
 async function seedAdmin(): Promise<void> {
-  const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  // 1) Thăng quyền cho các tài khoản đã tồn tại.
+  if (adminEmails.length > 0) {
+    const promoted = await prisma.user.updateMany({
+      where: { email: { in: adminEmails }, role: { not: "ADMIN" } },
+      data: { role: "ADMIN" },
+    });
+    console.log(
+      `[seed] Quản trị chính: ${adminEmails.join(", ")}` +
+        (promoted.count > 0 ? ` — vừa thăng quyền ${promoted.count} tài khoản.` : "."),
+    );
+  }
+
+  // 2) Đặt mật khẩu (bắt buộc khi Google đang tắt).
+  const email = (process.env.SEED_ADMIN_EMAIL ?? adminEmails[0] ?? "").trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD;
   if (!email || !password) {
-    console.log("[seed] Bỏ qua tài khoản admin (chưa đặt SEED_ADMIN_EMAIL + SEED_ADMIN_PASSWORD).");
+    if (adminEmails.length === 0) {
+      console.log("[seed] Bỏ qua tài khoản quản trị (chưa đặt ADMIN_EMAILS).");
+    } else if (!password) {
+      console.log("[seed] Chưa đặt SEED_ADMIN_PASSWORD — không đổi mật khẩu.");
+    }
     return;
   }
   if (password.length < 8) {
@@ -69,7 +101,7 @@ async function seedAdmin(): Promise<void> {
     update: { passwordHash, role: "ADMIN", banned: false },
     create: { email, name: "Quản trị viên", passwordHash, role: "ADMIN" },
   });
-  console.log(`[seed] Tài khoản ADMIN sẵn sàng: ${email}`);
+  console.log(`[seed] Tài khoản quản trị sẵn sàng (có mật khẩu): ${email}`);
 }
 
 // ───────────────────────────── Khoá học ─────────────────────────────
