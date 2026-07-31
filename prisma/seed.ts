@@ -28,6 +28,9 @@ import bcrypt from "bcryptjs";
 // đổi trước khi ghi DB — ghi thẳng định dạng tác giả sẽ làm mọi phần Đọc/Nghe
 // trượt validate và bài học hiện ra lỗi.
 import { authoringToRoadmapQuestions } from "@/lib/roadmap-content";
+// Dùng CHUNG danh sách quản trị chính với lúc đăng nhập → không bao giờ lệch.
+import { getAdminEmails } from "@/lib/admin-emails";
+import { GOOGLE_LOGIN_ENABLED } from "@/lib/auth-flags";
 // Nội dung bài học tách theo cấp — mỗi file một cấp để soạn độc lập.
 // Xem hợp đồng ở prisma/content/types.ts.
 import type { ChapterSeed as ContentChapter } from "./content/types";
@@ -60,34 +63,50 @@ const prisma = new PrismaClient();
  *   ADMIN_EMAILS=chu@gmail.com SEED_ADMIN_PASSWORD='...' npm run db:seed
  */
 async function seedAdmin(): Promise<void> {
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+  const adminEmails = getAdminEmails();
 
-  // 1) Thăng quyền cho các tài khoản đã tồn tại.
-  if (adminEmails.length > 0) {
-    const promoted = await prisma.user.updateMany({
-      where: { email: { in: adminEmails }, role: { not: "ADMIN" } },
-      data: { role: "ADMIN" },
+  // 1) TẠO tài khoản còn thiếu + thăng quyền tài khoản đã có.
+  //
+  //    Phải TẠO chứ không chỉ `updateMany`: khi đăng nhập Google đang tắt, một
+  //    email chưa từng đăng ký thì chưa có bản ghi User nào để mà thăng quyền —
+  //    và cũng không thể tự đăng ký (đăng ký bằng email quản trị chính bị chặn
+  //    có chủ đích, xem registerAction). Không tạo ở đây thì không ai vào được.
+  for (const email of adminEmails) {
+    await prisma.user.upsert({
+      where: { email },
+      update: { role: "ADMIN", banned: false },
+      // Tạo KHÔNG kèm mật khẩu — mật khẩu đặt ở bước 2 nếu có
+      // SEED_ADMIN_PASSWORD. Tài khoản không mật khẩu vẫn đăng nhập Google được
+      // (khi bật lại), và `authorize` từ chối đăng nhập bằng mật khẩu với tài
+      // khoản chưa đặt mật khẩu, nên không mở thêm đường vào nào.
+      create: { email, name: "Quản trị viên", role: "ADMIN" },
     });
-    console.log(
-      `[seed] Quản trị chính: ${adminEmails.join(", ")}` +
-        (promoted.count > 0 ? ` — vừa thăng quyền ${promoted.count} tài khoản.` : "."),
-    );
   }
+  console.log(`[seed] Quản trị chính: ${adminEmails.join(", ")}`);
 
-  // 2) Đặt mật khẩu (bắt buộc khi Google đang tắt).
+  // 2) Đặt mật khẩu (BẮT BUỘC khi đăng nhập Google đang tắt).
   const email = (process.env.SEED_ADMIN_EMAIL ?? adminEmails[0] ?? "").trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD;
-  if (!email || !password) {
-    if (adminEmails.length === 0) {
-      console.log("[seed] Bỏ qua tài khoản quản trị (chưa đặt ADMIN_EMAILS).");
-    } else if (!password) {
-      console.log("[seed] Chưa đặt SEED_ADMIN_PASSWORD — không đổi mật khẩu.");
+
+  if (!password) {
+    // Cảnh báo to nếu chưa có ai đặt được mật khẩu — đây chính là tình huống
+    // "tài khoản có tồn tại, có quyền ADMIN, nhưng không đăng nhập được".
+    const withPassword = await prisma.user.count({
+      where: { email: { in: adminEmails }, passwordHash: { not: null } },
+    });
+    if (withPassword === 0 && !GOOGLE_LOGIN_ENABLED) {
+      console.warn(
+        "[seed] ⚠️  Tài khoản quản trị CHƯA CÓ MẬT KHẨU và đăng nhập Google đang TẮT\n" +
+          "        → hiện chưa có cách nào đăng nhập.\n" +
+          "        Đặt biến SEED_ADMIN_PASSWORD rồi deploy lại, hoặc chạy:\n" +
+          `        npm run admin:create -- ${email} '<mật khẩu>'`,
+      );
+    } else {
+      console.log("[seed] Chưa đặt SEED_ADMIN_PASSWORD — giữ nguyên mật khẩu hiện tại.");
     }
     return;
   }
+
   if (password.length < 8) {
     console.warn("[seed] SEED_ADMIN_PASSWORD quá ngắn (cần ≥ 8 ký tự) — bỏ qua.");
     return;
@@ -101,7 +120,7 @@ async function seedAdmin(): Promise<void> {
     update: { passwordHash, role: "ADMIN", banned: false },
     create: { email, name: "Quản trị viên", passwordHash, role: "ADMIN" },
   });
-  console.log(`[seed] Tài khoản quản trị sẵn sàng (có mật khẩu): ${email}`);
+  console.log(`[seed] ✅ Tài khoản quản trị sẵn sàng (có mật khẩu): ${email}`);
 }
 
 // ───────────────────────────── Khoá học ─────────────────────────────

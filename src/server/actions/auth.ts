@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { CREDENTIALS_LOGIN_ENABLED, MIN_PASSWORD_LENGTH } from "@/lib/auth-flags";
+import { isPrimaryAdmin } from "@/lib/admin-emails";
 
 export async function logoutAction() {
   await signOut({ redirectTo: "/" });
@@ -47,6 +48,21 @@ export async function registerAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Thông tin chưa hợp lệ." };
   }
   const { name, email, password } = parsed.data;
+
+  // CHẶN đăng ký công khai bằng email QUẢN TRỊ CHÍNH.
+  //
+  // Các email này được tự động thăng lên ADMIN khi đăng nhập (xem
+  // src/lib/admin-emails.ts). Nếu để đăng ký tự do, người lạ chỉ cần biết địa
+  // chỉ email của chủ sở hữu là tạo được tài khoản đó và chiếm luôn quyền quản
+  // trị. Tài khoản quản trị chính CHỈ được tạo bằng `npm run db:seed` hoặc
+  // `npm run admin:create` — hai đường đều đòi quyền truy cập máy chủ.
+  //
+  // Báo lỗi chung chung giống hệt trường hợp email đã tồn tại, để không tiết lộ
+  // địa chỉ nào là địa chỉ quản trị.
+  if (isPrimaryAdmin(email)) {
+    console.warn(`[auth] Chặn đăng ký bằng email quản trị chính: ${email}`);
+    return { ok: false, error: "Email này đã được đăng ký. Bé hãy đăng nhập nhé." };
+  }
 
   try {
     const existing = await db.user.findUnique({

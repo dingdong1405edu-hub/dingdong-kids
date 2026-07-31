@@ -1,30 +1,34 @@
 // ===========================================================================
-//  ADMIN CHÍNH — danh sách email luôn có quyền quản trị.
+//  QUẢN TRỊ CHÍNH — danh sách email luôn có quyền quản trị.
 //
-//  Đặt biến môi trường `ADMIN_EMAILS` (nhiều email cách nhau bằng dấu phẩy):
-//      ADMIN_EMAILS="dingdong1405edu@gmail.com"
+//  Gồm email chủ sở hữu ghi cứng trong mã nguồn, CỘNG thêm bất kỳ email nào đặt
+//  trong biến môi trường `ADMIN_EMAILS` (nhiều email cách nhau bằng dấu phẩy).
+//  Ghi cứng chủ sở hữu để dự án KHÔNG BAO GIỜ rơi vào cảnh không ai vào được
+//  trang quản trị chỉ vì quên đặt một biến môi trường.
 //
 //  Email trong danh sách này được TỰ ĐỘNG thăng lên ADMIN ngay khi đăng nhập —
-//  bằng Google hay bằng email/mật khẩu đều được.
+//  bằng Google hay bằng email/mật khẩu đều được (xem src/lib/auth.ts).
 //
-//  VÌ SAO LÀM THẾ NÀY thay vì chỉ tạo sẵn một tài khoản trong DB:
-//   • Không phải cất mật khẩu quản trị trong biến môi trường mãi mãi.
-//   • Sống sót qua việc reset/đổi database — deploy DB mới vẫn vào được ngay.
-//   • Không bao giờ bị "khoá ngoài": lỡ ai đó hạ quyền chủ sở hữu ở /admin/users
-//     thì lần đăng nhập kế tiếp quyền tự được trả lại.
-//   • Dùng chung một cơ chế cho cả hai cách đăng nhập.
+//  ⚠️ AN TOÀN — hai quy tắc bắt buộc, đừng nới:
+//   1. KHÔNG cho đăng ký công khai bằng các email này (xem registerAction trong
+//      src/server/actions/auth.ts). Nếu không, người lạ chỉ cần vào /register gõ
+//      đúng địa chỉ là chiếm được quyền quản trị.
+//   2. Tài khoản quản trị chính chỉ được tạo bằng `npm run db:seed` hoặc
+//      `npm run admin:create` — hai đường đều đòi quyền truy cập máy chủ.
 //
-//  Đây là quyền CAO NHẤT và chỉ chủ sở hữu hạ tầng mới đặt được (ai sửa được
-//  biến môi trường thì cũng đã kiểm soát toàn bộ máy chủ rồi). Cấp quyền cho
-//  quản trị viên phụ thì làm ở /admin/users, đừng nhét thêm vào đây.
+//  Quản trị viên PHỤ thì cấp ở /admin/users, đừng thêm vào đây.
 // ===========================================================================
 
-/** Email quản trị chính, đã chuẩn hoá về chữ thường. */
+/** Chủ sở hữu dự án — luôn là quản trị viên, không phụ thuộc cấu hình. */
+const OWNER_EMAILS = ["dingdong1405edu@gmail.com"];
+
+/** Email quản trị chính, đã chuẩn hoá về chữ thường, không trùng lặp. */
 export function getAdminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
+  const fromEnv = (process.env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
+  return [...new Set([...OWNER_EMAILS, ...fromEnv])];
 }
 
 /** Email này có phải quản trị chính không? */
