@@ -141,6 +141,9 @@ const vocabWordSchema = z.object({
   partOfSpeech: z.string().trim().default(""),
   /** Ảnh minh hoạ — với trẻ nhỏ, ẢNH quan trọng hơn cả nghĩa tiếng Việt. */
   imageUrl: z.string().trim().nullish(),
+  /** Emoji minh hoạ — DỰ PHÒNG khi chưa có ảnh thật. Bé chưa đọc được chữ nên
+   *  màn hình BẮT BUỘC phải có hình gì đó; thiếu cả hai thì bé chỉ thấy chữ. */
+  emoji: z.string().trim().default(""),
   audioUrl: z.string().trim().nullish(),
   examples: z.array(exampleSchema).default([]),
 });
@@ -166,6 +169,7 @@ export function buildRoadmapVocabCards(sectionId: string, content: unknown): Voc
     ipa: w.ipa ?? "",
     meaning: w.meaning,
     partOfSpeech: w.partOfSpeech ?? "",
+    emoji: w.emoji ?? "",
     examples: (w.examples ?? []).map((e) => ({
       sentence: e.sentence,
       meaning: e.meaning ?? "",

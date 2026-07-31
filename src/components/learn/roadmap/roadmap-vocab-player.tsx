@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { BookOpen, Sparkles, Play, ArrowLeft, Volume2, Ear } from "lucide-react";
+import { BookOpen, Sparkles, Play, ArrowLeft, Ear } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { isDue } from "@/lib/srs";
 import { playWord } from "@/lib/speech";
 import { WordFlow } from "@/components/learn/vocab/word-flow";
 import { ListenRepeatFlow } from "@/components/learn/vocab/listen-repeat-flow";
+import { WordVisual } from "@/components/learn/vocab/word-visual";
 import { ReviewFlow } from "@/components/learn/vocab/review/review-flow";
 import { persistRoadmapReview } from "@/lib/roadmap-review-persist";
 import type { VocabWordCard, WordReviewState } from "@/types";
@@ -71,6 +72,7 @@ export function RoadmapVocabPlayer({
       <ListenRepeatFlow
         title={title}
         words={words}
+        seed={sectionId}
         onExit={() => setView("menu")}
         onNextLevel={() => setView("learn")}
         onComplete={onComplete}
@@ -140,19 +142,9 @@ export function RoadmapVocabPlayer({
               aria-label={`Nghe từ ${w.word}`}
               className="sticker flex items-center gap-2 bg-card px-3 py-2 transition-transform hover:-translate-y-0.5"
             >
-              {w.imageUrl ? (
-                // Ảnh admin tải lên. Dùng <img> thường (không next/image) để mọi URL
-                // admin nhập đều hiện được mà không phải khai báo remotePatterns.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={w.imageUrl}
-                  alt=""
-                  loading="lazy"
-                  className="h-8 w-8 rounded-lg object-cover"
-                />
-              ) : (
-                <Volume2 className="h-5 w-5 text-primary" />
-              )}
+              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
+                <WordVisual word={w} emojiClass="text-2xl" />
+              </span>
               <span className="font-primer text-lg font-bold">{w.word}</span>
             </button>
           ))}
@@ -196,8 +188,8 @@ export function RoadmapVocabPlayer({
                     </span>
                   </div>
                   <p className="text-[15px] text-muted-foreground">
-                    Nhìn hình, nghe từ rồi nói theo. Chưa cần ghép chữ, không chấm điểm —
-                    bé cứ nói thoải mái nhé!
+                    Làm quen mặt từ rồi chơi <b>2 trò chơi</b>: chỉ hình, chích bong bóng,
+                    lật thẻ tìm đôi… Chưa cần ghép chữ, không chấm sai bao giờ.
                   </p>
                 </div>
               </div>

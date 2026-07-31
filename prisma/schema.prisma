@@ -195,6 +195,10 @@ model VocabWord {
   examples  Json        @default("[]")
   /// Ảnh minh hoạ — kênh truyền đạt CHÍNH cho trẻ chưa đọc thạo.
   imageUrl  String?
+  /// Emoji minh hoạ — DỰ PHÒNG khi chưa có ảnh thật. Bé chưa đọc được chữ nên
+  /// màn hình luôn phải có hình gì đó; thiếu cả emoji lẫn ảnh thì bé chỉ nhìn
+  /// thấy chữ tiếng Anh và không đoán được nghĩa.
+  emoji     String      @default("")
   /// Audio phát âm (sinh tự động bằng TTS hoặc admin tải lên).
   audioUrl  String?
   createdAt DateTime    @default(now())
@@ -257,6 +261,9 @@ model RoadmapWordReview {
   meaning        String    @default("")
   examples       Json      @default("[]")
   imageUrl       String?
+  /// Emoji minh hoạ — chụp lại cùng lúc với ảnh, để màn ôn tập luôn có hình
+  /// kể cả khi chưa có ảnh thật.
+  emoji          String    @default("")
   audioUrl       String?
   repetitions    Int       @default(0)
   intervalDays   Int       @default(0)

@@ -35,6 +35,7 @@ export default async function VocabReviewPage() {
     ipa: r.word.ipa,
     meaning: r.word.meaning,
     partOfSpeech: r.word.partOfSpeech,
+    emoji: r.word.emoji,
     examples: Array.isArray(r.word.examples) ? (r.word.examples as unknown as WordExample[]) : [],
     imageUrl: r.word.imageUrl,
     audioUrl: r.word.audioUrl,

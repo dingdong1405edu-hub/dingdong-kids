@@ -43,6 +43,7 @@ export default async function RoadmapReviewPage({ searchParams }: Props) {
     ipa: r.ipa,
     meaning: r.meaning,
     partOfSpeech: "",
+    emoji: r.emoji,
     examples: Array.isArray(r.examples) ? (r.examples as unknown as WordExample[]) : [],
     imageUrl: r.imageUrl,
     audioUrl: r.audioUrl,

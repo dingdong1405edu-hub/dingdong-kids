@@ -23,6 +23,7 @@ interface RawRow {
   ipa: string;
   meaning: string;
   partOfSpeech: string;
+  emoji: string;
   imageUrl: string;
   exSentence: string;
   exMeaning: string;
@@ -31,7 +32,7 @@ interface PreviewRow extends RawRow {
   valid: boolean;
 }
 
-const HEADER_RE = /word|từ|ipa|phiên âm|nghĩa|meaning|loại|ảnh|image/i;
+const HEADER_RE = /word|từ|ipa|phiên âm|nghĩa|meaning|loại|emoji|ảnh|image/i;
 /** Có ít nhất một chữ cái Latin → coi như đây là một từ tiếng Anh. */
 const hasLetters = (s: string) => /[a-zA-Z]/.test(s);
 
@@ -58,7 +59,7 @@ function splitCsvLine(line: string): string[] {
   return out;
 }
 
-/** Cột: 0 từ · 1 IPA · 2 nghĩa · 3 từ loại · 4 link ảnh · 5 câu ví dụ · 6 nghĩa ví dụ. */
+/** Cột: 0 từ · 1 IPA · 2 nghĩa · 3 từ loại · 4 emoji · 5 link ảnh · 6 câu ví dụ · 7 nghĩa ví dụ. */
 function rowsFromMatrix(matrix: unknown[][]): RawRow[] {
   const cleaned = matrix
     .map((r) => (Array.isArray(r) ? r.map((c) => (c == null ? "" : String(c)).trim()) : []))
@@ -72,9 +73,10 @@ function rowsFromMatrix(matrix: unknown[][]): RawRow[] {
     ipa: c[1] ?? "",
     meaning: c[2] ?? "",
     partOfSpeech: c[3] ?? "",
-    imageUrl: c[4] ?? "",
-    exSentence: c[5] ?? "",
-    exMeaning: c[6] ?? "",
+    emoji: c[4] ?? "",
+    imageUrl: c[5] ?? "",
+    exSentence: c[6] ?? "",
+    exMeaning: c[7] ?? "",
   }));
 }
 
@@ -109,7 +111,8 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
   const preview = useMemo(() => finalize(rows), [rows]);
   const validCount = preview.filter((r) => r.valid).length;
   const skipCount = preview.length - validCount;
-  const noImageCount = preview.filter((r) => r.valid && !r.imageUrl).length;
+  // Thiếu ảnh mà vẫn có emoji thì bé vẫn nhìn ra nghĩa — chỉ cảnh báo khi thiếu CẢ HAI.
+  const noImageCount = preview.filter((r) => r.valid && !r.imageUrl && !r.emoji).length;
 
   function reset() {
     setPasteText("");
@@ -159,6 +162,7 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
         ipa: r.ipa,
         meaning: r.meaning,
         partOfSpeech: r.partOfSpeech,
+        emoji: r.emoji,
         imageUrl: r.imageUrl || null,
         audioUrl: null,
         examples: r.exSentence ? [{ sentence: r.exSentence, meaning: r.exMeaning }] : [],

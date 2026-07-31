@@ -33,7 +33,7 @@ import { getAdminEmails } from "@/lib/admin-emails";
 import { GOOGLE_LOGIN_ENABLED } from "@/lib/auth-flags";
 // Nội dung bài học tách theo cấp — mỗi file một cấp để soạn độc lập.
 // Xem hợp đồng ở prisma/content/types.ts.
-import type { ChapterSeed as ContentChapter } from "./content/types";
+import type { ChapterSeed as ContentChapter, LessonSeed as ContentLesson } from "./content/types";
 import { CHAPTERS as PRE_STARTERS_CHAPTERS } from "./content/pre-starters";
 import { CHAPTERS as STARTERS_CHAPTERS } from "./content/starters";
 import { CHAPTERS as MOVERS_CHAPTERS } from "./content/movers";
@@ -184,6 +184,7 @@ interface WordSeed {
   word: string;
   ipa: string;
   meaning: string;
+  emoji: string;
   partOfSpeech: string;
   examples: Array<{ sentence: string; meaning: string }>;
 }
@@ -201,6 +202,7 @@ const w = (
   word: string,
   ipa: string,
   meaning: string,
+  emoji: string,
   sentence: string,
   sentenceVi: string,
   partOfSpeech = "danh từ",
@@ -208,6 +210,9 @@ const w = (
   word,
   ipa,
   meaning,
+  // Emoji là hình minh hoạ DUY NHẤT cho tới khi có kho ảnh thật — bé chưa đọc
+  // được chữ nên thiếu nó là bé không đoán được nghĩa.
+  emoji,
   partOfSpeech,
   examples: [{ sentence, meaning: sentenceVi }],
 });
@@ -220,14 +225,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "PRE_STARTERS",
     lessonTitle: "Con vật quanh bé",
     words: [
-      w("cat", "/kæt/", "con mèo", "The cat is sleeping.", "Con mèo đang ngủ."),
-      w("dog", "/dɒɡ/", "con chó", "My dog is friendly.", "Chó của tớ rất thân thiện."),
-      w("bird", "/bɜːrd/", "con chim", "A bird can fly.", "Chim biết bay."),
-      w("fish", "/fɪʃ/", "con cá", "The fish swims in the water.", "Con cá bơi trong nước."),
-      w("rabbit", "/ˈræbɪt/", "con thỏ", "The rabbit likes carrots.", "Con thỏ thích cà rốt."),
-      w("duck", "/dʌk/", "con vịt", "The duck is in the pond.", "Con vịt ở dưới ao."),
-      w("cow", "/kaʊ/", "con bò", "The cow eats grass.", "Con bò ăn cỏ."),
-      w("pig", "/pɪɡ/", "con lợn", "The pig is pink.", "Con lợn màu hồng."),
+      w("cat", "/kæt/", "con mèo", "🐱", "The cat is sleeping.", "Con mèo đang ngủ."),
+      w("dog", "/dɒɡ/", "con chó", "🐶", "My dog is friendly.", "Chó của tớ rất thân thiện."),
+      w("bird", "/bɜːrd/", "con chim", "🐦", "A bird can fly.", "Chim biết bay."),
+      w("fish", "/fɪʃ/", "con cá", "🐟", "The fish swims in the water.", "Con cá bơi trong nước."),
+      w("rabbit", "/ˈræbɪt/", "con thỏ", "🐰", "The rabbit likes carrots.", "Con thỏ thích cà rốt."),
+      w("duck", "/dʌk/", "con vịt", "🦆", "The duck is in the pond.", "Con vịt ở dưới ao."),
+      w("cow", "/kaʊ/", "con bò", "🐄", "The cow eats grass.", "Con bò ăn cỏ."),
+      w("pig", "/pɪɡ/", "con lợn", "🐷", "The pig is pink.", "Con lợn màu hồng."),
     ],
   },
   {
@@ -237,14 +242,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "PRE_STARTERS",
     lessonTitle: "Bảy sắc cầu vồng",
     words: [
-      w("red", "/red/", "màu đỏ", "The apple is red.", "Quả táo màu đỏ.", "tính từ"),
-      w("blue", "/bluː/", "màu xanh dương", "The sky is blue.", "Bầu trời màu xanh.", "tính từ"),
-      w("green", "/ɡriːn/", "màu xanh lá", "The leaf is green.", "Chiếc lá màu xanh lá.", "tính từ"),
-      w("yellow", "/ˈjeləʊ/", "màu vàng", "The sun is yellow.", "Mặt trời màu vàng.", "tính từ"),
-      w("pink", "/pɪŋk/", "màu hồng", "I like pink flowers.", "Tớ thích hoa màu hồng.", "tính từ"),
-      w("black", "/blæk/", "màu đen", "My shoes are black.", "Giày của tớ màu đen.", "tính từ"),
-      w("white", "/waɪt/", "màu trắng", "The cloud is white.", "Đám mây màu trắng.", "tính từ"),
-      w("orange", "/ˈɒrɪndʒ/", "màu cam", "I have an orange ball.", "Tớ có quả bóng màu cam.", "tính từ"),
+      w("red", "/red/", "màu đỏ", "🔴", "The apple is red.", "Quả táo màu đỏ.", "tính từ"),
+      w("blue", "/bluː/", "màu xanh dương", "🔵", "The sky is blue.", "Bầu trời màu xanh.", "tính từ"),
+      w("green", "/ɡriːn/", "màu xanh lá", "🟢", "The leaf is green.", "Chiếc lá màu xanh lá.", "tính từ"),
+      w("yellow", "/ˈjeləʊ/", "màu vàng", "🟡", "The sun is yellow.", "Mặt trời màu vàng.", "tính từ"),
+      w("pink", "/pɪŋk/", "màu hồng", "🌸", "I like pink flowers.", "Tớ thích hoa màu hồng.", "tính từ"),
+      w("black", "/blæk/", "màu đen", "⚫", "My shoes are black.", "Giày của tớ màu đen.", "tính từ"),
+      w("white", "/waɪt/", "màu trắng", "⚪", "The cloud is white.", "Đám mây màu trắng.", "tính từ"),
+      w("orange", "/ˈɒrɪndʒ/", "màu cam", "🟠", "I have an orange ball.", "Tớ có quả bóng màu cam.", "tính từ"),
     ],
   },
   {
@@ -254,14 +259,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "PRE_STARTERS",
     lessonTitle: "Người thân của bé",
     words: [
-      w("mother", "/ˈmʌðər/", "mẹ", "This is my mother.", "Đây là mẹ của tớ."),
-      w("father", "/ˈfɑːðər/", "bố", "My father is tall.", "Bố tớ cao."),
-      w("sister", "/ˈsɪstər/", "chị / em gái", "I have one sister.", "Tớ có một chị gái."),
-      w("brother", "/ˈbrʌðər/", "anh / em trai", "My brother is six.", "Anh tớ sáu tuổi."),
-      w("baby", "/ˈbeɪbi/", "em bé", "The baby is sleeping.", "Em bé đang ngủ."),
-      w("grandma", "/ˈɡrænmɑː/", "bà", "My grandma makes cakes.", "Bà tớ làm bánh."),
-      w("grandpa", "/ˈɡrænpɑː/", "ông", "Grandpa reads a book.", "Ông đọc sách."),
-      w("family", "/ˈfæməli/", "gia đình", "I love my family.", "Tớ yêu gia đình tớ."),
+      w("mother", "/ˈmʌðər/", "mẹ", "👩", "This is my mother.", "Đây là mẹ của tớ."),
+      w("father", "/ˈfɑːðər/", "bố", "👨", "My father is tall.", "Bố tớ cao."),
+      w("sister", "/ˈsɪstər/", "chị / em gái", "👧", "I have one sister.", "Tớ có một chị gái."),
+      w("brother", "/ˈbrʌðər/", "anh / em trai", "👦", "My brother is six.", "Anh tớ sáu tuổi."),
+      w("baby", "/ˈbeɪbi/", "em bé", "👶", "The baby is sleeping.", "Em bé đang ngủ."),
+      w("grandma", "/ˈɡrænmɑː/", "bà", "👵", "My grandma makes cakes.", "Bà tớ làm bánh."),
+      w("grandpa", "/ˈɡrænpɑː/", "ông", "👴", "Grandpa reads a book.", "Ông đọc sách."),
+      w("family", "/ˈfæməli/", "gia đình", "👨‍👩‍👧", "I love my family.", "Tớ yêu gia đình tớ."),
     ],
   },
   {
@@ -271,14 +276,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "STARTERS",
     lessonTitle: "Đồ dùng học tập",
     words: [
-      w("book", "/bʊk/", "quyển sách", "I read a book every day.", "Tớ đọc sách mỗi ngày."),
-      w("pen", "/pen/", "cái bút", "My pen is blue.", "Bút của tớ màu xanh."),
-      w("pencil", "/ˈpensl/", "bút chì", "I draw with a pencil.", "Tớ vẽ bằng bút chì."),
-      w("bag", "/bæɡ/", "cái cặp", "My bag is very heavy.", "Cặp của tớ rất nặng."),
-      w("desk", "/desk/", "cái bàn học", "The desk is next to the window.", "Cái bàn ở cạnh cửa sổ."),
-      w("teacher", "/ˈtiːtʃər/", "giáo viên", "Our teacher is very kind.", "Cô giáo của chúng tớ rất tốt bụng."),
-      w("friend", "/frend/", "bạn", "Nam is my best friend.", "Nam là bạn thân của tớ."),
-      w("classroom", "/ˈklɑːsruːm/", "lớp học", "Our classroom is big.", "Lớp học của chúng tớ rộng."),
+      w("book", "/bʊk/", "quyển sách", "📕", "I read a book every day.", "Tớ đọc sách mỗi ngày."),
+      w("pen", "/pen/", "cái bút", "🖊️", "My pen is blue.", "Bút của tớ màu xanh."),
+      w("pencil", "/ˈpensl/", "bút chì", "✏️", "I draw with a pencil.", "Tớ vẽ bằng bút chì."),
+      w("bag", "/bæɡ/", "cái cặp", "🎒", "My bag is very heavy.", "Cặp của tớ rất nặng."),
+      w("desk", "/desk/", "cái bàn học", "🪑", "The desk is next to the window.", "Cái bàn ở cạnh cửa sổ."),
+      w("teacher", "/ˈtiːtʃər/", "giáo viên", "👩‍🏫", "Our teacher is very kind.", "Cô giáo của chúng tớ rất tốt bụng."),
+      w("friend", "/frend/", "bạn", "🧑‍🤝‍🧑", "Nam is my best friend.", "Nam là bạn thân của tớ."),
+      w("classroom", "/ˈklɑːsruːm/", "lớp học", "🏫", "Our classroom is big.", "Lớp học của chúng tớ rộng."),
     ],
   },
   {
@@ -288,14 +293,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "STARTERS",
     lessonTitle: "Bé thích ăn gì?",
     words: [
-      w("apple", "/ˈæpl/", "quả táo", "I eat an apple after lunch.", "Tớ ăn một quả táo sau bữa trưa."),
-      w("bread", "/bred/", "bánh mì", "We have bread for breakfast.", "Chúng tớ ăn bánh mì vào bữa sáng."),
-      w("milk", "/mɪlk/", "sữa", "I drink milk every morning.", "Tớ uống sữa mỗi sáng."),
-      w("rice", "/raɪs/", "cơm", "My family eats rice for dinner.", "Gia đình tớ ăn cơm vào bữa tối."),
-      w("water", "/ˈwɔːtər/", "nước", "Please give me some water.", "Cho tớ xin chút nước."),
-      w("cake", "/keɪk/", "bánh ngọt", "The cake is very sweet.", "Cái bánh rất ngọt."),
-      w("egg", "/eɡ/", "quả trứng", "I like eggs for breakfast.", "Tớ thích ăn trứng vào bữa sáng."),
-      w("banana", "/bəˈnɑːnə/", "quả chuối", "Monkeys love bananas.", "Khỉ rất thích chuối."),
+      w("apple", "/ˈæpl/", "quả táo", "🍎", "I eat an apple after lunch.", "Tớ ăn một quả táo sau bữa trưa."),
+      w("bread", "/bred/", "bánh mì", "🍞", "We have bread for breakfast.", "Chúng tớ ăn bánh mì vào bữa sáng."),
+      w("milk", "/mɪlk/", "sữa", "🥛", "I drink milk every morning.", "Tớ uống sữa mỗi sáng."),
+      w("rice", "/raɪs/", "cơm", "🍚", "My family eats rice for dinner.", "Gia đình tớ ăn cơm vào bữa tối."),
+      w("water", "/ˈwɔːtər/", "nước", "💧", "Please give me some water.", "Cho tớ xin chút nước."),
+      w("cake", "/keɪk/", "bánh ngọt", "🍰", "The cake is very sweet.", "Cái bánh rất ngọt."),
+      w("egg", "/eɡ/", "quả trứng", "🥚", "I like eggs for breakfast.", "Tớ thích ăn trứng vào bữa sáng."),
+      w("banana", "/bəˈnɑːnə/", "quả chuối", "🍌", "Monkeys love bananas.", "Khỉ rất thích chuối."),
     ],
   },
   {
@@ -305,14 +310,14 @@ const VOCAB_UNITS: VocabUnitSeed[] = [
     level: "STARTERS",
     lessonTitle: "Hộp đồ chơi của bé",
     words: [
-      w("ball", "/bɔːl/", "quả bóng", "Let's play with the ball.", "Cùng chơi bóng nào."),
-      w("doll", "/dɒl/", "búp bê", "My doll has long hair.", "Búp bê của tớ tóc dài."),
-      w("kite", "/kaɪt/", "cái diều", "We fly a kite in the park.", "Chúng tớ thả diều ở công viên."),
-      w("robot", "/ˈrəʊbɒt/", "người máy", "My robot can walk.", "Người máy của tớ biết đi."),
-      w("bike", "/baɪk/", "xe đạp", "I ride my bike to school.", "Tớ đạp xe tới trường."),
-      w("car", "/kɑːr/", "ô tô", "This toy car is very fast.", "Chiếc ô tô đồ chơi này rất nhanh."),
-      w("teddy", "/ˈtedi/", "gấu bông", "I sleep with my teddy.", "Tớ ngủ cùng gấu bông."),
-      w("puzzle", "/ˈpʌzl/", "trò xếp hình", "This puzzle is hard.", "Trò xếp hình này khó."),
+      w("ball", "/bɔːl/", "quả bóng", "⚽", "Let's play with the ball.", "Cùng chơi bóng nào."),
+      w("doll", "/dɒl/", "búp bê", "🪆", "My doll has long hair.", "Búp bê của tớ tóc dài."),
+      w("kite", "/kaɪt/", "cái diều", "🪁", "We fly a kite in the park.", "Chúng tớ thả diều ở công viên."),
+      w("robot", "/ˈrəʊbɒt/", "người máy", "🤖", "My robot can walk.", "Người máy của tớ biết đi."),
+      w("bike", "/baɪk/", "xe đạp", "🚲", "I ride my bike to school.", "Tớ đạp xe tới trường."),
+      w("car", "/kɑːr/", "ô tô", "🚗", "This toy car is very fast.", "Chiếc ô tô đồ chơi này rất nhanh."),
+      w("teddy", "/ˈtedi/", "gấu bông", "🧸", "I sleep with my teddy.", "Tớ ngủ cùng gấu bông."),
+      w("puzzle", "/ˈpʌzl/", "trò xếp hình", "🧩", "This puzzle is hard.", "Trò xếp hình này khó."),
     ],
   },
 ];
@@ -437,26 +442,10 @@ const GRAMMAR_UNITS: GrammarSeed[] = [
 
 // ───────────────────────────── Lộ trình ─────────────────────────────
 
-interface LessonSeed {
-  topic: string;
-  topicVi: string;
-  icon: string;
-  /** Từ vựng của bài — dùng cho cả phần VOCAB lẫn các bài tập khác. */
-  words: Array<{ word: string; ipa: string; meaning: string }>;
-  /** Âm phonics dạy trong bài. */
-  sound: { letters: string; sound: string; hint: string; words: Array<{ word: string; meaning: string; emoji: string }> };
-  reading: { title: string; passage: string; translation: string; questions: unknown[] };
-  listening: { title: string; transcript: string; questions: unknown[] };
-  writingPrompt: string;
-  writingOutline: string;
-  speaking: { sentences: string[]; questions: Array<{ question: string; sampleAnswer: string }> };
-}
-
-interface ChapterSeed {
-  title: string;
-  subtitle: string;
-  lessons: LessonSeed[];
-}
+// Kiểu bài học dùng CHUNG với prisma/content/types.ts — đừng khai báo lại ở đây,
+// hai bản sao sẽ lệch nhau (đúng cái đã làm mất trường `emoji` của từ vựng).
+type LessonSeed = ContentLesson;
+type ChapterSeed = ContentChapter;
 
 const mcq = (
   prompt: string,
@@ -686,6 +675,7 @@ async function seedVocab(): Promise<void> {
         word: word.word,
         ipa: word.ipa,
         meaning: word.meaning,
+        emoji: word.emoji,
         partOfSpeech: word.partOfSpeech,
         examples: word.examples,
       };
@@ -736,6 +726,9 @@ function sectionContent(l: LessonSeed, skill: Skill): unknown {
           ipa: x.ipa,
           meaning: x.meaning,
           partOfSpeech: "danh từ",
+          // Emoji là hình minh hoạ DUY NHẤT cho tới khi có kho ảnh thật —
+          // đừng bỏ, nếu không bé chỉ nhìn thấy chữ.
+          emoji: x.emoji,
           examples: [],
         })),
       };

@@ -13,6 +13,7 @@ export function persistRoadmapReview(word: VocabWordCard, quality: number) {
     meaning: word.meaning,
     examples: word.examples,
     imageUrl: word.imageUrl,
+    emoji: word.emoji,
     audioUrl: word.audioUrl,
     quality,
   }).catch(() => {});

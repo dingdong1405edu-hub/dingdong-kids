@@ -200,6 +200,9 @@ export interface VocabWordCard {
   partOfSpeech: string;
   examples: WordExample[];
   imageUrl: string | null;
+  /** Emoji minh hoạ — dùng khi chưa có `imageUrl`. Với bé chưa đọc được chữ,
+   *  màn hình luôn phải có hình; emoji là mức tối thiểu luôn có sẵn. */
+  emoji: string;
   audioUrl: string | null;
 }
 

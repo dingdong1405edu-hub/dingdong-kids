@@ -30,7 +30,7 @@ export function VocabSectionEditor({
   function add() {
     setWords([
       ...words,
-      { word: "", ipa: "", meaning: "", partOfSpeech: "", imageUrl: null, audioUrl: null, examples: [] },
+      { word: "", ipa: "", meaning: "", partOfSpeech: "", emoji: "", imageUrl: null, audioUrl: null, examples: [] },
     ]);
   }
   function remove(i: number) {

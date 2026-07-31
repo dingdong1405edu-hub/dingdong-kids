@@ -41,6 +41,7 @@ export default async function VocabLessonPage({ params }: Props) {
     ipa: w.ipa,
     meaning: w.meaning,
     partOfSpeech: w.partOfSpeech,
+    emoji: w.emoji,
     examples: Array.isArray(w.examples) ? (w.examples as unknown as WordExample[]) : [],
     imageUrl: w.imageUrl,
     audioUrl: w.audioUrl,

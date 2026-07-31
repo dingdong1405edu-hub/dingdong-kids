@@ -23,6 +23,7 @@ const reviewSchema = z.object({
   meaning: z.string().default(""),
   examples: z.array(exampleSchema).default([]),
   imageUrl: z.string().nullish(),
+  emoji: z.string().default(""),
   audioUrl: z.string().nullish(),
   quality: z.number().int().min(0).max(5),
 });
@@ -39,7 +40,7 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
   const parsed = reviewSchema.safeParse(params);
   if (!parsed.success) return { ok: false as const, error: "Invalid input" };
 
-  const { word, ipa, meaning, examples, imageUrl, audioUrl, quality } = parsed.data;
+  const { word, ipa, meaning, examples, imageUrl, emoji, audioUrl, quality } = parsed.data;
   const userId = session.user.id;
   const snapshot = examples as unknown as Prisma.InputJsonValue;
 
@@ -63,6 +64,7 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
         meaning,
         examples: snapshot,
         imageUrl: imageUrl ?? null,
+        emoji,
         audioUrl: audioUrl ?? null,
         repetitions: next.repetitions,
         intervalDays: next.intervalDays,
@@ -78,6 +80,7 @@ export async function reviewRoadmapWordAction(params: z.infer<typeof reviewSchem
         meaning,
         examples: snapshot,
         imageUrl: imageUrl ?? null,
+        emoji,
         audioUrl: audioUrl ?? null,
         repetitions: next.repetitions,
         intervalDays: next.intervalDays,

@@ -48,6 +48,7 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
       <ListenRepeatFlow
         title={lesson.title}
         words={words}
+        seed={lesson.id}
         onExit={() => setView("menu")}
         onNextLevel={() => setView("learn")}
       />
