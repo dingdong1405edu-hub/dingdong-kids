@@ -12,14 +12,16 @@
 //  phải bằng cách lật thẻ. Nên giờ phần làm quen rút ngắn lại chỉ để giới thiệu
 //  mặt từ, còn phần chính là hai trò chơi ngay sau đó.
 //
-//  CỐ TÌNH KHÔNG GHI ÂM: nhận dạng giọng trẻ 4 tuổi rất kém chính xác, chấm sai
-//  một lần là bé mất hứng. Ở mức này mục tiêu là bé DÁM MỞ MIỆNG NÓI, không phải
-//  nói chuẩn. Việc chấm phát âm để dành cho phần Nói ở các cấp lớn hơn.
+//  GHI ÂM để bé NGHE LẠI GIỌNG MÌNH — nhưng KHÔNG CHẤM ĐIỂM. Nhận dạng giọng
+//  trẻ 4 tuổi kém chính xác tới mức chấm sai là chuyện thường, mà chấm sai một
+//  lần là bé mất hứng. Ở mức này mục tiêu là bé DÁM MỞ MIỆNG NÓI, không phải nói
+//  chuẩn. Nghe lại chính giọng mình là thứ trẻ con cực thích và tự nó đã đủ
+//  động lực. Việc chấm phát âm để dành cho phần Nói ở các cấp lớn hơn.
 // ===========================================================================
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { X, ArrowLeft, Volume2, Mic, Check, RotateCcw, Sparkles } from "lucide-react";
+import { X, ArrowLeft, Volume2, Mic, Square, Check, RotateCcw, Sparkles, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +29,7 @@ import { playWord } from "@/lib/speech";
 import { emitDing } from "@/lib/ding-bus";
 import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { WordVisual } from "./word-visual";
+import { useRecorder } from "@/lib/use-recorder";
 import { pickGames, type VocabGameEntry } from "./games/registry";
 import { cn } from "@/lib/utils";
 import type { VocabWordCard } from "@/types";
@@ -311,12 +314,7 @@ function MeetWords({
           <Volume2 className="h-11 w-11" />
         </button>
 
-        <div className="flex items-center gap-2 rounded-2xl bg-sunny/15 px-4 py-2.5">
-          <Mic className="h-5 w-5 shrink-0 text-sunny-foreground" />
-          <span className="font-display text-base font-extrabold text-sunny-foreground">
-            Bé nói theo nào: <span className="font-primer">{word.word}</span>
-          </span>
-        </div>
+        <RepeatRecorder word={word.word} />
 
         {heard && (
           <p className="animate-fade-in text-sm font-semibold text-muted-foreground">{praise}</p>
@@ -340,6 +338,129 @@ function MeetWords({
           {index < words.length - 1 ? "Bé nói được rồi!" : "Chơi thôi! 🎮"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ───────────────────────── Ghi âm & nghe lại ─────────────────────────
+
+/**
+ * Bé bấm mic → nói theo → nghe lại chính giọng mình, đặt cạnh giọng mẫu.
+ *
+ * KHÔNG CHẤM ĐIỂM, không gửi lên server: nhận dạng giọng trẻ 4–6 tuổi sai rất
+ * nhiều, chấm oan một lần là bé không dám nói nữa. Chỉ riêng việc nghe lại giọng
+ * mình đã đủ hấp dẫn với trẻ con, và so hai giọng cạnh nhau là cách tự sửa phát
+ * âm tự nhiên nhất ở tuổi này.
+ *
+ * Tự dừng sau 6 giây vì bé rất hay quên bấm dừng.
+ */
+function RepeatRecorder({ word }: { word: string }) {
+  const rec = useRecorder(6);
+
+  // Đổi sang từ khác thì xoá bản ghi cũ — nếu không bé bấm "nghe lại giọng con"
+  // ở từ mới lại nghe ra từ trước đó.
+  useEffect(() => {
+    rec.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [word]);
+
+  if (rec.state === "unsupported") {
+    return (
+      <p className="rounded-2xl bg-muted px-4 py-2.5 text-center text-sm font-semibold text-muted-foreground">
+        Máy này chưa ghi âm được — bé cứ nói to theo nhé! 🗣️
+      </p>
+    );
+  }
+
+  if (rec.state === "denied") {
+    return (
+      <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-muted px-4 py-3 text-center">
+        <p className="text-sm font-semibold text-muted-foreground">
+          Chưa bật micro nên chưa ghi âm được.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Bố mẹ bấm vào 🔒 trên thanh địa chỉ → cho phép Micro, rồi tải lại trang.
+        </p>
+        <button
+          type="button"
+          onClick={() => void rec.start()}
+          className="mt-1 text-sm font-bold text-primary hover:underline"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
+  // Đã ghi xong → so hai giọng cạnh nhau
+  if (rec.state === "ready" && rec.audioUrl) {
+    return (
+      <div className="flex w-full max-w-xs flex-col items-center gap-2">
+        <p className="font-display text-sm font-extrabold text-primary">
+          Nghe lại xem giống chưa nhé! 👂
+        </p>
+        <div className="grid w-full grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => playWord({ word })}
+            className="btn-chunky flex min-h-[56px] flex-col items-center justify-center rounded-2xl border-4 border-primary/25 bg-card px-2 py-2"
+          >
+            <span className="text-xs font-bold text-muted-foreground">Ding nói</span>
+            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-primary">
+              <Volume2 className="h-4 w-4" /> Nghe
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void new Audio(rec.audioUrl!).play().catch(() => {})}
+            className="btn-chunky flex min-h-[56px] flex-col items-center justify-center rounded-2xl border-4 border-sunny/40 bg-sunny/10 px-2 py-2"
+          >
+            <span className="text-xs font-bold text-muted-foreground">Con nói</span>
+            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-sunny-foreground">
+              <Play className="h-4 w-4" /> Nghe
+            </span>
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => void rec.start()}
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-foreground"
+        >
+          <Mic className="h-4 w-4" /> Nói lại lần nữa
+        </button>
+      </div>
+    );
+  }
+
+  const recording = rec.state === "recording";
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <button
+        type="button"
+        onClick={() => (recording ? rec.stop() : void rec.start())}
+        aria-label={recording ? "Dừng ghi âm" : `Ghi âm bé nói từ ${word}`}
+        className={cn(
+          "btn-chunky relative flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95",
+          recording
+            ? "bg-rose-500 text-white"
+            : "bg-sunny text-sunny-foreground hover:scale-105",
+        )}
+      >
+        {recording && (
+          <motion.span
+            className="absolute inset-0 rounded-full bg-rose-500/40"
+            animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+          />
+        )}
+        {recording ? <Square className="h-8 w-8 fill-current" /> : <Mic className="h-9 w-9" />}
+      </button>
+      <span className="font-display text-base font-extrabold text-sunny-foreground">
+        {recording ? "Đang nghe bé nói… bấm để dừng" : "Bấm mic rồi nói theo nhé!"}
+      </span>
+      {!recording && (
+        <span className="font-primer text-lg font-bold">{word}</span>
+      )}
     </div>
   );
 }

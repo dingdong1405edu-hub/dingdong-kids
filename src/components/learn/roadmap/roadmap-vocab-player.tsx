@@ -188,8 +188,9 @@ export function RoadmapVocabPlayer({
                     </span>
                   </div>
                   <p className="text-[15px] text-muted-foreground">
-                    Làm quen mặt từ rồi chơi <b>2 trò chơi</b>: chỉ hình, chích bong bóng,
-                    lật thẻ tìm đôi… Chưa cần ghép chữ, không chấm sai bao giờ.
+                    Làm quen mặt từ rồi chơi <b>2 trò chơi</b> bốc từ 8 trò: ấp trứng,
+                    câu cá, ú oà, xây tháp, chích bong bóng… Mỗi bài một bộ khác nhau.
+                    Chưa cần ghép chữ, không chấm sai bao giờ.
                   </p>
                 </div>
               </div>

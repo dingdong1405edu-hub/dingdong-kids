@@ -6,6 +6,7 @@ import {
   X,
   LayoutDashboard,
   Route,
+  Gamepad2,
   Target,
   BookOpen,
   SpellCheck,
@@ -44,6 +45,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/roadmap", label: "Lộ trình", icon: Route },
+      { href: "/games", label: "Sân chơi", icon: Gamepad2 },
       { href: "/goals", label: "Mục tiêu", icon: Target },
     ],
   },

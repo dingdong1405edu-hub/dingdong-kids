@@ -66,6 +66,46 @@ export const VOCAB_GAMES: VocabGameEntry[] = [
       import("./feed-ding-game").then((m) => ({ default: m.FeedDingGame })),
     ),
   },
+  {
+    id: "egg-hatch",
+    title: "Ấp trứng",
+    hint: "Mỗi câu đúng làm trứng nứt thêm. Đủ rồi thì trứng nở!",
+    emoji: "🥚",
+    minWords: 3,
+    Component: load(() =>
+      import("./egg-hatch-game").then((m) => ({ default: m.EggHatchGame })),
+    ),
+  },
+  {
+    id: "fishing",
+    title: "Câu cá",
+    hint: "Nghe từ rồi câu đúng con cá bỏ vào xô.",
+    emoji: "🎣",
+    minWords: 3,
+    Component: load(() =>
+      import("./fishing-game").then((m) => ({ default: m.FishingGame })),
+    ),
+  },
+  {
+    id: "peekaboo",
+    title: "Ú oà",
+    hint: "Từ đang trốn sau cánh cửa nào? Mở ra xem nhé!",
+    emoji: "🚪",
+    minWords: 3,
+    Component: load(() =>
+      import("./peekaboo-game").then((m) => ({ default: m.PeekabooGame })),
+    ),
+  },
+  {
+    id: "tower-build",
+    title: "Xây tháp",
+    hint: "Mỗi câu đúng xây thêm một tầng. Xây tới ngôi sao nhé!",
+    emoji: "🏗️",
+    minWords: 3,
+    Component: load(() =>
+      import("./tower-build-game").then((m) => ({ default: m.TowerBuildGame })),
+    ),
+  },
 ];
 
 /**

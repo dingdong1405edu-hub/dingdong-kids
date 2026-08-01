@@ -149,6 +149,7 @@ export default async function DashboardPage() {
       <div>
         <h2 className="font-display mb-3 text-lg font-bold">Bé muốn chơi gì hôm nay?</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ModuleCard href="/games" icon="🎮" title="Sân chơi" subtitle="Chơi thoải mái — không chấm điểm" color="bg-fuchsia-100 dark:bg-fuchsia-500/15" />
           <ModuleCard href="/vocab" icon="📚" title="Từ vựng" subtitle="Học từ mới qua tranh và tiếng" progress={vocabProgress} color="bg-blue-100 dark:bg-blue-500/15" />
           <ModuleCard href="/phonics" icon="🔤" title="Ghép vần" subtitle="Phonics — nghe âm, ghép chữ thành từ" progress={phonicsProgress} color="bg-amber-100 dark:bg-amber-500/15" />
           <ModuleCard href="/grammar" icon="📝" title="Ngữ pháp" subtitle="Đặt câu đúng, thật dễ hiểu" progress={grammarProgress} color="bg-green-100 dark:bg-green-500/15" />
