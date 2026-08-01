@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isDue } from "@/lib/srs";
+import { primeSpeech } from "@/lib/speech";
 import { WordFlow } from "./word-flow";
 import { ListenRepeatFlow } from "./listen-repeat-flow";
 import { ReviewFlow } from "./review/review-flow";
@@ -99,8 +100,10 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
 
       <Tabs defaultValue={completed ? "review" : "listen"} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="listen" className="text-[13px]">
-            <Ear className="mr-1 h-4 w-4" /> Nghe &amp; nhắc lại
+          <TabsTrigger value="listen" className="min-w-0 text-[13px]">
+            <Ear className="mr-1 h-4 w-4 shrink-0" />
+            <span className="truncate sm:hidden">Nghe</span>
+            <span className="hidden truncate sm:inline">Nghe &amp; nhắc lại</span>
           </TabsTrigger>
           <TabsTrigger value="learn" className="text-[13px]">
             <BookOpen className="mr-1 h-4 w-4" /> Học từ
@@ -135,7 +138,7 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
                   Bài này chưa có từ vựng.
                 </p>
               ) : (
-                <Button className="btn-chunky w-full" onClick={() => setView("listen")}>
+                <Button className="btn-chunky w-full" onClick={() => { primeSpeech(); setView("listen"); }}>
                   <Play className="mr-1.5 h-4 w-4" /> Bắt đầu nghe
                 </Button>
               )}
@@ -222,7 +225,7 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
                     )}
                     <span className="text-muted-foreground">/ {words.length} từ</span>
                   </div>
-                  <Button className="w-full" onClick={() => setView("review")}>
+                  <Button className="w-full" onClick={() => { primeSpeech(); setView("review"); }}>
                     <Sparkles className="mr-1.5 h-4 w-4" />
                     {dueCount > 0 ? "Bắt đầu ôn" : "Ôn sớm"}
                   </Button>

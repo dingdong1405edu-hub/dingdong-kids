@@ -172,7 +172,7 @@ export function MemoryMatchGame({ words, onDone }: VocabGameProps) {
                 transition={{ duration: 0.35 }}
                 className={cn(
                   // Ô chơi ≥ 96px (nguyên tắc 4)
-                  "relative flex aspect-square min-h-[6rem] items-center justify-center rounded-2xl border-4",
+                  "relative flex aspect-square w-full min-w-0 items-center justify-center rounded-2xl border-4",
                   isMatched
                     ? "animate-pop-in border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15"
                     : isFaceUp

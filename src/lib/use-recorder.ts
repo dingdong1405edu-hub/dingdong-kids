@@ -16,7 +16,14 @@
 // ===========================================================================
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type RecorderState = "idle" | "recording" | "ready" | "denied" | "unsupported";
+export type RecorderState =
+  | "idle"
+  | "recording"
+  | "ready"
+  | "denied"
+  /** Trang không chạy trên HTTPS → trình duyệt ẩn luôn micro. */
+  | "insecure"
+  | "unsupported";
 
 export interface UseRecorder {
   state: RecorderState;
@@ -71,7 +78,18 @@ export function useRecorder(maxSeconds = 8): UseRecorder {
   }, []);
 
   const start = useCallback(async () => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    if (typeof window === "undefined") return;
+
+    // Trình duyệt CHỈ cho dùng micro trên "secure context" (https:// hoặc
+    // localhost). Mở bằng IP mạng LAN kiểu http://192.168.1.5:3000 thì
+    // `navigator.mediaDevices` là undefined — không phải lỗi code, và cũng
+    // không có cách nào xin quyền. Phải nói rõ, nếu không người dùng cứ tưởng
+    // nút ghi âm bị hỏng.
+    if (!window.isSecureContext) {
+      setState("insecure");
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
       setState("unsupported");
       return;
     }

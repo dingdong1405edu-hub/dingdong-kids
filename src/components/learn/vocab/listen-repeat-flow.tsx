@@ -364,6 +364,20 @@ function RepeatRecorder({ word }: { word: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [word]);
 
+  if (rec.state === "insecure") {
+    return (
+      <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-amber-50 px-4 py-3 text-center dark:bg-amber-500/10">
+        <p className="text-sm font-bold text-amber-700 dark:text-amber-300">
+          Trang này chưa chạy HTTPS nên trình duyệt khoá micro
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Mở bằng địa chỉ <b>https://…</b> hoặc <b>localhost</b> thì ghi âm được ngay.
+          Bé cứ nói to theo, phần nghe vẫn dùng bình thường nhé!
+        </p>
+      </div>
+    );
+  }
+
   if (rec.state === "unsupported") {
     return (
       <p className="rounded-2xl bg-muted px-4 py-2.5 text-center text-sm font-semibold text-muted-foreground">

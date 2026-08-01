@@ -12,7 +12,10 @@
  */
 import { authoringToRoadmapQuestions, validateSectionContent } from "@/lib/roadmap-content";
 import type { SkillKey } from "@/lib/roadmap";
+import type { EnglishLevel } from "@prisma/client";
 import type { ChapterSeed, LessonSeed, LessonQuestion } from "./types";
+import { ROADMAP_GRAMMAR } from "./grammar/roadmap";
+import { roadmapGrammarContent, type LessonGrammarSeed } from "./grammar/types";
 
 import { CHAPTERS as PRE_STARTERS } from "./pre-starters";
 import { CHAPTERS as STARTERS } from "./starters";
@@ -41,6 +44,16 @@ const PASSAGE_RANGE: Record<string, [number, number]> = {
 };
 
 const countWords = (s: string) => (s.trim().match(/[A-Za-z0-9'’-]+/g) ?? []).length;
+
+/** Khoá thư mục ↔ enum cấp trong DB, để tra ngữ pháp lộ trình. */
+const LEVEL_BY_KEY: Record<string, EnglishLevel> = {
+  "pre-starters": "PRE_STARTERS",
+  starters: "STARTERS",
+  movers: "MOVERS",
+  flyers: "FLYERS",
+  ket: "KET",
+  pet: "PET",
+};
 
 let errors = 0;
 let warnings = 0;
@@ -87,6 +100,135 @@ function checkQuestions(where: string, questions: LessonQuestion[], source: stri
         fail(at, `\`supportingQuote\` không có trong bài: "${q.supportingQuote.slice(0, 50)}…"`);
       }
     }
+  }
+}
+
+/** Bỏ dấu câu + hạ chữ thường để so khớp "cùng bộ từ" cho bài sắp xếp câu. */
+const words = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/[.,!?;:"]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+/**
+ * Kiểm từng bài tập ngữ pháp. Bắt đúng những lỗi khiến minigame KHÔNG CHƠI ĐƯỢC
+ * hoặc không bao giờ chấm đúng — thứ mà zod không thấy vì `Exercise` cố tình
+ * lỏng (có index signature).
+ */
+function checkGrammarExercise(where: string, raw: unknown): void {
+  const e = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const type = String(e.type ?? "");
+  const list = (k: string) => (Array.isArray(e[k]) ? (e[k] as unknown[]).map(String) : []);
+
+  if (type === "fill_blank") {
+    const sentence = String(e.sentence ?? "");
+    const blank = String(e.blank ?? "");
+    const options = list("options");
+    // Trình chơi tách câu tại "___"; thiếu nó thì bé không thấy chỗ trống nào.
+    if (!sentence.includes("___")) fail(where, "fill_blank thiếu chỗ trống “___” trong `sentence`");
+    if (!options.includes(blank)) {
+      fail(where, `fill_blank có \`blank\` = "${blank}" KHÔNG nằm trong options → không bao giờ chọn đúng được`);
+    }
+    if (options.length < 2) fail(where, "fill_blank cần ít nhất 2 lựa chọn");
+    if (new Set(options).size !== options.length) fail(where, "fill_blank có lựa chọn trùng nhau");
+  } else if (type === "sentence_order" || type === "sentenceOrder") {
+    const tiles = list("words");
+    const answer = String(e.answer ?? "");
+    if (!tiles.length) fail(where, "sentence_order thiếu `words`");
+    if (!answer.trim()) fail(where, "sentence_order thiếu `answer`");
+    // Thẻ từ phải là hoán vị ĐÚNG của câu trả lời, nếu không bé xếp kiểu gì
+    // cũng sai (thừa/thiếu thẻ so với đáp án).
+    const a = [...tiles.flatMap(words)].sort();
+    const b = [...words(answer)].sort();
+    if (a.join(" ") !== b.join(" ")) {
+      fail(where, `sentence_order: thẻ từ [${tiles.join(", ")}] không khớp đáp án "${answer}"`);
+    }
+  } else if (type === "translate") {
+    const answer = String(e.answer ?? "");
+    const options = list("options");
+    const dir = String(e.direction ?? "");
+    if (dir !== "vi_to_en" && dir !== "en_to_vi") fail(where, `translate có \`direction\` lạ: "${dir}"`);
+    if (!String(e.prompt ?? "").trim()) fail(where, "translate thiếu `prompt`");
+    if (!options.includes(answer)) {
+      fail(where, `translate có \`answer\` = "${answer}" KHÔNG nằm trong options → không bao giờ chọn đúng được`);
+    }
+    if (options.length < 2) fail(where, "translate cần ít nhất 2 lựa chọn");
+    // Trình chơi dùng chính chuỗi lựa chọn làm React key → trùng là hỏng render.
+    if (new Set(options).size !== options.length) fail(where, "translate có lựa chọn TRÙNG NHAU");
+  }
+}
+
+/** Ngữ pháp lộ trình của một cấp: khớp hàng với bài, và chơi được. */
+function checkRoadmapGrammar(levelKey: string, orderedTopics: string[]): void {
+  const level = LEVEL_BY_KEY[levelKey];
+  const entries: LessonGrammarSeed[] | undefined = level ? ROADMAP_GRAMMAR[level] : undefined;
+  if (!entries) {
+    warn(`${levelKey} · Ngữ pháp`, "chưa soạn — phần Ngữ pháp của cấp này sẽ hiện “Sắp có”");
+    return;
+  }
+
+  if (entries.length !== orderedTopics.length) {
+    fail(
+      `${levelKey} · Ngữ pháp`,
+      `có ${entries.length} mục nhưng cấp này có ${orderedTopics.length} bài — hai danh sách PHẢI dài bằng nhau`,
+    );
+  }
+
+  for (const [i, topic] of orderedTopics.entries()) {
+    const g = entries[i];
+    const at = `${levelKey} · Ngữ pháp · bài ${i + 1} (${topic})`;
+    if (!g) {
+      fail(at, "thiếu ngữ pháp cho bài này");
+      continue;
+    }
+    // Chốt chặn quan trọng nhất: lệch hàng thì bé học ngữ pháp của bài khác.
+    if (g.topic !== topic) {
+      fail(at, `LỆCH HÀNG — mục thứ ${i + 1} khai topic "${g.topic}" nhưng bài thứ ${i + 1} là "${topic}"`);
+      continue;
+    }
+    if (!g.sections?.length) {
+      fail(at, "không có phần lý thuyết nào");
+      continue;
+    }
+
+    for (const [si, s] of g.sections.entries()) {
+      const sat = `${at} · phần ${si + 1}`;
+      if (!s.id?.trim()) fail(sat, "thiếu `id`");
+      if (!s.title?.trim()) fail(sat, "thiếu `title`");
+      if (!s.explanation?.trim()) fail(sat, "thiếu `explanation`");
+      if (!s.examples?.length) fail(sat, "không có ví dụ nào");
+      if (!s.exercises?.length) fail(sat, "không có bài tập nào");
+
+      for (const [xi, x] of (s.exercises ?? []).entries()) {
+        checkGrammarExercise(`${sat} · bài tập ${xi + 1}`, x);
+      }
+
+      // Luật chung của dự án: mỗi điểm ngữ pháp đủ 8 minigame (2× mỗi loại) —
+      // giống hệt cảnh báo `grammarStructureWarning()` hiện cho admin.
+      const c = { fill: 0, order: 0, vi2en: 0, en2vi: 0 };
+      for (const x of (s.exercises ?? []) as Array<Record<string, unknown>>) {
+        const t = String(x.type);
+        if (t === "fill_blank") c.fill++;
+        else if (t === "sentence_order" || t === "sentenceOrder") c.order++;
+        else if (t === "translate") {
+          if (x.direction === "vi_to_en") c.vi2en++;
+          else if (x.direction === "en_to_vi") c.en2vi++;
+        }
+      }
+      const missing: string[] = [];
+      if (c.fill < 2) missing.push("chọn từ ×2");
+      if (c.order < 2) missing.push("sắp xếp câu ×2");
+      if (c.vi2en < 2) missing.push("dịch Việt→Anh ×2");
+      if (c.en2vi < 2) missing.push("dịch Anh→Việt ×2");
+      if (missing.length) warn(sat, `chưa đủ 8 minigame — thiếu ${missing.join(", ")}`);
+    }
+
+    // Cuối cùng: chạy qua ĐÚNG bộ validate mà player dùng khi mở bài.
+    const res = validateSectionContent("GRAMMAR", roadmapGrammarContent(g));
+    if (!res.ok) fail(at, `TRƯỢT VALIDATE — ${res.error}`);
   }
 }
 
@@ -173,6 +315,9 @@ function main(): void {
       continue;
     }
     const topics = new Set<string>();
+    // Thứ tự bài DỒN QUA CÁC CHƯƠNG — đúng thứ tự `order` mà seed.ts sinh ra,
+    // cũng là thứ tự mà ngữ pháp lộ trình phải khớp theo.
+    const orderedTopics: string[] = [];
     for (const ch of chapters) {
       if (!ch.title?.trim()) fail(levelKey, "chương thiếu tiêu đề");
       if (!ch.lessons?.length) fail(`${levelKey} · ${ch.title}`, "chương không có bài nào");
@@ -181,9 +326,11 @@ function main(): void {
         // → bài sau ghi đè bài trước, mất nội dung.
         if (topics.has(l.topic)) fail(`${levelKey} · ${l.topic}`, "TRÙNG `topic` với bài khác cùng cấp");
         topics.add(l.topic);
+        orderedTopics.push(l.topic);
         checkLesson(levelKey, ch.title, l);
       }
     }
+    checkRoadmapGrammar(levelKey, orderedTopics);
   }
 
   console.log(

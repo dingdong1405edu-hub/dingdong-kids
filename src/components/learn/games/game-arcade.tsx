@@ -20,6 +20,7 @@ import { VOCAB_GAMES, type VocabGameEntry } from "@/components/learn/vocab/games
 import { WordVisual } from "@/components/learn/vocab/word-visual";
 import { themeFor } from "@/lib/roadmap";
 import { shuffle } from "@/lib/english";
+import { primeSpeech } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 import type { VocabWordCard } from "@/types";
 
@@ -212,6 +213,7 @@ export function GameArcade({ packs }: { packs: ArcadePack[] }) {
       <Button
         className="btn-chunky w-full rounded-2xl py-4 font-display text-base font-extrabold"
         onClick={() => {
+          primeSpeech();
           const game = shuffle(VOCAB_GAMES)[0];
           const playable = packs.filter((p) => p.words.length >= (game.minWords ?? 3));
           const pack = shuffle(playable.length ? playable : packs)[0];
@@ -227,7 +229,7 @@ export function GameArcade({ packs }: { packs: ArcadePack[] }) {
             key={g.id}
             type="button"
             whileTap={{ scale: 0.97 }}
-            onClick={() => setView({ kind: "pick-pack", game: g })}
+            onClick={() => { primeSpeech(); setView({ kind: "pick-pack", game: g }); }}
             className="sticker flex items-center gap-3 bg-card p-4 text-left transition-transform hover:-translate-y-0.5"
           >
             <span className="text-4xl" aria-hidden>

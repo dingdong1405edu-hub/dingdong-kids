@@ -40,6 +40,10 @@ import { CHAPTERS as MOVERS_CHAPTERS } from "./content/movers";
 import { CHAPTERS as FLYERS_CHAPTERS } from "./content/flyers";
 import { CHAPTERS as KET_CHAPTERS } from "./content/ket";
 import { CHAPTERS as PET_CHAPTERS } from "./content/pet";
+// Ngữ pháp của bài lộ trình — tách riêng khỏi `LessonSeed` để soạn độc lập,
+// khớp với bài theo THỨ TỰ (xem prisma/content/grammar/types.ts).
+import { grammarForLesson } from "./content/grammar/roadmap";
+import { roadmapGrammarContent } from "./content/grammar/types";
 
 const prisma = new PrismaClient();
 
@@ -715,8 +719,18 @@ async function seedGrammar(): Promise<void> {
   console.log(`[seed] ${GRAMMAR_UNITS.length} unit ngữ pháp.`);
 }
 
-/** Dựng content JSON cho từng kỹ năng của một bài lộ trình. */
-function sectionContent(l: LessonSeed, skill: Skill): unknown {
+/**
+ * Dựng content JSON cho từng kỹ năng của một bài lộ trình.
+ * `level` + `index` (thứ tự bài trong cấp, 0-based) chỉ dùng để tra ngữ pháp —
+ * ngữ pháp soạn ở `prisma/content/grammar/roadmap-<cấp>.ts`, không nằm trong
+ * `LessonSeed`.
+ */
+function sectionContent(
+  l: LessonSeed,
+  skill: Skill,
+  level: EnglishLevel,
+  index: number,
+): unknown {
   switch (skill) {
     case "VOCAB":
       return {
@@ -773,9 +787,12 @@ function sectionContent(l: LessonSeed, skill: Skill): unknown {
         part1Sentences: l.speaking.sentences.map((text) => ({ text })),
         part3Questions: l.speaking.questions,
       };
-    case "GRAMMAR":
-      // Ngữ pháp của bài dùng chung giáo án của cấp — trỏ về unit ngữ pháp đã seed.
-      return null;
+    case "GRAMMAR": {
+      // Ngữ pháp soạn riêng cho từng bài, dùng lại đúng từ vựng bài đó vừa dạy.
+      // Cấp chưa soạn → null → phần Ngữ pháp để "Sắp có" như trước.
+      const g = grammarForLesson(level, index);
+      return g ? roadmapGrammarContent(g) : null;
+    }
     default:
       return null;
   }
@@ -848,9 +865,11 @@ async function seedRoadmap(courseIds: Map<EnglishLevel, string>): Promise<void> 
         lessonCount++;
 
         for (const [si, skill] of ROADMAP_SKILLS.entries()) {
-          const content = sectionContent(l, skill);
-          // Phần Ngữ pháp chưa có content riêng cho từng bài → để "Sắp có" thay
-          // vì tạo một phần rỗng mà bấm vào không có gì.
+          // `order` là số thứ tự bài trong cấp (dồn qua các chương) — cũng chính
+          // là khoá tra ngữ pháp ở prisma/content/grammar/roadmap-<cấp>.ts.
+          const content = sectionContent(l, skill, level, order);
+          // Kỹ năng nào chưa soạn nội dung (vd Ngữ pháp ở cấp chưa làm) → để
+          // "Sắp có" thay vì tạo một phần rỗng mà bấm vào không có gì.
           const published = content !== null;
           await prisma.roadmapSection.upsert({
             where: { lessonId_skill: { lessonId, skill } },

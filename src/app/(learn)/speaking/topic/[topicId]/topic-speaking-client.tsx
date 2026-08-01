@@ -161,11 +161,30 @@ function TopicRecorder({
   const recording = phase === "recording";
 
   async function start() {
+    // Trình duyệt CHỈ cho dùng micro trên "secure context" (https:// hoặc
+    // localhost). Mở bằng IP mạng LAN (http://192.168.x.x:3000) thì
+    // `navigator.mediaDevices` là undefined — không xin quyền được, và người
+    // dùng sẽ tưởng nút ghi âm hỏng. Phải nói rõ nguyên nhân.
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      toast.error("Trang chưa chạy HTTPS nên trình duyệt khoá micro. Hãy mở bằng https:// hoặc localhost.", {
+        duration: 8000,
+      });
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("Trình duyệt này không ghi âm được. Bé thử Chrome hoặc Safari bản mới nhé.", {
+        duration: 8000,
+      });
+      return;
+    }
+
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      toast.error("Không thể truy cập microphone");
+      toast.error("Chưa bật micro. Bố mẹ bấm khoá trên thanh địa chỉ, cho phép Micro rồi tải lại trang.", {
+        duration: 8000,
+      });
       return;
     }
     try {

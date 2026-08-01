@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { normalizeAnswer } from "@/lib/english";
 import type { SentenceOrderExercise } from "@/types";
 
 interface Props {
@@ -29,8 +30,11 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
   }
 
   function submit() {
-    const attempt = chosen.join("");
-    const correct = attempt === exercise.answer;
+    // Ghép bằng DẤU CÁCH rồi so khớp chuẩn hoá: `answer` tác giả viết là câu
+    // hoàn chỉnh ("She is happy.") — có dấu cách, viết hoa và dấu chấm — còn
+    // các thẻ từ thì không. Ghép trần (`join("")`) sẽ không bao giờ khớp.
+    const attempt = normalizeAnswer(chosen.join(" "));
+    const correct = attempt === normalizeAnswer(exercise.answer);
     setSubmitted(true);
     onAnswer(correct, exercise.answer);
   }

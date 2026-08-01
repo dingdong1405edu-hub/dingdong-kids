@@ -73,7 +73,7 @@ export function PdfPreviewClient({ payload, downloadBase, backHref }: Props) {
 
       {/* Bản xem trước (đúng như file PDF) */}
       <div className="overflow-x-auto rounded-3xl border-2 bg-muted/30 p-3 sm:p-6">
-        <div className="mx-auto w-[760px] max-w-[760px] rounded-2xl bg-white p-8 shadow-soft sm:p-10">
+        <div className="mx-auto w-full max-w-[760px] rounded-2xl bg-white p-5 shadow-soft sm:p-8 md:p-10">
           {payloadToElement(payload, scope)}
         </div>
       </div>

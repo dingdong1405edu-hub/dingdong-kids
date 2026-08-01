@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { isDue } from "@/lib/srs";
-import { playWord } from "@/lib/speech";
+import { playWord, primeSpeech } from "@/lib/speech";
 import { WordFlow } from "@/components/learn/vocab/word-flow";
 import { ListenRepeatFlow } from "@/components/learn/vocab/listen-repeat-flow";
 import { WordVisual } from "@/components/learn/vocab/word-visual";
@@ -138,7 +138,7 @@ export function RoadmapVocabPlayer({
             <button
               key={w.id}
               type="button"
-              onClick={() => playWord({ word: w.word, audioUrl: w.audioUrl })}
+              onClick={() => { primeSpeech(); playWord({ word: w.word, audioUrl: w.audioUrl }); }}
               aria-label={`Nghe từ ${w.word}`}
               className="sticker flex items-center gap-2 bg-card px-3 py-2 transition-transform hover:-translate-y-0.5"
             >
@@ -161,14 +161,20 @@ export function RoadmapVocabPlayer({
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-3 rounded-2xl">
-          <TabsTrigger value="listen" className="rounded-xl font-display text-[13px] font-extrabold">
-            <Ear className="mr-1 h-4 w-4" /> Nghe &amp; nhắc lại
+          {/* Nhãn RÚT GỌN trên màn hẹp: "Nghe & nhắc lại" trong ô ~100px ở máy
+              320px sẽ tràn/xuống dòng xấu. Từ sm trở lên mới hiện đủ chữ. */}
+          <TabsTrigger value="listen" className="min-w-0 rounded-xl font-display text-[13px] font-extrabold">
+            <Ear className="mr-1 h-4 w-4 shrink-0" />
+            <span className="truncate sm:hidden">Nghe</span>
+            <span className="hidden truncate sm:inline">Nghe &amp; nhắc lại</span>
           </TabsTrigger>
-          <TabsTrigger value="learn" className="rounded-xl font-display text-[13px] font-extrabold">
-            <BookOpen className="mr-1 h-4 w-4" /> Học từ
+          <TabsTrigger value="learn" className="min-w-0 rounded-xl font-display text-[13px] font-extrabold">
+            <BookOpen className="mr-1 h-4 w-4 shrink-0" />
+            <span className="truncate">Học từ</span>
           </TabsTrigger>
-          <TabsTrigger value="review" className="rounded-xl font-display text-[13px] font-extrabold">
-            <Sparkles className="mr-1 h-4 w-4" /> Ôn từ
+          <TabsTrigger value="review" className="min-w-0 rounded-xl font-display text-[13px] font-extrabold">
+            <Sparkles className="mr-1 h-4 w-4 shrink-0" />
+            <span className="truncate">Ôn từ</span>
           </TabsTrigger>
         </TabsList>
 
@@ -202,7 +208,7 @@ export function RoadmapVocabPlayer({
               ) : (
                 <Button
                   className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
-                  onClick={() => setView("listen")}
+                  onClick={() => { primeSpeech(); setView("listen"); }}
                 >
                   <Play className="mr-1.5 h-5 w-5" /> Bắt đầu nghe
                 </Button>
@@ -240,7 +246,7 @@ export function RoadmapVocabPlayer({
               ) : (
                 <Button
                   className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
-                  onClick={() => setView("learn")}
+                  onClick={() => { primeSpeech(); setView("learn"); }}
                 >
                   <Play className="mr-1.5 h-5 w-5" /> {completed ? "Học lại" : "Bắt đầu học"}
                 </Button>
@@ -285,7 +291,7 @@ export function RoadmapVocabPlayer({
                   </div>
                   <Button
                     className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
-                    onClick={() => setView("review")}
+                    onClick={() => { primeSpeech(); setView("review"); }}
                   >
                     <Sparkles className="mr-1.5 h-5 w-5" />
                     {dueCount > 0 ? "Bắt đầu ôn" : "Ôn sớm"}
