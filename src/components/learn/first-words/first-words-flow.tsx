@@ -29,7 +29,10 @@ import {
   type FirstWordsUnit,
 } from "@/lib/first-words";
 import { useRecorder } from "@/lib/use-recorder";
-import { completeFirstWordsUnitAction } from "@/server/actions/first-words";
+import {
+  completeFirstWordsUnitAction,
+  saveFirstWordsReviewAction,
+} from "@/server/actions/first-words";
 import { useWordAudio } from "./use-word-audio";
 import { PictureCard } from "./picture-card";
 import { MicOrb } from "./mic-orb";
@@ -46,9 +49,15 @@ interface Props {
   audio: Record<string, string>;
   bestStars: number;
   next: { id: string; title: string; emoji: string } | null;
+  /**
+   * `"unit"` — học một chủ đề, lưu vào đúng chủ đề đó.
+   * `"review"` — ôn từ khó gom từ nhiều chủ đề, điểm ghi ngược về chủ đề gốc
+   * của từng từ (xem `saveFirstWordsReviewAction`).
+   */
+  mode?: "unit" | "review";
 }
 
-export function FirstWordsFlow({ unit, audio, bestStars, next }: Props) {
+export function FirstWordsFlow({ unit, audio, bestStars, next, mode = "unit" }: Props) {
   const words = unit.words;
   const maxStars = words.length * STARS_PER_WORD;
 
@@ -163,23 +172,27 @@ export function FirstWordsFlow({ unit, audio, bestStars, next }: Props) {
     async (final: Array<WordResultData | null>) => {
       if (savedRef.current) return;
       savedRef.current = true;
-      const stars = final.reduce((n, r) => n + (r?.stars ?? 0), 0);
-      const wordsSaid = final.filter((r) => r?.said).length;
+
+      // Sao theo TỪNG từ — đúng thứ tự `unit.words`. Từ bé bỏ qua tính 0.
+      const wordStars = final.map((r) => r?.stars ?? 0);
+      const stars = wordStars.reduce((n, s) => n + s, 0);
+      const durationSec = Math.round((Date.now() - startedAt.current) / 1000);
 
       setSaving(true);
-      const res = await completeFirstWordsUnitAction({
-        unitId: unit.id,
-        stars,
-        wordsSaid,
-        durationSec: Math.round((Date.now() - startedAt.current) / 1000),
-      });
+      const res =
+        mode === "review"
+          ? await saveFirstWordsReviewAction({
+              items: words.map((w, i) => ({ word: w.word, stars: wordStars[i] })),
+              durationSec,
+            })
+          : await completeFirstWordsUnitAction({ unitId: unit.id, wordStars, durationSec });
       setSaving(false);
       if (res.ok) setXpEarned(res.xpEarned ?? 0);
       else savedRef.current = false; // cho phép thử lưu lại ở lần chơi sau
       emitDing(stars >= maxStars * 0.8 ? "celebrate" : "complete");
       setStage("done");
     },
-    [maxStars, unit.id],
+    [maxStars, mode, unit.id, words],
   );
 
   function goNext() {
@@ -242,7 +255,10 @@ export function FirstWordsFlow({ unit, audio, bestStars, next }: Props) {
         <div>
           <h1 className="font-display text-3xl font-extrabold">{unit.title}</h1>
           <p className="mt-1 text-[15px] font-semibold text-muted-foreground">
-            {words.length} từ · Bé nghe cô đọc rồi nói theo nhé!
+            {words.length} từ ·{" "}
+            {mode === "review"
+              ? "Mấy từ này bé nói chưa quen, mình nói lại nhé!"
+              : "Bé nghe cô đọc rồi nói theo nhé!"}
           </p>
         </div>
 

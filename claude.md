@@ -188,11 +188,13 @@ không trừ tim — đây là cửa ngõ hút phụ huynh vào hệ thống.
 | Nội dung (10 chủ đề × 8 từ) | [src/lib/first-words.ts](src/lib/first-words.ts) — **tĩnh trong code** |
 | Bản đồ chủ đề | `/roadmap/tap-noi` (route TĨNH, thắng `/roadmap/[level]`) |
 | Luồng học | `/roadmap/tap-noi/[unitId]` |
+| Ôn từ khó | `/roadmap/tap-noi/on-tap` (route TĨNH, thắng `[unitId]`) |
 | Giao diện | [src/components/learn/first-words/](src/components/learn/first-words/) |
 | Sinh audio theo yêu cầu | `POST /api/speak` — **chỉ nhận từ trong danh sách trắng** `isFirstWord()` |
 | Chấm phát âm | `POST /api/grade/first-words` — gộp STT + chấm trong MỘT request |
 | Chấm bằng AI | `gradeKidWord()` trong [src/lib/groq.ts](src/lib/groq.ts) |
-| Lưu tiến độ | `completeFirstWordsUnitAction` → model `FirstWordsProgress` |
+| Lưu tiến độ | `completeFirstWordsUnitAction` / `saveFirstWordsReviewAction` → `FirstWordsProgress` |
+| Chặn chi phí AI | [src/lib/rate-limit.ts](src/lib/rate-limit.ts) — cửa sổ trượt trong bộ nhớ |
 
 **Luật bất di bất dịch của cấp này** — bé chưa đọc được chữ:
 
@@ -208,6 +210,21 @@ không trừ tim — đây là cửa ngõ hút phụ huynh vào hệ thống.
 **Audio**: trang server chỉ tra cache (`cachedSpeechUrls`, không gọi Deepgram) nên mở là
 chạy ngay; từ nào thiếu thì client xin sinh ở nền. Trong lúc chờ có Web Speech đọc tạm.
 80 từ × 1 lần gọi Aura cho toàn bộ vòng đời dự án.
+
+**Dữ liệu theo TỪNG TỪ** — `FirstWordsProgress.wordStars` là nguồn sự thật (`bestStars` /
+`wordsSaid` chỉ là số tổng tính sẵn). Nhờ đó có: báo cáo "bé vướng từ nào" cho phụ huynh
+(`ParentReport`), bài **ôn từ khó** dựng động từ các từ 1–2 sao, và mốc **tốt nghiệp**.
+Bài ôn KHÔNG có hàng tiến độ riêng — điểm ghi ngược về chủ đề gốc của từng từ, nếu không
+mọi số tổng sẽ bị đếm hai lần.
+
+**Phễu thương mại**: cấp này miễn phí là có chủ đích — nó là chỗ phụ huynh thấy con mình
+thật sự nói được tiếng Anh. Nói được **80% số từ** → hiện `GraduationCard` (bằng khen có tên
+bé + mời lên gói Pre-Starters). Chưa đủ thì chỉ nhắc một dòng, không chào mời.
+
+**Giới hạn tần suất** (bắt buộc, không phải tối ưu): mỗi lượt chấm = 1 Deepgram + 1 Groq,
+đều mất tiền và đăng nhập KHÔNG chặn được. `/api/grade/first-words` 90 lượt/15 phút,
+`/api/speak` 20 lượt/10 phút. Chạm trần thì **không báo lỗi**: phần chấm trả lời rủ bé nghỉ
+giải lao, phần audio trả map rỗng để Web Speech đọc tiếp.
 
 ---
 

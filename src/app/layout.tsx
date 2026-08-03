@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   // (thiếu nó, canonical trên Railway sẽ trỏ về localhost).
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "DingDong Kids — Học tiếng Anh vui cho bé 4-15 tuổi",
+    default: "DingDong Kids — Học tiếng Anh vui cho bé 3-15 tuổi",
     template: `%s — ${SITE_NAME}`,
   },
   description:
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: "vi_VN",
     images: [
-      { url: "/og-cover.png", width: 1200, height: 630, alt: "DingDong Kids — Học tiếng Anh vui cho bé 4-15 tuổi" },
+      { url: "/og-cover.png", width: 1200, height: 630, alt: "DingDong Kids — Học tiếng Anh vui cho bé 3-15 tuổi" },
     ],
   },
   twitter: {

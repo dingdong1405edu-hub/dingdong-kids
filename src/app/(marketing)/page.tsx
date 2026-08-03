@@ -14,7 +14,7 @@ import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
   // absolute: trang chủ tự mang tên thương hiệu, không để template root nối đuôi lần nữa.
-  title: { absolute: "DingDong Kids — Tiếng Anh vui cho bé 4–15 tuổi" },
+  title: { absolute: "DingDong Kids — Tiếng Anh vui cho bé 3–15 tuổi" },
   description:
     "Học tiếng Anh online cho trẻ theo chuẩn Cambridge: từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói. AI chấm bài viết và luyện nói, lộ trình hoàn toàn bằng tiếng Việt. Bắt đầu miễn phí.",
   keywords: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "DingDong Kids — Tiếng Anh vui cho bé 4–15 tuổi",
+    title: "DingDong Kids — Tiếng Anh vui cho bé 3–15 tuổi",
     description:
       "Từ vựng, ghép vần, ngữ pháp, đọc, nghe, viết, nói theo chuẩn Cambridge Young Learners. AI chấm điểm từng bài. Bắt đầu miễn phí.",
     url: "/",
@@ -66,11 +66,11 @@ const jsonLd = {
 };
 
 const audiences = [
-  { icon: "🎓", label: "Sinh viên" },
-  { icon: "💼", label: "Người đi làm" },
-  { icon: "✈️", label: "Du học sinh" },
-  { icon: "🀄", label: "Người mất gốc" },
+  { icon: "🧸", label: "Bé chưa biết chữ" },
+  { icon: "🌱", label: "Bé mẫu giáo" },
+  { icon: "🎒", label: "Bé tiểu học" },
   { icon: "🏆", label: "Luyện thi Cambridge" },
+  { icon: "👨‍👩‍👧", label: "Bố mẹ đồng hành" },
 ];
 
 const features = [
@@ -139,7 +139,15 @@ const steps = [
   },
 ];
 
-const levels = ["Pre-Starters", "Starters", "Movers", "Flyers", "Key A2", "Preliminary B1"];
+const levels = [
+  "Bé Tập Nói",
+  "Pre-Starters",
+  "Starters",
+  "Movers",
+  "Flyers",
+  "Key A2",
+  "Preliminary B1",
+];
 
 // ⚠️ CHƯA PHẢI PHẢN HỒI THẬT — chỗ giữ sẵn, THAY TRƯỚC KHI MỞ BÁN.
 // Ba lời chứng thực cũ (Minh Anh / Hoàng Long / Thu Hà) là của bản HSK dạy
@@ -188,6 +196,7 @@ export default async function LandingPage() {
       note: "mãi mãi",
       desc: "Trải nghiệm đầy đủ cách DingDong dạy trước khi quyết định trả phí.",
       features: [
+        "Trọn chặng Bé Tập Nói — 10 chủ đề, 80 từ, AI chấm phát âm",
         "Các bài đầu của mỗi cấp lộ trình",
         "Luyện tập tự do với hệ thống tim (tự hồi)",
         "Theo dõi XP và chuỗi ngày học",
@@ -277,7 +286,7 @@ export default async function LandingPage() {
                 <div className={styles.heroStatLbl}>Kỹ năng</div>
               </div>
               <div className={styles.heroStatItem}>
-                <div className={styles.heroStatNum}>4–15</div>
+                <div className={styles.heroStatNum}>3–15</div>
                 <div className={styles.heroStatLbl}>Tuổi phù hợp</div>
               </div>
             </div>
@@ -394,11 +403,12 @@ export default async function LandingPage() {
             <div className={styles.sectionHeader}>
               <div className={styles.sectionLabel}>📈 Lộ trình</div>
               <h2 id="levels-title" className={styles.sectionTitle}>
-                Từ Pre-Starters đến Preliminary B1
+                Từ chưa biết chữ đến Preliminary B1
               </h2>
               <p className={styles.sectionSubtitle}>
-                Từ những từ đầu tiên đến trình độ B1, DingDong đi cùng bé suốt hành
-                trình.
+                Bé 3 tuổi chưa biết chữ vẫn bắt đầu được: chặng <b>Bé Tập Nói</b> chỉ có hình và
+                tiếng, bé nhìn tranh rồi nói theo — <b>miễn phí hoàn toàn</b>. Rồi đi tiếp tới B1,
+                DingDong đi cùng bé suốt hành trình.
               </p>
             </div>
           </Reveal>

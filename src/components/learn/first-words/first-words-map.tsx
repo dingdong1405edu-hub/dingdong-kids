@@ -10,24 +10,46 @@ import { Star, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { Ambient } from "@/components/motion/ambient";
-import { FIRST_WORDS_LEVEL, STARS_PER_WORD, type FirstWordsUnit } from "@/lib/first-words";
+import {
+  collectWeakWords,
+  FIRST_WORDS_LEVEL,
+  STARS_PER_WORD,
+  type FirstWordsUnit,
+} from "@/lib/first-words";
+import { ParentReport } from "./parent-report";
+import { GraduationCard } from "./graduation-card";
 
 export interface UnitProgressDTO {
   bestStars: number;
   wordsSaid: number;
+  /** Sao của từng từ trong chủ đề — nguồn để tìm từ bé còn yếu. */
+  wordStars: number[];
 }
 
 interface Props {
   units: FirstWordsUnit[];
   /** unitId → tiến độ tốt nhất của bé. */
   progress: Record<string, UnitProgressDTO>;
+  childName: string;
+  /** Link gói Pre-Starters cho thẻ tốt nghiệp. */
+  upgradeHref: string;
 }
 
-export function FirstWordsMap({ units, progress }: Props) {
+/** Ngưỡng "tốt nghiệp": nói được 80% số từ của cả cấp. */
+const GRADUATION_RATIO = 0.8;
+
+export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props) {
   const totalStars = units.reduce((n, u) => n + (progress[u.id]?.bestStars ?? 0), 0);
   const maxStars = units.reduce((n, u) => n + u.words.length * STARS_PER_WORD, 0);
   const saidTotal = units.reduce((n, u) => n + (progress[u.id]?.wordsSaid ?? 0), 0);
   const wordTotal = units.reduce((n, u) => n + u.words.length, 0);
+
+  const startedUnits = units.filter((u) => (progress[u.id]?.bestStars ?? 0) > 0).length;
+  const weakWords = collectWeakWords(
+    Object.fromEntries(units.map((u) => [u.id, progress[u.id]?.wordStars])),
+  );
+  const needSaid = Math.ceil(wordTotal * GRADUATION_RATIO);
+  const graduated = saidTotal >= needSaid;
 
   return (
     <div className="space-y-6">
@@ -67,6 +89,20 @@ export function FirstWordsMap({ units, progress }: Props) {
           Bé đã nói được {saidTotal}/{wordTotal} từ · Học thoải mái, hoàn toàn miễn phí 💛
         </p>
       </div>
+
+      {/* Tốt nghiệp → mời lên Pre-Starters. Chỉ hiện khi bé đã có thành quả thật;
+          bé chưa học gì thì không chào mời (xem graduation-card.tsx). */}
+      {saidTotal > 0 && (
+        <GraduationCard
+          ready={graduated}
+          wordsSaid={saidTotal}
+          totalWords={wordTotal}
+          totalStars={totalStars}
+          childName={childName}
+          upgradeHref={upgradeHref}
+          wordsToGo={Math.max(1, needSaid - saidTotal)}
+        />
+      )}
 
       {/* Lưới chủ đề */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -125,16 +161,15 @@ export function FirstWordsMap({ units, progress }: Props) {
         })}
       </div>
 
-      {/* Lời nhắn cho bố mẹ — bé không đọc phần này, nên viết thẳng vào việc */}
-      <div className="rounded-3xl border-2 border-dashed border-border/70 bg-muted/30 p-5">
-        <p className="font-display text-base font-extrabold">👨‍👩‍👧 Bố mẹ đọc nhé</p>
-        <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted-foreground">
-          <li>• Bé cần được cấp quyền <b>micro</b> để tập nói và được AI chấm phát âm.</li>
-          <li>• Nút 👁️ ở góc trên bài học bật/tắt phần chữ tiếng Anh — mặc định ẩn để bé nghe bằng tai chứ không đoán theo mặt chữ.</li>
-          <li>• Máy nhận giọng trẻ em kém chính xác hơn giọng người lớn, nên phần chấm ở đây cố ý <b>rất rộng lượng</b>: bé chịu nói là đã có sao.</li>
-          <li>• Xong cấp này, bé sang <b>Pre-Starters</b> để bắt đầu nhận mặt chữ.</li>
-        </ul>
-      </div>
+      <ParentReport
+        totalStars={totalStars}
+        maxStars={maxStars}
+        wordsSaid={saidTotal}
+        totalWords={wordTotal}
+        startedUnits={startedUnits}
+        totalUnits={units.length}
+        weakWords={weakWords}
+      />
     </div>
   );
 }
