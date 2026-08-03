@@ -96,6 +96,7 @@ model User {
   roadmapWordReviews RoadmapWordReview[]
   grammarProgress   GrammarProgress[]
   phonicsProgress   PhonicsProgress[]
+  firstWordsProgress FirstWordsProgress[]
   roadmapProgress   RoadmapProgress[]
   attempts          Attempt[]
   payments          Payment[]
@@ -346,6 +347,36 @@ model PhonicsProgress {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+// ===================================================================
+//  BÉ TẬP NÓI (First Words) — cấp ĐỨNG TRƯỚC Pre-Starters
+// ===================================================================
+
+/// Tiến độ cấp "Bé Tập Nói" — dành cho bé 3–5 tuổi CHƯA BIẾT CHỮ: chỉ nhìn
+/// hình, nghe tiếng và nhắc lại từng từ; phát âm do AI (Groq) chấm.
+///
+/// `unitId` là id TĨNH của chủ đề định nghĩa trong src/lib/first-words.ts —
+/// cùng khuôn với PhonicsProgress: nội dung cố định trong code, chỉ tiến độ
+/// của bé nằm ở DB. Nhờ vậy thêm/sửa chủ đề không cần đụng schema hay seed.
+model FirstWordsProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  unitId    String // id chủ đề tĩnh (vd "animals")
+  completed Boolean  @default(false)
+  /// Tổng sao cao nhất từng đạt ở chủ đề (mỗi từ tối đa 3 sao).
+  bestStars Int      @default(0)
+  /// Số từ bé đã nói được (≥ 2 sao) trong lần tốt nhất — để hiện "6/8 từ".
+  wordsSaid Int      @default(0)
+  xpEarned  Int      @default(0)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, unitId])
   @@index([userId])
 }
 

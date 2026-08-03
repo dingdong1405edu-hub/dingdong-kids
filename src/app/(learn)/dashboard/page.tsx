@@ -123,7 +123,7 @@ export default async function DashboardPage() {
                   </span>
                 </div>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  Bản đồ phiêu lưu từ Pre-Starters tới Preliminary — từ vựng, ghép vần, ngữ pháp, nghe, nói, đọc, viết.
+                  Bé chưa biết chữ bắt đầu ở Bé Tập Nói, rồi đi tiếp Pre-Starters tới Preliminary — từ vựng, ghép vần, ngữ pháp, nghe, nói, đọc, viết.
                 </p>
               </div>
             </div>
@@ -149,6 +149,7 @@ export default async function DashboardPage() {
       <div>
         <h2 className="font-display mb-3 text-lg font-bold">Bé muốn chơi gì hôm nay?</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ModuleCard href="/roadmap/tap-noi" icon="🧸" title="Bé tập nói" subtitle="Chưa biết chữ vẫn học — nhìn hình, nói theo" color="bg-pink-100 dark:bg-pink-500/15" />
           <ModuleCard href="/games" icon="🎮" title="Sân chơi" subtitle="Chơi thoải mái — không chấm điểm" color="bg-fuchsia-100 dark:bg-fuchsia-500/15" />
           <ModuleCard href="/vocab" icon="📚" title="Từ vựng" subtitle="Học từ mới qua tranh và tiếng" progress={vocabProgress} color="bg-blue-100 dark:bg-blue-500/15" />
           <ModuleCard href="/phonics" icon="🔤" title="Ghép vần" subtitle="Phonics — nghe âm, ghép chữ thành từ" progress={phonicsProgress} color="bg-amber-100 dark:bg-amber-500/15" />

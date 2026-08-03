@@ -5,12 +5,15 @@ import { redirect } from "next/navigation";
 import { Route } from "lucide-react";
 import { Ambient } from "@/components/motion/ambient";
 import { CourseWorldCard } from "@/components/learn/roadmap/course-world-card";
+import { FirstWordsWorldCard } from "@/components/learn/roadmap/first-words-world-card";
 import { DingBuddy } from "@/components/marketing/ding-buddy";
 import { levelToSlug } from "@/lib/roadmap";
+import { FIRST_WORDS_UNITS, STARS_PER_WORD, TOTAL_FIRST_WORDS } from "@/lib/first-words";
 
 export const metadata: Metadata = {
   title: "Học theo lộ trình",
-  description: "Bản đồ học tiếng Anh cho bé theo chuẩn Cambridge, từ Pre-Starters tới Preliminary.",
+  description:
+    "Bản đồ học tiếng Anh cho bé: bắt đầu từ Bé Tập Nói cho bé chưa biết chữ, rồi đi tiếp theo chuẩn Cambridge từ Pre-Starters tới Preliminary.",
 };
 
 export default async function RoadmapPage() {
@@ -29,6 +32,15 @@ export default async function RoadmapPage() {
     where: { userId, completed: true },
     select: { lesson: { select: { courseId: true } } },
   });
+
+  // Chặng "Bé Tập Nói" (trước Pre-Starters) — nội dung tĩnh trong code, chỉ tiến
+  // độ nằm DB, nên gom riêng chứ không đi qua bảng Course.
+  const firstWords = await db.firstWordsProgress.findMany({
+    where: { userId },
+    select: { bestStars: true },
+  });
+  const firstWordsStars = firstWords.reduce((n, r) => n + r.bestStars, 0);
+  const firstWordsMaxStars = TOTAL_FIRST_WORDS * STARS_PER_WORD;
   const doneByCourse = new Map<string, number>();
   for (const p of progresses) {
     const cid = p.lesson.courseId;
@@ -50,8 +62,9 @@ export default async function RoadmapPage() {
           </div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">Bé chọn thế giới nào?</h1>
           <p className="mt-1.5 text-[15px] text-white/90">
-            6 thế giới từ Pre-Starters tới Preliminary. Mỗi thế giới là một bản đồ gồm từ vựng, ghép
-            vần, ngữ pháp, nghe, nói, đọc và viết. Đi từng bước, mở khoá từng bài như một cuộc phiêu lưu.
+            Bé chưa biết chữ thì bắt đầu ở <b>Bé Tập Nói</b> — chỉ nhìn hình và nói theo. Sau đó là 6 thế giới
+            từ Pre-Starters tới Preliminary, mỗi thế giới một bản đồ gồm từ vựng, ghép vần, ngữ pháp, nghe,
+            nói, đọc và viết.
           </p>
         </div>
         <div className="pointer-events-none absolute -right-4 -top-8 select-none text-[140px] leading-none opacity-20">
@@ -59,28 +72,36 @@ export default async function RoadmapPage() {
         </div>
       </div>
 
-      {/* Lưới khóa học */}
-      {courses.length === 0 ? (
+      {/* Lưới khóa học — "Bé Tập Nói" luôn đứng đầu, kể cả khi chưa có khoá nào
+          được xuất bản, vì nội dung của nó nằm trong code chứ không nằm DB. */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <FirstWordsWorldCard
+          totalStars={firstWordsStars}
+          maxStars={firstWordsMaxStars}
+          doneUnits={firstWords.length}
+          totalUnits={FIRST_WORDS_UNITS.length}
+          totalWords={TOTAL_FIRST_WORDS}
+        />
+        {courses.map((c, i) => (
+          <CourseWorldCard
+            key={c.id}
+            index={i + 1}
+            slug={levelToSlug(c.level)}
+            level={c.level}
+            title={c.title}
+            subtitle={c.subtitle}
+            description={c.description}
+            total={c._count.lessons}
+            done={doneByCourse.get(c.id) ?? 0}
+            recommended={c.id === recommendedId}
+          />
+        ))}
+      </div>
+
+      {courses.length === 0 && (
         <div className="sticker rounded-3xl border-dashed py-16 text-center text-muted-foreground">
           <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
-          <p>Bản đồ đang được cô vẽ nốt. Bé quay lại sau nhé 🌟</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((c, i) => (
-            <CourseWorldCard
-              key={c.id}
-              index={i}
-              slug={levelToSlug(c.level)}
-              level={c.level}
-              title={c.title}
-              subtitle={c.subtitle}
-              description={c.description}
-              total={c._count.lessons}
-              done={doneByCourse.get(c.id) ?? 0}
-              recommended={c.id === recommendedId}
-            />
-          ))}
+          <p>Các thế giới Cambridge đang được cô vẽ nốt. Bé học Bé Tập Nói trước nhé 🌟</p>
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import {
   X,
   LayoutDashboard,
   Route,
+  Baby,
   Gamepad2,
   Target,
   BookOpen,
@@ -45,6 +46,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/roadmap", label: "Lộ trình", icon: Route },
+      { href: "/roadmap/tap-noi", label: "Bé tập nói", icon: Baby },
       { href: "/games", label: "Sân chơi", icon: Gamepad2 },
       { href: "/goals", label: "Mục tiêu", icon: Target },
     ],
@@ -125,8 +127,16 @@ function NavLink({
 
 function NavContent({ user, onNavigate }: { user: SidebarUser; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const isActive = (item: NavItem) =>
+
+  // Mục nào KHỚP DÀI NHẤT thì mục đó sáng. Cần vậy vì có mục lồng trong mục khác
+  // ("/roadmap/tap-noi" nằm trong "/roadmap"): nếu để cả hai cùng active thì hai
+  // thẻ framer-motion trùng `layoutId` sẽ tranh nhau và viền sáng nhảy loạn.
+  const matches = (item: NavItem) =>
     item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
+  const activeHref = NAV_GROUPS.flatMap((g) => g.items)
+    .filter(matches)
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const isActive = (item: NavItem) => item.href === activeHref;
 
   return (
     <div className="flex h-full flex-col">

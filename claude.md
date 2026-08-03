@@ -69,6 +69,7 @@ dingdong-kids/
 │   │   ├── (learn)/            # khu vực học viên
 │   │   │   ├── dashboard/
 │   │   │   ├── roadmap/[level]/[lessonId]/[skill]/
+│   │   │   ├── roadmap/tap-noi/[unitId]/     # "Bé Tập Nói" — trước Pre-Starters (§6.1)
 │   │   │   ├── vocab/          ├── phonics/      ├── grammar/
 │   │   │   ├── reading/        ├── listening/
 │   │   │   ├── writing/        ├── speaking/
@@ -77,7 +78,8 @@ dingdong-kids/
 │   │   ├── admin/              # dashboard quản trị (role: ADMIN)
 │   │   ├── api/
 │   │   │   ├── auth/[...nextauth]/ · chat/ · health/
-│   │   │   ├── grade/writing/ · grade/speaking/ · transcribe/
+│   │   │   ├── grade/writing/ · grade/speaking/ · grade/first-words/ · transcribe/
+│   │   │   ├── speak/          # TTS theo yêu cầu cho "Bé Tập Nói" (danh sách trắng)
 │   │   │   ├── admin/upload/ · admin/audio/ · admin/tts/
 │   │   │   ├── files/[id]/ · payos/webhook/ · pdf/**
 │   │   └── layout.tsx
@@ -102,6 +104,11 @@ dingdong-kids/
 
 Đầy đủ trong [prisma/schema.prisma](prisma/schema.prisma). Các điểm cần nhớ:
 
+> ⚠️ **Cấp "Bé Tập Nói" KHÔNG nằm trong enum này.** Nó đứng TRƯỚC `PRE_STARTERS`
+> trên lộ trình nhưng không có `Course`, không chia 7 kỹ năng, không bán theo gói
+> — nội dung tĩnh trong [src/lib/first-words.ts](src/lib/first-words.ts), tiến độ
+> ở model `FirstWordsProgress`. Xem §6.1.
+
 ```prisma
 enum EnglishLevel {
   PRE_STARTERS  // 4–5 tuổi · làm quen
@@ -122,7 +129,8 @@ enum Role { LEARNER ADMIN }
 · `MockExam` → `MockExamSection` → `MockExamPart` → `Question` · `Material`
 · `Attempt` · `Payment` / `Subscription` · `SavedWord` · `WordReport` · `Feedback`
 · `Upload` · `AuditLog`
-· Tiến độ: `VocabProgress` · `GrammarProgress` · `PhonicsProgress` · `RoadmapProgress`
+· Tiến độ: `VocabProgress` · `GrammarProgress` · `PhonicsProgress` · `FirstWordsProgress`
+· `RoadmapProgress`
 · Ôn tập ngắt quãng: `VocabReview` · `RoadmapWordReview`
 
 **Quy ước quan trọng:**
@@ -147,6 +155,7 @@ enum Role { LEARNER ADMIN }
 | `groq.ts` | Toàn bộ chấm bài + sinh câu hỏi + tra từ |
 | `chat.ts` | Trợ lý **"Ding"** (`streamDingReply`) |
 | `phonics-data.ts` / `phonics-lessons.ts` | Dữ liệu + bài học Phonics (**tĩnh trong code**, chỉ tiến độ lưu DB) |
+| `first-words.ts` | Cấp **Bé Tập Nói** — 10 chủ đề × 8 từ (**tĩnh trong code**), `FIRST_WORDS_LEVEL`, `isFirstWord()` (danh sách trắng cho `/api/speak`) |
 | `payment-plans.ts` | Giá & gói — **sửa giá chỉ ở đây** |
 | `entitlements.ts` | Suy ra quyền lợi từ vai trò + subscription |
 | `hearts.ts` | Hệ thống tim |
@@ -166,6 +175,39 @@ Bản DingDong HSK ghi rõ: *"Deepgram & Groq KHÔNG có giọng TTS tiếng Tru
 - **Cache**: kết quả lưu ở `Upload.ttsKey = sha256(voice + text)`. Cùng câu, cùng giọng →
   **không gọi API lần hai**. Aura tính tiền theo ký tự nên cache là bắt buộc, không phải tối ưu.
 - Dự phòng ở client: Web Speech `en-US` khi chưa có `audioUrl`.
+
+---
+
+## 6.1. Cấp "Bé Tập Nói" (First Words) — trước Pre-Starters
+
+Chặng ĐẦU TIÊN của lộ trình, cho bé **3–5 tuổi CHƯA BIẾT CHỮ**. **Miễn phí hoàn toàn**,
+không trừ tim — đây là cửa ngõ hút phụ huynh vào hệ thống.
+
+| Thành phần | Nơi ở |
+|---|---|
+| Nội dung (10 chủ đề × 8 từ) | [src/lib/first-words.ts](src/lib/first-words.ts) — **tĩnh trong code** |
+| Bản đồ chủ đề | `/roadmap/tap-noi` (route TĨNH, thắng `/roadmap/[level]`) |
+| Luồng học | `/roadmap/tap-noi/[unitId]` |
+| Giao diện | [src/components/learn/first-words/](src/components/learn/first-words/) |
+| Sinh audio theo yêu cầu | `POST /api/speak` — **chỉ nhận từ trong danh sách trắng** `isFirstWord()` |
+| Chấm phát âm | `POST /api/grade/first-words` — gộp STT + chấm trong MỘT request |
+| Chấm bằng AI | `gradeKidWord()` trong [src/lib/groq.ts](src/lib/groq.ts) |
+| Lưu tiến độ | `completeFirstWordsUnitAction` → model `FirstWordsProgress` |
+
+**Luật bất di bất dịch của cấp này** — bé chưa đọc được chữ:
+
+- **Không bước nào bắt bé đọc chữ mới đi tiếp được.** Chữ trên nút là cho bố mẹ;
+  bé đi theo hình, màu và vị trí. Chữ tiếng Anh **ẩn mặc định** (công tắc 👁️).
+- **Tiếng phải tự đến**: mở từ mới là tự phát giọng đọc, bé không phải đi tìm nút loa.
+- **Không có màn báo lỗi.** Mic bị chặn / mạng hỏng / thiếu API key → bé vẫn nhận
+  được sao và lời khen; phần giải thích viết cho bố mẹ đọc.
+- **Sàn là 1 sao, không bao giờ 0.** `gradeKidWord` chấm rộng lượng nhất hệ thống:
+  ASR nghe giọng trẻ em rất kém, transcript lạ thì mặc định **máy sai, không phải bé sai**.
+- Nói lại nhiều lần luôn giữ kết quả **tốt nhất** — tụt sao thì bé không dám thử nữa.
+
+**Audio**: trang server chỉ tra cache (`cachedSpeechUrls`, không gọi Deepgram) nên mở là
+chạy ngay; từ nào thiếu thì client xin sinh ở nền. Trong lúc chờ có Web Speech đọc tạm.
+80 từ × 1 lần gọi Aura cho toàn bộ vòng đời dự án.
 
 ---
 
@@ -234,6 +276,7 @@ Linh vật: **"Ding"** — chú gấu con (thay "Bao" bánh bao của bản cũ)
 **Gói Tự do** (mọi tính năng ngoài lộ trình): 1 tháng 250k · 3 tháng 600k (tháng đầu 100k).
 
 **Freemium**:
+- **Bé Tập Nói** (§6.1): **miễn phí 100%**, không trừ tim, không giới hạn chủ đề.
 - Lộ trình: miễn phí `FREE_ROADMAP_LESSONS` bài đầu mỗi cấp (mặc định **3**).
 - Tính năng tự do: miễn phí tới khi **hết tim**. Tối đa 5 tim, hồi 1 tim / 30 phút.
   Hoàn thành bài không sai câu nào → +1 tim.

@@ -506,6 +506,101 @@ Return JSON:
   return coerceSpeakingResult(parsed);
 }
 
+// ===== Chấm MỘT TỪ cho bé CHƯA BIẾT CHỮ (cấp "Bé Tập Nói") =====
+//
+// Đây là thang chấm DỄ NHẤT toàn hệ thống, và cố ý như vậy:
+//  • Người học là bé 3–5 tuổi vừa nghe tiếng Anh lần đầu. Mục tiêu của màn này
+//    là bé DÁM MỞ MIỆNG NÓI, không phải phát âm chuẩn.
+//  • Nhận dạng giọng nói trên giọng trẻ em kém hơn giọng người lớn rất nhiều;
+//    thêm nữa bé hay nói lẫn tiếng Việt, cười, hoặc bố mẹ nói chen vào. Vì thế
+//    transcript sai KHÔNG được mặc định coi là bé sai.
+//  • KHÔNG BAO GIỜ trả 0 sao. Sàn là 1 sao — bé đã chịu nói là đáng khen.
+// Output cực gọn (4 khoá) vì màn hình của bé chỉ hiện sao + một dòng chữ cho mẹ.
+const KID_WORD_SYSTEM = `You are a warm, playful English teacher for VERY YOUNG Vietnamese children (ages 3-5) who CANNOT READ YET. A child looked at a picture, heard one English word, and tried to repeat it. You receive the ASR transcript of what the child said. Output ONLY one compact JSON object — no markdown, no code fences, no <think>, no extra keys.
+
+SCORING (be extremely generous — this is a toddler's first contact with English):
+- 3 = the transcript clearly contains the target word, or a very close attempt.
+- 2 = a recognisable attempt: right vowel or first sound, a dropped final consonant (cat -> ca), th -> t, sh -> s, missing -s, missing final /r/. Vietnamese children ALWAYS do these; they are normal, not failure.
+- 1 = the child spoke but nothing resembling the word came through, OR the transcript is empty/noise.
+- NEVER return 0. The floor is 1.
+- If the ASR text looks like nonsense, a Vietnamese word, or a homophone of the target, ASSUME THE RECOGNIZER FAILED, not the child: give the child the benefit of the doubt and lean to the HIGHER score.
+- Set "ok" true when the child genuinely produced the word (score 2 or 3).
+
+WRITING THE TEXT (Vietnamese, for the child and the parent sitting next to them):
+- "p" = a short cheer, 3-8 words, always positive, may use one emoji. Address the child as "bé". Examples: "Bé nói giỏi quá! 🎉", "Đúng rồi, bé nói to lắm!".
+- "t" = ONE tiny tip for the parent, max 12 words, gentle, no jargon; "" (empty) when the child got it right. Example: "Bé nhớ ngậm hơi ở cuối từ nhé".
+- Never use negative words ("sai", "kém", "chưa được"). Nudge with "thử lại", "gần đúng rồi".
+
+Return exactly: {"s":<1|2|3>,"ok":<true|false>,"p":"<lời khen tiếng Việt>","t":"<mẹo cho bố mẹ hoặc rỗng>"}`;
+
+export interface KidWordGrade {
+  /** 1–3 sao. Không bao giờ 0. */
+  stars: number;
+  /** Bé thực sự nói ra được từ đó (≥ 2 sao). */
+  said: boolean;
+  /** Lời khen ngắn tiếng Việt hiện dưới các ngôi sao. */
+  praise: string;
+  /** Mẹo rất ngắn cho bố mẹ (có thể rỗng). */
+  tip: string;
+  /** Máy nghe được gì — chỉ hiện cho bố mẹ khi bật "hiện chữ". */
+  transcript: string;
+}
+
+/** Lời khen dự phòng khi Groq không dùng được — bé vẫn phải có phản hồi vui. */
+function fallbackKidGrade(transcript: string, close: boolean): KidWordGrade {
+  if (close) {
+    return { stars: 3, said: true, praise: "Bé nói đúng rồi! 🎉", tip: "", transcript };
+  }
+  if (transcript.trim()) {
+    return { stars: 2, said: true, praise: "Bé nói to lắm! 👏", tip: "Nghe cô đọc thêm một lần rồi nói lại nhé", transcript };
+  }
+  return { stars: 1, said: false, praise: "Bé thử lại nào! 🌟", tip: "Bé nói to hơn một chút cho máy nghe rõ nhé", transcript };
+}
+
+/**
+ * Chấm một lần bé nhắc lại MỘT từ. `close` là kết quả so khớp máy móc ở server
+ * (xem isAnswerAcceptable) — đưa vào prompt làm gợi ý, và dùng luôn làm đường lui
+ * khi Groq lỗi để bé không bao giờ đứng chờ một màn hình trống.
+ */
+export async function gradeKidWord(params: {
+  word: string;
+  meaning: string | null;
+  transcript: string;
+  close: boolean;
+}): Promise<KidWordGrade> {
+  const { word, meaning, transcript, close } = params;
+
+  // Máy đã nghe ra đúng từ → khỏi tốn một lượt gọi AI, khen ngay cho nhanh.
+  // Trẻ nhỏ mất kiên nhẫn rất nhanh; mỗi giây chờ là một giây bé quay đi chỗ khác.
+  if (close) return fallbackKidGrade(transcript, true);
+
+  try {
+    const parsed = await runGroqJson({
+      models: GRADING_MODELS,
+      system: KID_WORD_SYSTEM,
+      maxTokens: 200,
+      temperature: 0.4,
+      user: `Target word: "${word}"${meaning ? ` (nghĩa tiếng Việt: ${meaning})` : ""}
+What the speech recognizer heard the child say: "${transcript || "(im lặng — không nghe thấy gì)"}"
+A simple string comparison says the transcript does NOT match the target word — but remember the recognizer is unreliable on toddlers' voices.`,
+    });
+
+    const r = isRecord(parsed) ? parsed : {};
+    const rawStars = typeof r.s === "number" ? Math.round(r.s) : 0;
+    const stars = Math.min(3, Math.max(1, rawStars || 1));
+    const praise = asStr(r.p).trim();
+    return {
+      stars,
+      said: r.ok === true || stars >= 2,
+      praise: praise || fallbackKidGrade(transcript, false).praise,
+      tip: asStr(r.t).trim(),
+      transcript,
+    };
+  } catch {
+    return fallbackKidGrade(transcript, false);
+  }
+}
+
 // ===== Chấm NÓI THEO CHỦ ĐỀ (trả lời câu hỏi mở) =====
 // Khác gradeSpeaking (chấm 3 tiêu chí phát âm/ngữ điệu/lưu loát cho câu ngắn):
 // đây là bài trả lời MỞ, DÀI. Đầu vào là transcript do ASR tạo ra, nên prompt dặn
