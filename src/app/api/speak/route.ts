@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { isFirstWord } from "@/lib/first-words";
+import { rateLimit } from "@/lib/rate-limit";
 import { isTtsConfigured, synthesizeMany } from "@/lib/tts";
 
 /**
@@ -20,6 +21,14 @@ const schema = z.object({
   texts: z.array(z.string().min(1).max(40)).min(1).max(12),
 });
 
+/**
+ * Một chủ đề chỉ cần ĐÚNG MỘT lượt gọi để sinh nốt phần thiếu, và mỗi từ chỉ
+ * phải sinh một lần trong cả vòng đời dự án. 20 lượt / 10 phút là quá rộng cho
+ * người học thật, nhưng chặn được kịch bản gọi vòng lặp đốt tiền Aura.
+ */
+const SPEAK_LIMIT = 20;
+const SPEAK_WINDOW_MS = 10 * 60_000;
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) {
@@ -36,9 +45,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Không có từ nào hợp lệ" }, { status: 400 });
   }
 
-  // Chưa cấu hình Deepgram: KHÔNG phải lỗi. Client tự đọc bằng giọng en-US của
-  // trình duyệt (Web Speech) — bé vẫn nghe được, chỉ là giọng kém tự nhiên hơn.
+  // Chưa cấu hình Deepgram, hoặc gọi quá dày: KHÔNG phải lỗi. Trả map rỗng và
+  // client tự đọc bằng giọng en-US của trình duyệt (Web Speech) — bé vẫn nghe
+  // được, chỉ là giọng kém tự nhiên hơn. Không có gì vỡ trên màn hình của bé.
   if (!isTtsConfigured()) return NextResponse.json({ urls: {} });
+  if (!rateLimit(`speak:${session.user.id}`, SPEAK_LIMIT, SPEAK_WINDOW_MS).ok) {
+    return NextResponse.json({ urls: {} });
+  }
 
   const generated = await synthesizeMany(texts);
   const urls: Record<string, string> = {};

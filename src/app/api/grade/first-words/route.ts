@@ -4,6 +4,7 @@ import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
 import { gradeKidWord, isGradingConfigured } from "@/lib/groq";
 import { isAnswerAcceptable, normalizeAnswer, splitWords } from "@/lib/english";
 import { firstWordMeaning, isFirstWord } from "@/lib/first-words";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Bé nhắc lại MỘT từ ở cấp "Bé Tập Nói": ghi âm → chữ → sao.
@@ -17,6 +18,17 @@ import { firstWordMeaning, isFirstWord } from "@/lib/first-words";
  * (chưa cấu hình API, máy nghe hỏng…) — luôn trả về ít nhất 1 sao kèm lời động
  * viên, vì màn hình báo lỗi đỏ với một đứa trẻ chưa biết chữ là vô nghĩa.
  */
+
+/**
+ * Mỗi lượt chấm = 1 lượt Deepgram + 1 lượt Groq, đều tính tiền. Một buổi học
+ * thật của bé rơi vào 8–25 lượt (một chủ đề 8 từ, nói lại đôi ba lần); 90 lượt
+ * mỗi 15 phút là rộng gấp mấy lần mà vẫn chặn được kịch bản bấm liên tục.
+ */
+const GRADE_LIMIT = 90;
+const GRADE_WINDOW_MS = 15 * 60_000;
+
+/** Bản ghi 5 giây của trình duyệt chỉ vài chục KB; 5 MB là trần chống tệp rác. */
+const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
 
 /** Bé có nói ra được từ đó không — so khớp máy móc, chấp nhận cả câu có thừa từ. */
 function looksLikeWord(transcript: string, word: string): boolean {
@@ -42,6 +54,21 @@ export async function POST(req: NextRequest) {
   }
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "Chưa có bản ghi âm nào" }, { status: 400 });
+  }
+  if (file.size > MAX_AUDIO_BYTES) {
+    return NextResponse.json({ error: "Bản ghi dài quá" }, { status: 413 });
+  }
+
+  // Vượt hạn mức → KHÔNG báo lỗi. Trả về một lời rủ nghỉ giải lao: vừa dừng
+  // được chi phí, vừa là lời khuyên đúng với một đứa trẻ đã nói liên tục 15 phút.
+  if (!rateLimit(`first-words:${session.user.id}`, GRADE_LIMIT, GRADE_WINDOW_MS).ok) {
+    return NextResponse.json({
+      stars: 1,
+      said: false,
+      praise: "Bé nghỉ tay một chút nhé! 🍎",
+      tip: "Bé đã nói rất nhiều rồi. Nghỉ vài phút rồi mình học tiếp nha.",
+      transcript: "",
+    });
   }
 
   // 1) Ghi âm → chữ. Hỏng thì coi như "không nghe rõ" chứ không chặn bé lại.

@@ -250,14 +250,76 @@ export function isFirstWord(text: string): boolean {
   return WORD_SET.has(text.trim().toLowerCase());
 }
 
-/** Nghĩa tiếng Việt của một từ (để prompt chấm bài có ngữ cảnh). Null nếu không có. */
-export function firstWordMeaning(word: string): string | null {
+/** Vị trí của một từ trong kho: chủ đề nào, ô thứ mấy. Null nếu không có. */
+export function locateFirstWord(word: string): { unitId: string; index: number } | null {
   const key = word.trim().toLowerCase();
   for (const u of FIRST_WORDS_UNITS) {
-    const hit = u.words.find((w) => w.word.toLowerCase() === key);
-    if (hit) return hit.vi;
+    const i = u.words.findIndex((w) => w.word.toLowerCase() === key);
+    if (i >= 0) return { unitId: u.id, index: i };
   }
   return null;
+}
+
+/** Nghĩa tiếng Việt của một từ (để prompt chấm bài có ngữ cảnh). Null nếu không có. */
+export function firstWordMeaning(word: string): string | null {
+  const at = locateFirstWord(word);
+  if (!at) return null;
+  return getFirstWordsUnit(at.unitId)?.words[at.index]?.vi ?? null;
+}
+
+// ===== Ôn lại những từ bé chưa nói tốt =====
+
+/** id "chủ đề ảo" của bài ôn tập — KHÔNG có bản ghi tiến độ riêng (xem dưới). */
+export const REVIEW_UNIT_ID = "on-tap";
+
+/** Bài ôn giữ ngắn: bé 3–5 tuổi hết kiên nhẫn sau khoảng 10 lượt nói. */
+export const REVIEW_MAX_WORDS = 10;
+
+export interface WeakWord extends FirstWord {
+  unitId: string;
+  unitTitle: string;
+  /** Sao cao nhất bé từng đạt ở từ này (1–2; 0 = chưa thử bao giờ). */
+  stars: number;
+}
+
+/**
+ * Những từ bé ĐÃ THỬ nhưng chưa đạt 3 sao, xếp từ yếu nhất lên trước.
+ *
+ * Cố ý BỎ QUA từ chưa thử lần nào (0 sao): những từ đó thuộc về chủ đề của
+ * chúng, bé sẽ gặp khi học chủ đề đó. Bài ôn chỉ để quay lại chỗ bé đã vấp.
+ *
+ * `progress` là map unitId → mảng sao theo từng từ (cột `wordStars`).
+ */
+export function collectWeakWords(
+  progress: Record<string, number[] | undefined>,
+  limit = REVIEW_MAX_WORDS,
+): WeakWord[] {
+  const out: WeakWord[] = [];
+  for (const u of FIRST_WORDS_UNITS) {
+    const stars = progress[u.id];
+    if (!stars) continue;
+    u.words.forEach((w, i) => {
+      const s = stars[i] ?? 0;
+      if (s > 0 && s < STARS_PER_WORD) {
+        out.push({ ...w, unitId: u.id, unitTitle: u.title, stars: s });
+      }
+    });
+  }
+  // Yếu nhất trước — bé chỉ ôn được vài từ mỗi lượt nên phải ưu tiên đúng chỗ.
+  out.sort((a, b) => a.stars - b.stars);
+  return out.slice(0, limit);
+}
+
+/** Gói danh sách từ yếu thành một "chủ đề" để dùng lại luồng học sẵn có. */
+export function buildReviewUnit(words: WeakWord[]): FirstWordsUnit {
+  return {
+    id: REVIEW_UNIT_ID,
+    title: "Ôn từ khó",
+    titleEn: "Review",
+    emoji: "🔁",
+    cover: "from-sky-300 via-indigo-400 to-violet-400",
+    words: words.map((w) => ({ word: w.word, vi: w.vi, emoji: w.emoji })),
+  };
 }
 
 // ===== Nhận diện cấp trên lộ trình =====

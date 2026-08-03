@@ -365,6 +365,12 @@ model FirstWordsProgress {
   userId    String
   unitId    String // id chủ đề tĩnh (vd "animals")
   completed Boolean  @default(false)
+  /// Sao cao nhất của TỪNG từ, cùng thứ tự với `words` trong src/lib/first-words.ts
+  /// — vd `[3,2,3,1,0,0,0,0]`. Đây là NGUỒN SỰ THẬT; `bestStars`/`wordsSaid` chỉ
+  /// là số tổng tính sẵn để trang danh sách khỏi phải cộng lại.
+  /// Nhờ dữ liệu theo từng từ mà làm được báo cáo cho bố mẹ ("bé vướng từ nào")
+  /// và dựng được bài ôn riêng cho những từ bé chưa nói tốt.
+  wordStars Json     @default("[]")
   /// Tổng sao cao nhất từng đạt ở chủ đề (mỗi từ tối đa 3 sao).
   bestStars Int      @default(0)
   /// Số từ bé đã nói được (≥ 2 sao) trong lần tốt nhất — để hiện "6/8 từ".
