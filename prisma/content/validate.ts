@@ -15,23 +15,19 @@ import type { SkillKey } from "@/lib/roadmap";
 import type { EnglishLevel } from "@prisma/client";
 import type { ChapterSeed, LessonSeed, LessonQuestion } from "./types";
 import { ROADMAP_GRAMMAR } from "./grammar/roadmap";
-import { roadmapGrammarContent, type LessonGrammarSeed } from "./grammar/types";
+import { lessonContent, roadmapGrammarContent, type LessonGrammarSeed } from "./grammar/types";
+// Đọc từ ĐÚNG nguồn mà seed.ts dùng (gốc + phần bổ sung đã nối) — nếu không,
+// validator sẽ kiểm một danh sách còn seed lại ghi một danh sách khác.
+import { CHAPTERS_BY_KEY } from "./all";
+import { GRAMMAR_UNITS } from "./grammar";
+import { VOCAB_UNITS } from "./vocab";
+import { EXAMS } from "./exams";
+// Cấp "Bé Tập Nói" nằm trong src/lib (nội dung tĩnh, không seed vào DB) nhưng
+// vẫn cần một cổng kiểm — nó là cấp DUY NHẤT bé chưa biết chữ nào học được.
+import { FIRST_WORDS_UNITS, TOTAL_FIRST_WORDS, REVIEW_UNIT_ID } from "@/lib/first-words";
+import { PHONICS_LESSONS } from "@/lib/phonics-lessons";
 
-import { CHAPTERS as PRE_STARTERS } from "./pre-starters";
-import { CHAPTERS as STARTERS } from "./starters";
-import { CHAPTERS as MOVERS } from "./movers";
-import { CHAPTERS as FLYERS } from "./flyers";
-import { CHAPTERS as KET } from "./ket";
-import { CHAPTERS as PET } from "./pet";
-
-const MODULES: Record<string, ChapterSeed[]> = {
-  "pre-starters": PRE_STARTERS,
-  starters: STARTERS,
-  movers: MOVERS,
-  flyers: FLYERS,
-  ket: KET,
-  pet: PET,
-};
+const MODULES: Record<string, ChapterSeed[]> = CHAPTERS_BY_KEY;
 
 /** Số từ tối thiểu / tối đa của đoạn đọc theo cấp (xem hướng dẫn ở types.ts). */
 const PASSAGE_RANGE: Record<string, [number, number]> = {
@@ -299,11 +295,321 @@ function checkLesson(levelKey: string, chapterTitle: string, l: LessonSeed): voi
   }
 }
 
+/**
+ * Kho NGỮ PHÁP độc lập (khu "Luyện kỹ năng"). Kiểm hai thứ seed.ts không tự
+ * bắt được: slug bài TRÙNG NHAU (bài sau ghi đè bài trước, mất nội dung) và
+ * bài tập không chơi được.
+ */
+function checkGrammarLibrary(): void {
+  console.log(`\n▸ Kho ngữ pháp: ${GRAMMAR_UNITS.length} unit`);
+  const unitSlugs = new Set<string>();
+  const lessonSlugs = new Set<string>();
+  let lessons = 0;
+
+  for (const u of GRAMMAR_UNITS) {
+    const where = `Ngữ pháp · ${u.slug}`;
+    if (!u.slug?.trim()) fail("Ngữ pháp", "unit thiếu `slug`");
+    if (unitSlugs.has(u.slug)) fail(where, "TRÙNG `slug` unit với unit khác");
+    unitSlugs.add(u.slug);
+    if (!u.title?.trim()) fail(where, "thiếu `title`");
+    if (!u.theme?.trim()) fail(where, "thiếu `theme`");
+    if (!u.lessons?.length) fail(where, "unit không có bài nào");
+
+    for (const l of u.lessons ?? []) {
+      const at = `${where} · ${l.slug}`;
+      lessons++;
+      // Id bài là `seed-grammar-lesson-<slug>` → slug phải duy nhất TOÀN CỤC.
+      if (lessonSlugs.has(l.slug)) fail(at, "TRÙNG `slug` bài với bài khác — bài sau sẽ GHI ĐÈ bài trước");
+      lessonSlugs.add(l.slug);
+      if (!l.title?.trim()) fail(at, "thiếu `title`");
+      if (!l.sections?.length) fail(at, "không có phần lý thuyết nào");
+
+      for (const [si, s] of (l.sections ?? []).entries()) {
+        const sat = `${at} · phần ${si + 1}`;
+        if (!s.id?.trim()) fail(sat, "thiếu `id`");
+        if (!s.title?.trim()) fail(sat, "thiếu `title`");
+        if (!s.explanation?.trim()) fail(sat, "thiếu `explanation`");
+        if (!s.examples?.length) fail(sat, "không có ví dụ nào");
+        if (!s.exercises?.length) fail(sat, "không có bài tập nào");
+        for (const [xi, x] of (s.exercises ?? []).entries()) {
+          checkGrammarExercise(`${sat} · bài tập ${xi + 1}`, x);
+        }
+      }
+      for (const [qi, q] of (l.test?.questions ?? []).entries()) {
+        checkGrammarExercise(`${at} · kiểm tra · câu ${qi + 1}`, q);
+      }
+      // Chạy qua ĐÚNG bộ validate mà player dùng khi mở bài.
+      const res = validateSectionContent("GRAMMAR", lessonContent(l));
+      if (!res.ok) fail(at, `TRƯỢT VALIDATE — ${res.error}`);
+    }
+  }
+  console.log(`  ${lessons} bài ngữ pháp.`);
+}
+
+/** Kho TỪ VỰNG độc lập. Slug unit và id từ phải duy nhất, mỗi từ phải có emoji. */
+function checkVocabLibrary(): void {
+  const totalWords = VOCAB_UNITS.reduce((n, u) => n + u.words.length, 0);
+  console.log(`\n▸ Kho từ vựng: ${VOCAB_UNITS.length} unit · ${totalWords} từ`);
+  const slugs = new Set<string>();
+
+  for (const u of VOCAB_UNITS) {
+    const where = `Từ vựng · ${u.slug}`;
+    if (!u.slug?.trim()) fail("Từ vựng", "unit thiếu `slug`");
+    if (slugs.has(u.slug)) fail(where, "TRÙNG `slug` với unit khác — unit sau sẽ GHI ĐÈ unit trước");
+    slugs.add(u.slug);
+    if (!u.title?.trim()) fail(where, "thiếu `title`");
+    if (!u.theme?.trim()) fail(where, "thiếu `theme`");
+    if (!u.lessonTitle?.trim()) fail(where, "thiếu `lessonTitle`");
+    if (!u.words?.length) fail(where, "unit không có từ nào");
+
+    // Id từ là `seed-word-<slug>-<word>` → trùng `word` trong cùng unit là mất từ.
+    const seen = new Set<string>();
+    for (const word of u.words ?? []) {
+      const at = `${where} · ${word.word}`;
+      if (!word.word?.trim()) fail(where, "từ thiếu `word`");
+      if (seen.has(word.word.toLowerCase())) fail(at, "TRÙNG từ trong cùng unit");
+      seen.add(word.word.toLowerCase());
+      if (!word.meaning?.trim()) fail(at, "thiếu nghĩa tiếng Việt");
+      if (!word.emoji?.trim()) fail(at, "thiếu `emoji`");
+      if (!word.partOfSpeech?.trim()) fail(at, "thiếu `partOfSpeech`");
+      if (!/^\/.*\/$/.test(word.ipa ?? "")) {
+        warn(at, `IPA nên nằm trong hai gạch chéo, đang là "${word.ipa}"`);
+      }
+      if (!word.examples?.length) fail(at, "không có câu ví dụ nào");
+      for (const e of word.examples ?? []) {
+        if (!e.sentence?.trim()) fail(at, "câu ví dụ thiếu tiếng Anh");
+        if (!e.meaning?.trim()) fail(at, "câu ví dụ thiếu bản dịch");
+      }
+    }
+  }
+}
+
+/**
+ * Cấp "Bé Tập Nói". Bắt đúng những lỗi phá vỡ luật của cấp này (CLAUDE.md §6.1):
+ * bé chưa biết chữ nên hình phải rõ, và từ phải ngắn để máy nghe được giọng trẻ.
+ */
+function checkFirstWords(): void {
+  const core = FIRST_WORDS_UNITS.filter((u) => !u.bonus);
+  const bonus = FIRST_WORDS_UNITS.filter((u) => u.bonus);
+  console.log(
+    `\n▸ Bé Tập Nói: ${FIRST_WORDS_UNITS.length} chủ đề (${core.length} chính · ${bonus.length} thêm) · ${TOTAL_FIRST_WORDS} từ`,
+  );
+
+  const unitIds = new Set<string>();
+  // Một từ chỉ được thuộc ĐÚNG MỘT chủ đề: `locateFirstWord()` trả về chỗ đầu
+  // tiên tìm thấy, nên từ trùng sẽ luôn ghi sao về chủ đề trước và chủ đề sau
+  // không bao giờ đủ sao — bé làm mãi không xong.
+  const wordOwner = new Map<string, string>();
+
+  for (const u of FIRST_WORDS_UNITS) {
+    const where = `Bé Tập Nói · ${u.id}`;
+    if (!u.id?.trim()) fail("Bé Tập Nói", "chủ đề thiếu `id`");
+    if (u.id === REVIEW_UNIT_ID) fail(where, `\`id\` trùng với bài ôn tập ("${REVIEW_UNIT_ID}")`);
+    if (unitIds.has(u.id)) fail(where, "TRÙNG `id` với chủ đề khác");
+    unitIds.add(u.id);
+    if (!u.title?.trim()) fail(where, "thiếu `title` (tiếng Việt)");
+    if (!u.titleEn?.trim()) fail(where, "thiếu `titleEn`");
+    if (!u.emoji?.trim()) fail(where, "thiếu `emoji` chủ đề");
+    // Gradient phải là class literal, nếu không Tailwind JIT không quét ra và
+    // ô chủ đề hiện ra trắng trơn.
+    if (!/^from-\S+\s+via-\S+\s+to-\S+$/.test(u.cover ?? "")) {
+      fail(where, `\`cover\` phải có dạng "from-… via-… to-…", đang là "${u.cover}"`);
+    }
+    if (!u.words?.length) fail(where, "chủ đề không có từ nào");
+    if (u.words && u.words.length !== 8) {
+      warn(where, `có ${u.words.length} từ — các chủ đề khác đều 8 từ, lệch sẽ khó so sánh tiến độ`);
+    }
+
+    for (const word of u.words ?? []) {
+      const at = `${where} · ${word.word}`;
+      if (!word.word?.trim()) fail(where, "từ thiếu `word`");
+      if (!/^[a-z][a-z' ]*$/.test(word.word ?? "")) {
+        fail(at, "`word` phải viết THƯỜNG, chỉ chữ cái (bé nghe rồi nhắc lại, không đọc chữ)");
+      }
+      const key = word.word.trim().toLowerCase();
+      const owner = wordOwner.get(key);
+      if (owner) fail(at, `TRÙNG từ với chủ đề "${owner}" — sao sẽ luôn ghi về chủ đề đó`);
+      else wordOwner.set(key, u.id);
+      if (!word.vi?.trim()) fail(at, "thiếu nghĩa tiếng Việt (cho bố mẹ đọc)");
+      if (!word.emoji?.trim()) fail(at, "thiếu `emoji` — bé chưa đọc chữ, đây là kênh nghĩa DUY NHẤT");
+      // Từ dài làm nhận dạng giọng trẻ em sai nhiều hơn → bé bị chấm oan.
+      if (word.word.length > 9) warn(at, `từ hơi dài (${word.word.length} ký tự) — bé 3–5 tuổi khó nói tròn`);
+    }
+
+    // Emoji trùng trong cùng chủ đề = hai ô nhìn y hệt nhau, bé không phân biệt được.
+    const emojis = (u.words ?? []).map((x) => x.emoji);
+    const dupEmoji = emojis.filter((e, i) => emojis.indexOf(e) !== i);
+    if (dupEmoji.length) fail(where, `emoji TRÙNG trong cùng chủ đề: ${[...new Set(dupEmoji)].join(" ")}`);
+  }
+
+  if (core.length === 0) fail("Bé Tập Nói", "không còn chủ đề CHÍNH nào — mốc tốt nghiệp sẽ không tính được");
+}
+
+/**
+ * Đề thi thử. Bắt đúng những lỗi khiến đề "mở lên không làm được": tiểu phần
+ * không có gì để làm, phần nghe không có lời thoại, trích dẫn không có thật.
+ */
+function checkExams(): void {
+  console.log(`\n▸ Đề thi thử: ${EXAMS.length} đề`);
+  const slugs = new Set<string>();
+  let questions = 0;
+
+  for (const e of EXAMS) {
+    const where = `Thi thử · ${e.slug}`;
+    if (!e.slug?.trim()) fail("Thi thử", "đề thiếu `slug`");
+    if (slugs.has(e.slug)) fail(where, "TRÙNG `slug` với đề khác — đề sau sẽ GHI ĐÈ đề trước");
+    slugs.add(e.slug);
+    if (!e.title?.trim()) fail(where, "thiếu `title`");
+    if (!e.description?.trim()) fail(where, "thiếu `description`");
+    if (!e.totalTime || e.totalTime < 60) fail(where, "`totalTime` (giây) phải là số dương hợp lý");
+    if (!e.sections?.length) fail(where, "đề không có phần nào");
+
+    for (const [si, s] of (e.sections ?? []).entries()) {
+      const sat = `${where} · phần ${si + 1} (${s.skill})`;
+      // Trình chạy đề KHÔNG có bộ ghi âm — section nói sẽ hiện ra sai hoàn toàn.
+      if ((s.skill as string) === "SPEAKING") {
+        fail(sat, "đề seed KHÔNG được có phần SPEAKING — trình chạy đề chưa có bộ ghi âm");
+      }
+      if (!s.parts?.length) fail(sat, "phần không có tiểu phần nào");
+
+      for (const [pi, p] of (s.parts ?? []).entries()) {
+        const pat = `${sat} · Part ${pi + 1}`;
+        const isEssay = !!p.writingPrompt?.trim();
+        const qs = p.questions ?? [];
+
+        // Tiểu phần phải làm được: hoặc là ô viết, hoặc có câu hỏi.
+        if (!isEssay && qs.length === 0) {
+          fail(pat, "không có câu hỏi và cũng không phải ô viết — mở ra không làm được gì");
+        }
+        if (isEssay && qs.length > 0) {
+          fail(pat, "vừa có `writingPrompt` vừa có câu hỏi — player coi tiểu phần này là ô viết và BỎ QUA hết câu hỏi");
+        }
+        if (isEssay && (!p.writingMinWords || p.writingMinWords < 5)) {
+          warn(pat, "ô viết nên đặt `writingMinWords` (đếm TỪ, không đếm ký tự)");
+        }
+        if (s.skill === "LISTENING" && !p.transcript?.trim()) {
+          fail(pat, "phần nghe thiếu `transcript` — không có MP3 thì đây là thứ DUY NHẤT phát ra tiếng");
+        }
+        if (s.skill === "READING" && !isEssay && !p.passage?.trim()) {
+          warn(pat, "phần đọc không có `passage` — câu hỏi sẽ đứng trơ không có ngữ cảnh");
+        }
+
+        if (qs.length) {
+          checkQuestions(pat, qs, `${p.passage ?? ""}\n${p.transcript ?? ""}`);
+          questions += qs.length;
+        }
+      }
+    }
+  }
+  console.log(`  ${questions} câu hỏi.`);
+}
+
+/**
+ * Ghép vần (Phonics). Nội dung tĩnh trong `src/lib/phonics-lessons.ts`, dựng từ
+ * `phonics-data.ts` bằng bộ dựng — nên lỗi hay gặp KHÔNG phải sai kiểu mà là
+ * "đáp án không nằm trong lựa chọn" hoặc "lựa chọn trùng nhau", tức là thẻ bài
+ * không bao giờ chơi đúng được.
+ */
+function checkPhonics(): void {
+  console.log(`\n▸ Ghép vần: ${PHONICS_LESSONS.length} bài`);
+  const ids = new Set<string>();
+  let cards = 0;
+
+  /** Đáp án phải nằm trong lựa chọn và lựa chọn không được trùng. */
+  const checkChoice = (at: string, answer: string, options: string[]): void => {
+    if (!options.includes(answer)) {
+      fail(at, `đáp án "${answer}" KHÔNG nằm trong lựa chọn → không bao giờ chọn đúng được`);
+    }
+    if (options.length < 2) fail(at, "cần ít nhất 2 lựa chọn");
+    if (new Set(options).size !== options.length) fail(at, "có lựa chọn TRÙNG NHAU");
+  };
+
+  for (const l of PHONICS_LESSONS) {
+    const where = `Ghép vần · ${l.id}`;
+    if (!l.id?.trim()) fail("Ghép vần", "bài thiếu `id`");
+    if (ids.has(l.id)) fail(where, "TRÙNG `id` với bài khác");
+    ids.add(l.id);
+    if (!l.title?.trim()) fail(where, "thiếu `title`");
+    if (!l.emoji?.trim()) fail(where, "thiếu `emoji`");
+    if (!l.cards?.length) fail(where, "bài không có thẻ nào");
+
+    // Bài toàn thẻ "teach" thì trẻ chỉ ngồi xem, không có gì để làm và không ghi
+    // được tiến độ — PhonicsProgress tính theo thẻ CÓ chấm điểm.
+    const scored = (l.cards ?? []).filter((c) => c.kind !== "teach").length;
+    if (scored === 0) fail(where, "không có thẻ nào tính điểm — bé chỉ xem, không ghi được tiến độ");
+
+    for (const [i, c] of (l.cards ?? []).entries()) {
+      const at = `${where} · thẻ ${i + 1} (${c.kind})`;
+      cards++;
+      if (c.kind === "teach") {
+        if (!c.big?.trim()) fail(at, "thiếu chữ hiển thị `big`");
+        if (!c.sound?.trim()) fail(at, "thiếu cách đọc `sound`");
+        if (!c.emoji?.trim()) fail(at, "thiếu `emoji`");
+        // Mẹo phát âm là thứ DUY NHẤT nói cho trẻ Việt biết mình hay đọc sai chỗ nào.
+        if (!c.hint?.trim()) fail(at, "thiếu `hint` (mẹo phát âm cho người Việt)");
+      } else if (c.kind === "listen") {
+        if (!c.word?.trim()) fail(at, "thiếu `word` (từ được đọc lên)");
+        if (!c.emoji?.trim()) fail(at, "thiếu `emoji`");
+        checkChoice(at, c.answer, c.options);
+      } else if (c.kind === "blend") {
+        if (!c.parts?.length) fail(at, "thiếu `parts` (các âm để ghép)");
+        // Ghép các âm lại phải ra đúng từ, nếu không bé ghép kiểu gì cũng sai.
+        if (c.parts.join("") !== c.answer) {
+          fail(at, `ghép [${c.parts.join("-")}] ra "${c.parts.join("")}" chứ không phải "${c.answer}"`);
+        }
+        checkChoice(at, c.answer, c.options);
+      } else if (c.kind === "rhyme") {
+        if (!c.base?.word?.trim()) fail(at, "thiếu từ gốc `base`");
+        checkChoice(at, c.answer, c.options.map((o) => o.word));
+        if (c.options.some((o) => !o.emoji?.trim())) fail(at, "có lựa chọn thiếu emoji");
+        if (c.answer === c.base.word) fail(at, "đáp án TRÙNG từ gốc");
+      } else if (c.kind === "discriminate") {
+        if (!c.a?.word?.trim() || !c.b?.word?.trim()) fail(at, "thiếu một trong hai từ so sánh");
+        // Hai âm giống hệt nhau thì không có gì để phân biệt.
+        if (c.a?.sound === c.b?.sound) fail(at, `hai âm so sánh giống nhau ("${c.a?.sound}")`);
+        if (!c.note?.trim()) fail(at, "thiếu `note` giải thích khác nhau chỗ nào");
+      }
+    }
+  }
+  console.log(`  ${cards} thẻ.`);
+}
+
+/**
+ * Các kho KHÔNG chia theo cấp. Gọi riêng được để soạn nội dung xong kiểm ngay
+ * đúng phần mình vừa viết, không bị nhiễu bởi phần người khác đang sửa dở:
+ *   npm run content:check exams
+ */
+const LIBRARIES: Record<string, () => void> = {
+  grammar: checkGrammarLibrary,
+  vocab: checkVocabLibrary,
+  "first-words": checkFirstWords,
+  phonics: checkPhonics,
+  exams: checkExams,
+};
+
+function finish(): never {
+  console.log(`\n${errors === 0 ? "✅" : "❌"} Kết quả: ${errors} lỗi · ${warnings} cảnh báo`);
+  process.exit(errors > 0 ? 1 : 0);
+}
+
 function main(): void {
   const only = process.argv[2];
+
+  // Kiểm riêng MỘT kho.
+  const library = only ? LIBRARIES[only] : undefined;
+  if (library) {
+    library();
+    finish();
+  }
+
   const entries = Object.entries(MODULES).filter(([k]) => !only || k === only);
   if (entries.length === 0) {
-    console.error(`Không có cấp nào tên "${only}". Hợp lệ: ${Object.keys(MODULES).join(", ")}`);
+    console.error(
+      `Không có mục nào tên "${only}".\n` +
+        `  Cấp:  ${Object.keys(MODULES).join(", ")}\n` +
+        `  Kho:  ${Object.keys(LIBRARIES).join(", ")}\n` +
+        `  (bỏ trống = kiểm tất cả)`,
+    );
     process.exit(1);
   }
 
@@ -333,10 +639,10 @@ function main(): void {
     checkRoadmapGrammar(levelKey, orderedTopics);
   }
 
-  console.log(
-    `\n${errors === 0 ? "✅" : "❌"} Kết quả: ${errors} lỗi · ${warnings} cảnh báo`,
-  );
-  if (errors > 0) process.exit(1);
+  // Kho độc lập không chia theo cấp nên chỉ kiểm khi chạy toàn bộ.
+  if (!only) for (const check of Object.values(LIBRARIES)) check();
+
+  finish();
 }
 
 main();

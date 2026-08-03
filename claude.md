@@ -60,7 +60,20 @@ Giao diện: **tươi sáng, tròn trịa, nhiều hình, chữ to**, mobile-fir
 dingdong-kids/
 ├── prisma/
 │   ├── schema.prisma
-│   └── seed.ts
+│   ├── seed.ts                 # CHỈ ghi DB — nội dung nằm ở content/
+│   └── content/                # TOÀN BỘ nội dung seed, tách theo cấp
+│       ├── types.ts            # hợp đồng bài lộ trình + hướng dẫn soạn theo cấp
+│       ├── all.ts              # ⭐ gom bài của 6 cấp (gốc + extra) — seed & validate dùng CHUNG
+│       ├── validate.ts         # npm run content:check
+│       ├── <cấp>.ts            # bài lộ trình gốc (pre-starters … pet)
+│       ├── extra/<cấp>.ts      # bài lộ trình BỔ SUNG, nối sau bài gốc
+│       ├── vocab/              # kho từ vựng độc lập — index.ts + 1 file/cấp
+│       ├── exams/              # đề thi thử — index.ts + 1 file/cấp
+│       └── grammar/            # ngữ pháp — index.ts (kho độc lập)
+│           │                   #   + roadmap.ts (ngữ pháp gắn vào bài lộ trình)
+│           ├── <cấp>.ts        #   kho độc lập theo cấp
+│           ├── roadmap-<cấp>.ts#   ↔ bài trong content/<cấp>.ts
+│           └── extra-<cấp>.ts  #   ↔ bài trong content/extra/<cấp>.ts
 ├── public/
 ├── src/
 │   ├── app/
@@ -155,7 +168,8 @@ enum Role { LEARNER ADMIN }
 | `groq.ts` | Toàn bộ chấm bài + sinh câu hỏi + tra từ |
 | `chat.ts` | Trợ lý **"Ding"** (`streamDingReply`) |
 | `phonics-data.ts` / `phonics-lessons.ts` | Dữ liệu + bài học Phonics (**tĩnh trong code**, chỉ tiến độ lưu DB) |
-| `first-words.ts` | Cấp **Bé Tập Nói** — 10 chủ đề × 8 từ (**tĩnh trong code**), `FIRST_WORDS_LEVEL`, `isFirstWord()` (danh sách trắng cho `/api/speak`) |
+| `first-words.ts` | Cấp **Bé Tập Nói** — chặng chính `CORE_UNITS` (**tĩnh trong code**), `FIRST_WORDS_LEVEL`, `isFirstWord()` (danh sách trắng cho `/api/speak`) |
+| `first-words-data/` | Kiểu dữ liệu + các **gói chủ đề "Khám phá thêm"** (`pack-*.ts`), tự gắn `bonus: true` |
 | `payment-plans.ts` | Giá & gói — **sửa giá chỉ ở đây** |
 | `entitlements.ts` | Suy ra quyền lợi từ vai trò + subscription |
 | `hearts.ts` | Hệ thống tim |
@@ -185,7 +199,8 @@ không trừ tim — đây là cửa ngõ hút phụ huynh vào hệ thống.
 
 | Thành phần | Nơi ở |
 |---|---|
-| Nội dung (10 chủ đề × 8 từ) | [src/lib/first-words.ts](src/lib/first-words.ts) — **tĩnh trong code** |
+| Nội dung — **chặng chính** | [src/lib/first-words.ts](src/lib/first-words.ts) `CORE_UNITS` — **tĩnh trong code** |
+| Nội dung — **khám phá thêm** | [src/lib/first-words-data/](src/lib/first-words-data/) `pack-*.ts` — tự gắn `bonus: true` |
 | Bản đồ chủ đề | `/roadmap/tap-noi` (route TĨNH, thắng `/roadmap/[level]`) |
 | Luồng học | `/roadmap/tap-noi/[unitId]` |
 | Ôn từ khó | `/roadmap/tap-noi/on-tap` (route TĨNH, thắng `[unitId]`) |
@@ -209,7 +224,8 @@ không trừ tim — đây là cửa ngõ hút phụ huynh vào hệ thống.
 
 **Audio**: trang server chỉ tra cache (`cachedSpeechUrls`, không gọi Deepgram) nên mở là
 chạy ngay; từ nào thiếu thì client xin sinh ở nền. Trong lúc chờ có Web Speech đọc tạm.
-80 từ × 1 lần gọi Aura cho toàn bộ vòng đời dự án.
+Chi phí không phụ thuộc số chủ đề: mỗi trang chỉ nạp audio của ĐÚNG 8 từ trong chủ đề đang
+mở, và mỗi từ chỉ gọi Aura **một lần cho toàn bộ vòng đời dự án** (cache theo `Upload.ttsKey`).
 
 **Dữ liệu theo TỪNG TỪ** — `FirstWordsProgress.wordStars` là nguồn sự thật (`bestStars` /
 `wordsSaid` chỉ là số tổng tính sẵn). Nhờ đó có: báo cáo "bé vướng từ nào" cho phụ huynh
@@ -217,9 +233,15 @@ chạy ngay; từ nào thiếu thì client xin sinh ở nền. Trong lúc chờ 
 Bài ôn KHÔNG có hàng tiến độ riêng — điểm ghi ngược về chủ đề gốc của từng từ, nếu không
 mọi số tổng sẽ bị đếm hai lần.
 
+**Chặng chính vs Khám phá thêm** — mốc tốt nghiệp tính theo **80% số từ của CHẶNG CHÍNH**,
+KHÔNG phải toàn bộ kho. Đây là ràng buộc bắt buộc: nếu tính cả chủ đề thêm thì mỗi lần bổ
+sung nội dung là một lần đẩy tấm bằng ra xa, bé học chăm vẫn thấy mục tiêu lùi lại và phễu
+thương mại bên dưới hỏng theo. Thêm chủ đề mới → luôn cho vào `first-words-data/pack-*.ts`
+(tự gắn `bonus: true`); chỉ đổi `CORE_UNITS` khi thực sự muốn dời mốc tốt nghiệp.
+
 **Phễu thương mại**: cấp này miễn phí là có chủ đích — nó là chỗ phụ huynh thấy con mình
-thật sự nói được tiếng Anh. Nói được **80% số từ** → hiện `GraduationCard` (bằng khen có tên
-bé + mời lên gói Pre-Starters). Chưa đủ thì chỉ nhắc một dòng, không chào mời.
+thật sự nói được tiếng Anh. Nói được **80% số từ chặng chính** → hiện `GraduationCard`
+(bằng khen có tên bé + mời lên gói Pre-Starters). Chưa đủ thì chỉ nhắc một dòng, không chào mời.
 
 **Giới hạn tần suất** (bắt buộc, không phải tối ưu): mỗi lượt chấm = 1 Deepgram + 1 Groq,
 đều mất tiền và đăng nhập KHÔNG chặn được. `/api/grade/first-words` 90 lượt/15 phút,
@@ -311,6 +333,7 @@ npm install
 cp .env.example .env.local      # điền giá trị
 
 npx prisma db push              # đẩy schema lên DB (dự án chưa dùng migrations)
+npm run content:check           # ⭐ KIỂM NỘI DUNG TRƯỚC KHI SEED (xem dưới)
 npm run db:seed                 # seed nội dung mẫu
 npm run dev                     # http://localhost:3000
 
@@ -321,6 +344,40 @@ npm run build && npm start
 npx prisma studio               # GUI cho DB
 ```
 
+**`npm run content:check` là cổng bắt buộc trước mọi thay đổi nội dung.** Nó chạy đúng bộ
+validate mà player dùng khi mở bài, nên bắt được lớp lỗi khiến "bài học mở lên bị lỗi" mà
+typecheck không thấy:
+
+- Bài lộ trình: `supportingQuote` không có thật trong đoạn văn, đáp án trỏ ra ngoài danh
+  sách lựa chọn, trùng `topic`, đoạn đọc lệch độ dài so với cấp.
+- Ngữ pháp: `fill_blank` thiếu `___`, đáp án không nằm trong options, thẻ `sentence_order`
+  không phải hoán vị đúng của câu trả lời, trùng slug bài (bài sau **ghi đè** bài trước).
+- **Lệch hàng ngữ pháp lộ trình**: `grammar/roadmap-<cấp>.ts` phải dài đúng bằng danh sách
+  bài của cấp và `topic` khớp từng chữ — lệch một mục là bé học ngữ pháp của bài khác.
+- Từ vựng: trùng slug unit, thiếu emoji, thiếu câu ví dụ.
+- Bé Tập Nói: trùng từ giữa hai chủ đề (sao sẽ luôn ghi về chủ đề đầu → bé làm mãi không
+  xong), trùng emoji trong cùng chủ đề, `cover` không phải class Tailwind literal.
+- Thi thử: tiểu phần không có gì để làm, phần nghe thiếu lời thoại, tiểu phần vừa có ô viết
+  vừa có câu hỏi (player bỏ qua hết câu hỏi), và phần `SPEAKING` — xem cảnh báo ở §7.1.
+
+- Ghép vần: đáp án không nằm trong lựa chọn, lựa chọn trùng nhau, thẻ `blend` ghép các âm
+  lại KHÔNG ra đúng từ, thẻ `discriminate` so sánh hai âm giống hệt nhau, bài không có thẻ
+  nào tính điểm (bé chỉ ngồi xem, không ghi được tiến độ).
+
+Kiểm riêng một phần cho nhanh: `npm run content:check <cấp>` (pre-starters…pet) hoặc
+`npm run content:check <kho>` (`grammar` · `vocab` · `first-words` · `phonics` · `exams`).
+
+## 7.1. Thi thử — giới hạn cần biết
+
+Trình chạy đề ([src/app/(learn)/exam/[examId]/](src/app/(learn)/exam/[examId]/)) render được
+**Nghe · Đọc · Viết**, KHÔNG có bộ ghi âm cho phần **Nói** — soạn một section `SPEAKING`
+vào đề sẽ khiến câu hỏi nói hiện ra như câu trắc nghiệm thường. `validate.ts` chặn thẳng
+việc này. Phần Nói của người học nằm ở khu Luyện kỹ năng (`/speaking`).
+
+Phần nghe **không cần MP3**: `ExamAudio` đọc `transcript` bằng giọng trình duyệt và giới
+hạn số lần nghe đúng như thi thật (Pre-Starters/Starters/Movers 3 lần, cấp trên 2 lần).
+Admin gắn MP3 sau mà không phải sửa file nội dung.
+
 ---
 
 ## 11. Việc còn mở / quyết định chưa chốt
@@ -328,6 +385,12 @@ npx prisma studio               # GUI cho DB
 1. **Tài khoản phụ huynh** — schema đã có `User.parentId` + `birthYear` nhưng **chưa có giao diện**.
    Trẻ 5 tuổi không tự đăng ký/thanh toán được. Cần: phụ huynh tạo hồ sơ con, xem báo cáo tiến độ.
 2. **Bảng giá** — xem cảnh báo ở §9.
+2b. **Thi thử chưa có phân quyền** — `/exam` chỉ lọc theo cờ `published`, KHÔNG gọi
+   `getEntitlements()` và KHÔNG trừ tim. Nghĩa là 12 đề đang mở miễn phí cho mọi tài khoản
+   đăng nhập. Trước đây điều này không lộ ra vì kho đề rỗng (1 đề nháp, 0 câu hỏi), giờ có
+   nội dung thật thì phải chốt: (a) để miễn phí như hiện tại, (b) chỉ xuất bản Đề 1 mỗi cấp
+   làm bản dùng thử — Đề 2 để nháp, hoặc (c) đưa Thi thử vào **Gói Tự do** như §9 mô tả cho
+   "tính năng ngoài lộ trình". Chọn (c) thì phải sửa cả `exam/page.tsx` lẫn `exam/[examId]/page.tsx`.
 3. **Anh–Mỹ vs Anh–Anh** — hiện đặt `en-US` (trẻ VN quen giọng Mỹ) nhưng Cambridge YLE là
    chuẩn Anh–Anh. Đổi bằng env `DEEPGRAM_STT_LANGUAGE` + `DEEPGRAM_TTS_VOICE`.
 4. **Chi phí TTS** — cần đo giá Aura thực tế trước khi sinh audio hàng loạt cho toàn kho từ vựng.

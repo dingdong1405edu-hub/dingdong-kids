@@ -4,8 +4,6 @@
 // KHÔNG khoá chủ đề theo thứ tự như bản đồ Duolingo của các cấp lớn: bé 3–5 tuổi
 // học theo hứng thú, hôm nay thích con vật, mai thích màu sắc. Bắt bé đi đúng
 // tuyến chỉ làm bé bỏ cuộc. Mọi chủ đề mở sẵn, sao đã đạt hiện ngay trên thẻ.
-import Link from "next/link";
-import { motion } from "framer-motion";
 import { Star, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DingBuddy } from "@/components/marketing/ding-buddy";
@@ -18,6 +16,7 @@ import {
 } from "@/lib/first-words";
 import { ParentReport } from "./parent-report";
 import { GraduationCard } from "./graduation-card";
+import { FirstWordsUnitCard } from "./unit-card";
 
 export interface UnitProgressDTO {
   bestStars: number;
@@ -35,7 +34,7 @@ interface Props {
   upgradeHref: string;
 }
 
-/** Ngưỡng "tốt nghiệp": nói được 80% số từ của cả cấp. */
+/** Ngưỡng "tốt nghiệp": nói được 80% số từ của CHẶNG CHÍNH. */
 const GRADUATION_RATIO = 0.8;
 
 export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props) {
@@ -48,8 +47,16 @@ export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props
   const weakWords = collectWeakWords(
     Object.fromEntries(units.map((u) => [u.id, progress[u.id]?.wordStars])),
   );
-  const needSaid = Math.ceil(wordTotal * GRADUATION_RATIO);
-  const graduated = saidTotal >= needSaid;
+
+  // Chặng chính ↔ khám phá thêm. Tấm bằng CHỈ tính theo chặng chính: nếu tính
+  // cả chủ đề thêm thì mỗi lần bổ sung nội dung là một lần đẩy mục tiêu ra xa,
+  // bé học chăm vẫn thấy tấm bằng lùi lại.
+  const coreUnits = units.filter((u) => !u.bonus);
+  const bonusUnits = units.filter((u) => u.bonus);
+  const coreWords = coreUnits.reduce((n, u) => n + u.words.length, 0);
+  const coreSaid = coreUnits.reduce((n, u) => n + (progress[u.id]?.wordsSaid ?? 0), 0);
+  const needSaid = Math.ceil(coreWords * GRADUATION_RATIO);
+  const graduated = coreSaid >= needSaid;
 
   return (
     <div className="space-y-6">
@@ -95,71 +102,50 @@ export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props
       {saidTotal > 0 && (
         <GraduationCard
           ready={graduated}
-          wordsSaid={saidTotal}
-          totalWords={wordTotal}
+          wordsSaid={coreSaid}
+          totalWords={coreWords}
           totalStars={totalStars}
           childName={childName}
           upgradeHref={upgradeHref}
-          wordsToGo={Math.max(1, needSaid - saidTotal)}
+          wordsToGo={Math.max(1, needSaid - coreSaid)}
         />
       )}
 
-      {/* Lưới chủ đề */}
+      {/* Lưới chủ đề — chặng chính trước, để bé và bố mẹ thấy rõ đường đi. */}
+      {bonusUnits.length > 0 && (
+        <h2 className="font-display text-lg font-extrabold">🎯 Chặng chính</h2>
+      )}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {units.map((u, i) => {
-          const p = progress[u.id];
-          const stars = p?.bestStars ?? 0;
-          const max = u.words.length * STARS_PER_WORD;
-          const pct = max > 0 ? Math.min(100, Math.round((stars / max) * 100)) : 0;
-          const done = stars >= max;
-
-          return (
-            <motion.div
-              key={u.id}
-              initial={{ opacity: 0, y: 20, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: i * 0.05, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Link href={`${FIRST_WORDS_LEVEL.href}/${u.id}`} className="group block">
-                <div className="sticker flex flex-col items-center gap-2 rounded-3xl p-3 transition-transform duration-200 hover:-translate-y-1.5">
-                  <div
-                    className={cn(
-                      "relative flex aspect-square w-full items-center justify-center rounded-[1.75rem] bg-gradient-to-br shadow-soft",
-                      u.cover,
-                    )}
-                  >
-                    <span
-                      className="select-none text-[64px] leading-none drop-shadow transition-transform duration-300 group-hover:scale-110 sm:text-[72px]"
-                      aria-hidden
-                    >
-                      {u.emoji}
-                    </span>
-                    {done && (
-                      <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">
-                        <Star className="h-5 w-5 fill-sunny text-sunny" strokeWidth={2.5} />
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="w-full text-center">
-                    <div className="font-display text-[15px] font-extrabold leading-tight">{u.title}</div>
-                    <div className="text-[11px] font-semibold text-muted-foreground">{u.words.length} từ</div>
-                  </div>
-
-                  <div className="w-full">
-                    <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-sunny transition-all" style={{ width: `${pct}%` }} />
-                    </div>
-                    <div className="mt-1 flex items-center justify-center gap-1 text-[11px] font-extrabold tabular-nums text-muted-foreground">
-                      <Star className="h-3.5 w-3.5 fill-sunny text-sunny" /> {stars}/{max}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          );
-        })}
+        {coreUnits.map((u, i) => (
+          <FirstWordsUnitCard
+            key={u.id}
+            unit={u}
+            stars={progress[u.id]?.bestStars ?? 0}
+            index={i}
+          />
+        ))}
       </div>
+
+      {bonusUnits.length > 0 && (
+        <>
+          <div className="pt-2">
+            <h2 className="font-display text-lg font-extrabold">🌈 Khám phá thêm</h2>
+            <p className="text-[13px] font-semibold text-muted-foreground">
+              {bonusUnits.length} chủ đề chơi thêm cho vui — không bắt buộc để nhận bằng khen.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {bonusUnits.map((u, i) => (
+              <FirstWordsUnitCard
+                key={u.id}
+                unit={u}
+                stars={progress[u.id]?.bestStars ?? 0}
+                index={i}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       <ParentReport
         totalStars={totalStars}

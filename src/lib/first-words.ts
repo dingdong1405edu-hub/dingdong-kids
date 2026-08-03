@@ -16,27 +16,13 @@
 //  file này chạy cả phía client.
 // ===========================================================================
 
-export interface FirstWord {
-  /** Từ tiếng Anh bé nghe rồi nhắc lại. Viết thường, không dấu câu. */
-  word: string;
-  /** Nghĩa tiếng Việt — dành cho BỐ MẸ, bé chưa đọc được. */
-  vi: string;
-  /** Hình minh hoạ. Với bé chưa biết chữ đây là nội dung chính, không phải trang trí. */
-  emoji: string;
-}
+import { EXTRA_UNITS } from "./first-words-data";
+import type { FirstWord, FirstWordsUnit } from "./first-words-data/types";
 
-export interface FirstWordsUnit {
-  /** id tĩnh — cũng là slug URL và khoá của FirstWordsProgress. */
-  id: string;
-  /** Tên chủ đề tiếng Việt (bố mẹ đọc). */
-  title: string;
-  /** Tên chủ đề tiếng Anh. */
-  titleEn: string;
-  emoji: string;
-  /** Gradient nền bong bóng chủ đề — literal để Tailwind JIT quét được. */
-  cover: string;
-  words: FirstWord[];
-}
+// Xuất lại để mọi nơi vẫn `import type { FirstWord } from "@/lib/first-words"`
+// như cũ — kiểu đã dời sang first-words-data/types.ts để các gói chủ đề nhập
+// được mà không tạo vòng lặp import.
+export type { FirstWord, FirstWordsUnit };
 
 /** Mỗi từ tối đa 3 sao. */
 export const STARS_PER_WORD = 3;
@@ -44,7 +30,14 @@ export const STARS_PER_WORD = 3;
 /** XP tối đa cho một chủ đề (đủ 3 sao mọi từ mới lấy trọn). */
 export const XP_PER_UNIT = 20;
 
-export const FIRST_WORDS_UNITS: FirstWordsUnit[] = [
+/**
+ * CHẶNG CHÍNH — 10 chủ đề quyết định mốc tốt nghiệp.
+ *
+ * Cố ý giữ nguyên số lượng khi bổ sung nội dung: mốc tốt nghiệp tính theo 80%
+ * số từ của riêng chặng này, nên thêm chủ đề mới (dạng `bonus`) không bao giờ
+ * đẩy tấm bằng ra xa hơn với bé đang học dở.
+ */
+const CORE_UNITS: FirstWordsUnit[] = [
   {
     id: "animals",
     title: "Con vật",
@@ -217,8 +210,22 @@ export const FIRST_WORDS_UNITS: FirstWordsUnit[] = [
   },
 ];
 
+/**
+ * Toàn bộ chủ đề: chặng chính trước, khám phá thêm sau.
+ *
+ * Thứ tự này là thứ tự bé nhìn thấy trên bản đồ — chủ đề chính luôn đứng trước
+ * để bé (và bố mẹ) biết đâu là đường đi tới tấm bằng.
+ */
+export const FIRST_WORDS_UNITS: FirstWordsUnit[] = [...CORE_UNITS, ...EXTRA_UNITS];
+
+/** Chỉ chặng chính — nguồn tính mốc tốt nghiệp. */
+export const CORE_FIRST_WORDS_UNITS: FirstWordsUnit[] = CORE_UNITS;
+
 /** Tổng số từ toàn cấp — dùng cho thẻ giới thiệu ở trang lộ trình. */
 export const TOTAL_FIRST_WORDS = FIRST_WORDS_UNITS.reduce((n, u) => n + u.words.length, 0);
+
+/** Số từ của riêng chặng chính — mẫu số của mốc tốt nghiệp. */
+export const CORE_FIRST_WORDS_COUNT = CORE_UNITS.reduce((n, u) => n + u.words.length, 0);
 
 export function getFirstWordsUnit(id: string): FirstWordsUnit | undefined {
   return FIRST_WORDS_UNITS.find((u) => u.id === id);

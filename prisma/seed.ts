@@ -34,16 +34,18 @@ import { GOOGLE_LOGIN_ENABLED } from "@/lib/auth-flags";
 // Nội dung bài học tách theo cấp — mỗi file một cấp để soạn độc lập.
 // Xem hợp đồng ở prisma/content/types.ts.
 import type { ChapterSeed as ContentChapter, LessonSeed as ContentLesson } from "./content/types";
-import { CHAPTERS as PRE_STARTERS_CHAPTERS } from "./content/pre-starters";
-import { CHAPTERS as STARTERS_CHAPTERS } from "./content/starters";
-import { CHAPTERS as MOVERS_CHAPTERS } from "./content/movers";
-import { CHAPTERS as FLYERS_CHAPTERS } from "./content/flyers";
-import { CHAPTERS as KET_CHAPTERS } from "./content/ket";
-import { CHAPTERS as PET_CHAPTERS } from "./content/pet";
+// Danh sách bài của cả 6 cấp — gốc + phần bổ sung, đã nối sẵn. Dùng CHUNG với
+// `npm run content:check` nên thứ tự bài lúc kiểm và lúc seed luôn trùng nhau.
+import { CHAPTERS_BY_LEVEL } from "./content/all";
+// Kho từ vựng & ngữ pháp độc lập (khu "Luyện kỹ năng") — mỗi cấp một file.
+import { VOCAB_UNITS } from "./content/vocab";
+import { GRAMMAR_UNITS } from "./content/grammar";
+// Đề thi thử — mỗi cấp một file, xem hợp đồng ở content/exams/types.ts.
+import { EXAMS } from "./content/exams";
 // Ngữ pháp của bài lộ trình — tách riêng khỏi `LessonSeed` để soạn độc lập,
 // khớp với bài theo THỨ TỰ (xem prisma/content/grammar/types.ts).
 import { grammarForLesson } from "./content/grammar/roadmap";
-import { roadmapGrammarContent } from "./content/grammar/types";
+import { lessonContent, roadmapGrammarContent } from "./content/grammar/types";
 
 const prisma = new PrismaClient();
 
@@ -182,267 +184,8 @@ const COURSES: CourseSeed[] = [
   },
 ];
 
-// ───────────────────────────── Từ vựng ─────────────────────────────
-
-interface WordSeed {
-  word: string;
-  ipa: string;
-  meaning: string;
-  emoji: string;
-  partOfSpeech: string;
-  examples: Array<{ sentence: string; meaning: string }>;
-}
-
-interface VocabUnitSeed {
-  slug: string;
-  title: string;
-  theme: string;
-  level: EnglishLevel;
-  lessonTitle: string;
-  words: WordSeed[];
-}
-
-const w = (
-  word: string,
-  ipa: string,
-  meaning: string,
-  emoji: string,
-  sentence: string,
-  sentenceVi: string,
-  partOfSpeech = "danh từ",
-): WordSeed => ({
-  word,
-  ipa,
-  meaning,
-  // Emoji là hình minh hoạ DUY NHẤT cho tới khi có kho ảnh thật — bé chưa đọc
-  // được chữ nên thiếu nó là bé không đoán được nghĩa.
-  emoji,
-  partOfSpeech,
-  examples: [{ sentence, meaning: sentenceVi }],
-});
-
-const VOCAB_UNITS: VocabUnitSeed[] = [
-  {
-    slug: "animals",
-    title: "Animals",
-    theme: "Con vật",
-    level: "PRE_STARTERS",
-    lessonTitle: "Con vật quanh bé",
-    words: [
-      w("cat", "/kæt/", "con mèo", "🐱", "The cat is sleeping.", "Con mèo đang ngủ."),
-      w("dog", "/dɒɡ/", "con chó", "🐶", "My dog is friendly.", "Chó của tớ rất thân thiện."),
-      w("bird", "/bɜːrd/", "con chim", "🐦", "A bird can fly.", "Chim biết bay."),
-      w("fish", "/fɪʃ/", "con cá", "🐟", "The fish swims in the water.", "Con cá bơi trong nước."),
-      w("rabbit", "/ˈræbɪt/", "con thỏ", "🐰", "The rabbit likes carrots.", "Con thỏ thích cà rốt."),
-      w("duck", "/dʌk/", "con vịt", "🦆", "The duck is in the pond.", "Con vịt ở dưới ao."),
-      w("cow", "/kaʊ/", "con bò", "🐄", "The cow eats grass.", "Con bò ăn cỏ."),
-      w("pig", "/pɪɡ/", "con lợn", "🐷", "The pig is pink.", "Con lợn màu hồng."),
-    ],
-  },
-  {
-    slug: "colours",
-    title: "Colours",
-    theme: "Màu sắc",
-    level: "PRE_STARTERS",
-    lessonTitle: "Bảy sắc cầu vồng",
-    words: [
-      w("red", "/red/", "màu đỏ", "🔴", "The apple is red.", "Quả táo màu đỏ.", "tính từ"),
-      w("blue", "/bluː/", "màu xanh dương", "🔵", "The sky is blue.", "Bầu trời màu xanh.", "tính từ"),
-      w("green", "/ɡriːn/", "màu xanh lá", "🟢", "The leaf is green.", "Chiếc lá màu xanh lá.", "tính từ"),
-      w("yellow", "/ˈjeləʊ/", "màu vàng", "🟡", "The sun is yellow.", "Mặt trời màu vàng.", "tính từ"),
-      w("pink", "/pɪŋk/", "màu hồng", "🌸", "I like pink flowers.", "Tớ thích hoa màu hồng.", "tính từ"),
-      w("black", "/blæk/", "màu đen", "⚫", "My shoes are black.", "Giày của tớ màu đen.", "tính từ"),
-      w("white", "/waɪt/", "màu trắng", "⚪", "The cloud is white.", "Đám mây màu trắng.", "tính từ"),
-      w("orange", "/ˈɒrɪndʒ/", "màu cam", "🟠", "I have an orange ball.", "Tớ có quả bóng màu cam.", "tính từ"),
-    ],
-  },
-  {
-    slug: "family",
-    title: "My Family",
-    theme: "Gia đình",
-    level: "PRE_STARTERS",
-    lessonTitle: "Người thân của bé",
-    words: [
-      w("mother", "/ˈmʌðər/", "mẹ", "👩", "This is my mother.", "Đây là mẹ của tớ."),
-      w("father", "/ˈfɑːðər/", "bố", "👨", "My father is tall.", "Bố tớ cao."),
-      w("sister", "/ˈsɪstər/", "chị / em gái", "👧", "I have one sister.", "Tớ có một chị gái."),
-      w("brother", "/ˈbrʌðər/", "anh / em trai", "👦", "My brother is six.", "Anh tớ sáu tuổi."),
-      w("baby", "/ˈbeɪbi/", "em bé", "👶", "The baby is sleeping.", "Em bé đang ngủ."),
-      w("grandma", "/ˈɡrænmɑː/", "bà", "👵", "My grandma makes cakes.", "Bà tớ làm bánh."),
-      w("grandpa", "/ˈɡrænpɑː/", "ông", "👴", "Grandpa reads a book.", "Ông đọc sách."),
-      w("family", "/ˈfæməli/", "gia đình", "👨‍👩‍👧", "I love my family.", "Tớ yêu gia đình tớ."),
-    ],
-  },
-  {
-    slug: "school",
-    title: "At School",
-    theme: "Trường học",
-    level: "STARTERS",
-    lessonTitle: "Đồ dùng học tập",
-    words: [
-      w("book", "/bʊk/", "quyển sách", "📕", "I read a book every day.", "Tớ đọc sách mỗi ngày."),
-      w("pen", "/pen/", "cái bút", "🖊️", "My pen is blue.", "Bút của tớ màu xanh."),
-      w("pencil", "/ˈpensl/", "bút chì", "✏️", "I draw with a pencil.", "Tớ vẽ bằng bút chì."),
-      w("bag", "/bæɡ/", "cái cặp", "🎒", "My bag is very heavy.", "Cặp của tớ rất nặng."),
-      w("desk", "/desk/", "cái bàn học", "🪑", "The desk is next to the window.", "Cái bàn ở cạnh cửa sổ."),
-      w("teacher", "/ˈtiːtʃər/", "giáo viên", "👩‍🏫", "Our teacher is very kind.", "Cô giáo của chúng tớ rất tốt bụng."),
-      w("friend", "/frend/", "bạn", "🧑‍🤝‍🧑", "Nam is my best friend.", "Nam là bạn thân của tớ."),
-      w("classroom", "/ˈklɑːsruːm/", "lớp học", "🏫", "Our classroom is big.", "Lớp học của chúng tớ rộng."),
-    ],
-  },
-  {
-    slug: "food",
-    title: "Food and Drink",
-    theme: "Đồ ăn & thức uống",
-    level: "STARTERS",
-    lessonTitle: "Bé thích ăn gì?",
-    words: [
-      w("apple", "/ˈæpl/", "quả táo", "🍎", "I eat an apple after lunch.", "Tớ ăn một quả táo sau bữa trưa."),
-      w("bread", "/bred/", "bánh mì", "🍞", "We have bread for breakfast.", "Chúng tớ ăn bánh mì vào bữa sáng."),
-      w("milk", "/mɪlk/", "sữa", "🥛", "I drink milk every morning.", "Tớ uống sữa mỗi sáng."),
-      w("rice", "/raɪs/", "cơm", "🍚", "My family eats rice for dinner.", "Gia đình tớ ăn cơm vào bữa tối."),
-      w("water", "/ˈwɔːtər/", "nước", "💧", "Please give me some water.", "Cho tớ xin chút nước."),
-      w("cake", "/keɪk/", "bánh ngọt", "🍰", "The cake is very sweet.", "Cái bánh rất ngọt."),
-      w("egg", "/eɡ/", "quả trứng", "🥚", "I like eggs for breakfast.", "Tớ thích ăn trứng vào bữa sáng."),
-      w("banana", "/bəˈnɑːnə/", "quả chuối", "🍌", "Monkeys love bananas.", "Khỉ rất thích chuối."),
-    ],
-  },
-  {
-    slug: "toys",
-    title: "My Toys",
-    theme: "Đồ chơi",
-    level: "STARTERS",
-    lessonTitle: "Hộp đồ chơi của bé",
-    words: [
-      w("ball", "/bɔːl/", "quả bóng", "⚽", "Let's play with the ball.", "Cùng chơi bóng nào."),
-      w("doll", "/dɒl/", "búp bê", "🪆", "My doll has long hair.", "Búp bê của tớ tóc dài."),
-      w("kite", "/kaɪt/", "cái diều", "🪁", "We fly a kite in the park.", "Chúng tớ thả diều ở công viên."),
-      w("robot", "/ˈrəʊbɒt/", "người máy", "🤖", "My robot can walk.", "Người máy của tớ biết đi."),
-      w("bike", "/baɪk/", "xe đạp", "🚲", "I ride my bike to school.", "Tớ đạp xe tới trường."),
-      w("car", "/kɑːr/", "ô tô", "🚗", "This toy car is very fast.", "Chiếc ô tô đồ chơi này rất nhanh."),
-      w("teddy", "/ˈtedi/", "gấu bông", "🧸", "I sleep with my teddy.", "Tớ ngủ cùng gấu bông."),
-      w("puzzle", "/ˈpʌzl/", "trò xếp hình", "🧩", "This puzzle is hard.", "Trò xếp hình này khó."),
-    ],
-  },
-];
-
-// ───────────────────────────── Ngữ pháp ─────────────────────────────
-
-interface GrammarSeed {
-  slug: string;
-  unitTitle: string;
-  theme: string;
-  level: EnglishLevel;
-  lessonTitle: string;
-  content: unknown;
-}
-
-const GRAMMAR_UNITS: GrammarSeed[] = [
-  {
-    slug: "to-be",
-    unitTitle: "Verb to be",
-    theme: "Động từ to be",
-    level: "PRE_STARTERS",
-    lessonTitle: "am · is · are",
-    content: {
-      version: 3,
-      sections: [
-        {
-          id: "tobe-1",
-          title: "Câu với động từ to be",
-          titleEn: "Verb to be (am / is / are)",
-          structure: "I + am · He/She/It + is · We/You/They + are",
-          breakdown: [
-            { part: "I", role: "Chủ ngữ", meaning: "Người hoặc vật được nói đến." },
-            { part: "am", role: "Động từ to be", meaning: "Nghĩa là “thì, là, ở”. “I” luôn đi với “am”." },
-            { part: "happy", role: "Tính từ", meaning: "Điều mình muốn nói về chủ ngữ." },
-          ],
-          explanation:
-            "Tiếng Việt nói “Tớ vui” là đủ. Tiếng Anh thì BẮT BUỘC phải có am/is/are ở giữa.\n- I → am\n- he, she, it → is\n- we, you, they → are",
-          usage: "Dùng khi giới thiệu bản thân, nói cảm xúc, nói tuổi, hoặc tả người và vật.",
-          mistakes: [
-            { wrong: "She happy.", right: "She is happy.", note: "Thiếu “is” — tiếng Việt không có từ này nên bé hay quên." },
-            { wrong: "I is six.", right: "I am six.", note: "“I” luôn đi với “am”." },
-            { wrong: "They is my friends.", right: "They are my friends.", note: "“They” số nhiều nên dùng “are”." },
-          ],
-          examples: [
-            { situation: "Khi giới thiệu bản thân", sentence: "I am Mai.", meaning: "Tớ là Mai." },
-            { situation: "Khi nói về bạn", sentence: "He is my friend.", meaning: "Bạn ấy là bạn của tớ." },
-            { situation: "Khi tả đồ vật", sentence: "The cats are small.", meaning: "Những con mèo thì nhỏ." },
-          ],
-          exercises: [
-            { type: "fill_blank", sentence: "I ___ seven years old.", blank: "am", options: ["am", "is", "are", "be"], hint: "Đi với “I”", explanation: "Chủ ngữ “I” luôn đi với “am”." },
-            { type: "fill_blank", sentence: "She ___ my sister.", blank: "is", options: ["is", "am", "are", "be"], explanation: "“She” là ngôi thứ ba số ít nên dùng “is”." },
-            { type: "sentence_order", words: ["is", "She", "happy"], answer: "She is happy", meaning: "Bạn ấy vui." },
-            { type: "sentence_order", words: ["am", "I", "a", "student"], answer: "I am a student", meaning: "Tớ là học sinh." },
-            { type: "translate", direction: "vi_to_en", prompt: "Tớ là học sinh.", answer: "I am a student", options: ["I am a student", "I is a student", "I are student", "I a student"] },
-            { type: "translate", direction: "en_to_vi", prompt: "He is my friend.", answer: "Bạn ấy là bạn của tớ.", options: ["Bạn ấy là bạn của tớ.", "Bạn ấy là anh của tớ.", "Bạn ấy vui.", "Tớ có một người bạn."] },
-          ],
-        },
-      ],
-      test: {
-        timeLimit: 180,
-        passThreshold: 60,
-        questions: [
-          { type: "fill_blank", sentence: "He ___ a teacher.", blank: "is", options: ["is", "am", "are", "be"] },
-          { type: "sentence_order", words: ["are", "We", "friends"], answer: "We are friends" },
-          { type: "translate", direction: "en_to_vi", prompt: "I am happy.", answer: "Tớ vui.", options: ["Tớ vui.", "Tớ buồn.", "Tớ mệt.", "Tớ đói."] },
-        ],
-      },
-    },
-  },
-  {
-    slug: "plural-s",
-    unitTitle: "Plural nouns",
-    theme: "Danh từ số nhiều",
-    level: "STARTERS",
-    lessonTitle: "Thêm -s khi có nhiều",
-    content: {
-      version: 3,
-      sections: [
-        {
-          id: "plural-1",
-          title: "Danh từ số nhiều thêm -s",
-          titleEn: "Plural nouns with -s",
-          structure: "one cat → two cats",
-          breakdown: [
-            { part: "two", role: "Số đếm", meaning: "Cho biết có nhiều hơn một." },
-            { part: "cat", role: "Danh từ", meaning: "Tên của con vật / đồ vật." },
-            { part: "-s", role: "Đuôi số nhiều", meaning: "Thêm vào cuối danh từ khi có từ 2 trở lên." },
-          ],
-          explanation:
-            "Tiếng Việt nói “hai con mèo” — chữ “mèo” không đổi. Tiếng Anh thì phải thêm -s vào cuối: two cats.\n- Hầu hết danh từ: thêm -s (dog → dogs)\n- Kết thúc bằng s, x, ch, sh: thêm -es (box → boxes)\n- Một số từ đặc biệt: man → men, child → children",
-          usage: "Dùng khi nói về từ hai đồ vật / con vật / người trở lên.",
-          mistakes: [
-            { wrong: "I have three cat.", right: "I have three cats.", note: "Thiếu -s. Đây là lỗi phổ biến NHẤT của trẻ Việt." },
-            { wrong: "two boxs", right: "two boxes", note: "Từ kết thúc bằng -x thì thêm -es." },
-            { wrong: "many childs", right: "many children", note: "“child” là từ đặc biệt, số nhiều là “children”." },
-          ],
-          examples: [
-            { situation: "Đếm đồ chơi", sentence: "I have five balls.", meaning: "Tớ có năm quả bóng." },
-            { situation: "Nói về bạn bè", sentence: "My friends are here.", meaning: "Các bạn của tớ ở đây." },
-            { situation: "Từ thêm -es", sentence: "There are two buses.", meaning: "Có hai chiếc xe buýt." },
-          ],
-          exercises: [
-            { type: "fill_blank", sentence: "I have two ___.", blank: "cats", options: ["cats", "cat", "cates", "catz"], explanation: "Có hai con nên phải thêm -s: cats." },
-            { type: "fill_blank", sentence: "There are three ___.", blank: "boxes", options: ["boxes", "boxs", "box", "boxies"], explanation: "Từ kết thúc bằng -x thì thêm -es." },
-            { type: "sentence_order", words: ["have", "I", "four", "books"], answer: "I have four books", meaning: "Tớ có bốn quyển sách." },
-            { type: "translate", direction: "vi_to_en", prompt: "Tớ có hai con chó.", answer: "I have two dogs", options: ["I have two dogs", "I have two dog", "I has two dogs", "I have two doges"] },
-            { type: "rhyme_match", pairs: [{ a: "cat", b: "hat" }, { a: "dog", b: "frog" }] },
-          ],
-        },
-      ],
-      test: {
-        timeLimit: 180,
-        passThreshold: 60,
-        questions: [
-          { type: "fill_blank", sentence: "She has six ___.", blank: "pens", options: ["pens", "pen", "penes", "penz"] },
-          { type: "sentence_order", words: ["are", "There", "two", "buses"], answer: "There are two buses" },
-        ],
-      },
-    },
-  },
-];
+// Từ vựng và ngữ pháp KHÔNG còn viết thẳng trong file này nữa — xem
+// `prisma/content/vocab/` và `prisma/content/grammar/`, mỗi cấp một file.
 
 // ───────────────────────────── Lộ trình ─────────────────────────────
 
@@ -695,28 +438,29 @@ async function seedVocab(): Promise<void> {
 }
 
 async function seedGrammar(): Promise<void> {
-  for (const [i, g] of GRAMMAR_UNITS.entries()) {
-    const unitId = `seed-grammar-unit-${g.slug}`;
-    const lessonId = `seed-grammar-lesson-${g.slug}`;
+  let lessons = 0;
+  for (const [i, u] of GRAMMAR_UNITS.entries()) {
+    const unitId = `seed-grammar-unit-${u.slug}`;
     await prisma.grammarUnit.upsert({
       where: { id: unitId },
-      update: { title: g.unitTitle, theme: g.theme, level: g.level, order: i },
-      create: { id: unitId, title: g.unitTitle, theme: g.theme, level: g.level, order: i, published: true },
+      update: { title: u.title, theme: u.theme, level: u.level, order: i },
+      create: { id: unitId, title: u.title, theme: u.theme, level: u.level, order: i, published: true },
     });
-    await prisma.grammarLesson.upsert({
-      where: { id: lessonId },
-      update: { title: g.lessonTitle, exercises: g.content as object, order: 0 },
-      create: {
-        id: lessonId,
-        unitId,
-        title: g.lessonTitle,
-        order: 0,
-        exercises: g.content as object,
-        published: true,
-      },
-    });
+    // Một unit có NHIỀU bài. Slug bài là duy nhất TOÀN CỤC (xem hợp đồng ở
+    // content/grammar/types.ts) nên id bài không kèm slug unit — trùng slug
+    // giữa hai unit sẽ khiến bài sau ghi đè bài trước, `content:check` bắt lỗi này.
+    for (const [li, l] of u.lessons.entries()) {
+      const lessonId = `seed-grammar-lesson-${l.slug}`;
+      const content = lessonContent(l) as object;
+      await prisma.grammarLesson.upsert({
+        where: { id: lessonId },
+        update: { title: l.title, exercises: content, order: li },
+        create: { id: lessonId, unitId, title: l.title, order: li, exercises: content, published: true },
+      });
+      lessons++;
+    }
   }
-  console.log(`[seed] ${GRAMMAR_UNITS.length} unit ngữ pháp.`);
+  console.log(`[seed] ${GRAMMAR_UNITS.length} unit ngữ pháp · ${lessons} bài.`);
 }
 
 /**
@@ -798,15 +542,9 @@ function sectionContent(
   }
 }
 
-/** Nội dung bài học của từng cấp — mỗi cấp một file trong prisma/content/. */
-const CONTENT_BY_LEVEL: Record<EnglishLevel, ContentChapter[]> = {
-  PRE_STARTERS: PRE_STARTERS_CHAPTERS,
-  STARTERS: STARTERS_CHAPTERS,
-  MOVERS: MOVERS_CHAPTERS,
-  FLYERS: FLYERS_CHAPTERS,
-  KET: KET_CHAPTERS,
-  PET: PET_CHAPTERS,
-};
+/** Nội dung bài học của từng cấp — gốc `prisma/content/<cấp>.ts` nối với phần
+ *  bổ sung `prisma/content/extra/<cấp>.ts` (xem prisma/content/all.ts). */
+const CONTENT_BY_LEVEL: Record<EnglishLevel, ContentChapter[]> = CHAPTERS_BY_LEVEL;
 
 /**
  * Chỉ giữ những cấp THỰC SỰ có bài. Cấp có file rỗng sẽ rơi xuống khung
@@ -1111,45 +849,93 @@ async function seedMaterials(): Promise<void> {
   console.log(`[seed] ${MATERIALS.length} tài liệu.`);
 }
 
+/**
+ * Đề thi thử — nội dung soạn ở `prisma/content/exams/<cấp>.ts`.
+ *
+ * Câu hỏi bị XOÁ RỒI GHI LẠI mỗi lần seed thay vì upsert từng câu: `Question`
+ * không có id tất định (id do Prisma sinh), nên upsert theo id là không làm
+ * được, mà giữ nguyên thì sửa nội dung sẽ đẻ ra câu trùng. Xoá theo `examPartId`
+ * chỉ đụng đúng câu của đề seed — bài làm của người học nằm ở bảng `Attempt`,
+ * không tham chiếu tới `Question.id` nên không mất gì.
+ */
 async function seedMockExam(courseIds: Map<EnglishLevel, string>): Promise<void> {
-  if (!courseIds.has("STARTERS")) return;
-  const examId = "seed-exam-starters-1";
-  await prisma.mockExam.upsert({
-    where: { id: examId },
-    update: { title: "Đề thi thử Starters — Đề 1", level: "STARTERS" },
-    create: {
-      id: examId,
-      title: "Đề thi thử Starters — Đề 1",
-      level: "STARTERS",
-      description:
-        "Đề mẫu theo format Cambridge YLE Starters: Listening · Reading & Writing · Speaking. Bản nháp — admin bổ sung câu hỏi và audio trước khi xuất bản.",
-      totalTime: 2400,
-      order: 0,
-      published: false,
-    },
-  });
+  let questionCount = 0;
 
-  const sections: Array<{ skill: Skill; title: string; instructions: string }> = [
-    { skill: Skill.LISTENING, title: "Listening", instructions: "Nghe và chọn đáp án đúng. Mỗi đoạn được nghe hai lần." },
-    { skill: Skill.READING, title: "Reading & Writing", instructions: "Đọc và trả lời câu hỏi. Viết câu trả lời ngắn." },
-    { skill: Skill.SPEAKING, title: "Speaking", instructions: "Nói chuyện với giám khảo. Trả lời câu hỏi về bản thân." },
-  ];
-  for (const [i, s] of sections.entries()) {
-    const sectionId = `${examId}-s${i}`;
-    await prisma.mockExamSection.upsert({
-      where: { id: sectionId },
-      update: { title: s.title, instructions: s.instructions, order: i },
-      create: { id: sectionId, examId, skill: s.skill, title: s.title, instructions: s.instructions, order: i },
+  for (const [i, e] of EXAMS.entries()) {
+    // Cấp chưa có khoá học thì bỏ qua — đề sẽ mồ côi trên trang thi thử.
+    if (!courseIds.has(e.level)) continue;
+
+    const examId = `seed-exam-${e.slug}`;
+    const examData = {
+      title: e.title,
+      level: e.level,
+      description: e.description,
+      totalTime: e.totalTime,
+      order: i,
+      published: true,
+    };
+    await prisma.mockExam.upsert({
+      where: { id: examId },
+      update: examData,
+      create: { id: examId, ...examData },
     });
-    // Mỗi phần có sẵn Part 1 để admin điền câu hỏi vào.
-    const partId = `${sectionId}-p0`;
-    await prisma.mockExamPart.upsert({
-      where: { id: partId },
-      update: { title: "Part 1", order: 0 },
-      create: { id: partId, sectionId, title: "Part 1", order: 0 },
-    });
+
+    for (const [si, s] of e.sections.entries()) {
+      const sectionId = `${examId}-s${si}`;
+      const sectionData = {
+        skill: s.skill as Skill,
+        title: s.title ?? "",
+        instructions: s.instructions ?? null,
+        order: si,
+      };
+      await prisma.mockExamSection.upsert({
+        where: { id: sectionId },
+        update: sectionData,
+        create: { id: sectionId, examId, ...sectionData },
+      });
+
+      for (const [pi, p] of s.parts.entries()) {
+        const partId = `${sectionId}-p${pi}`;
+        const partData = {
+          title: p.title ?? "",
+          instructions: p.instructions ?? null,
+          passage: p.passage ?? null,
+          // `audioUrl` để trống có chủ đích: phần nghe chạy được bằng giọng
+          // trình duyệt đọc `transcript`. Admin gắn MP3 sau bằng nút 🔊.
+          transcript: p.transcript ?? null,
+          writingPrompt: p.writingPrompt ?? null,
+          writingMinWords: p.writingMinWords ?? null,
+          order: pi,
+        };
+        await prisma.mockExamPart.upsert({
+          where: { id: partId },
+          update: partData,
+          create: { id: partId, sectionId, ...partData },
+        });
+
+        await prisma.question.deleteMany({ where: { examPartId: partId } });
+        const questions = authoringToRoadmapQuestions(p.questions ?? []);
+        for (const [qi, q] of questions.entries()) {
+          await prisma.question.create({
+            data: {
+              examPartId: partId,
+              order: qi,
+              type: q.type,
+              prompt: q.prompt,
+              promptTranslation: q.promptTranslation ?? null,
+              options: (q.options ?? null) as object | undefined,
+              correctAnswer: q.correctAnswer as object,
+              explanation: q.explanation ?? null,
+              supportingQuote: q.supportingQuote ?? null,
+              quoteTranslation: q.quoteTranslation ?? null,
+            },
+          });
+          questionCount++;
+        }
+      }
+    }
   }
-  console.log("[seed] 1 đề thi thử mẫu (bản nháp).");
+  console.log(`[seed] ${EXAMS.length} đề thi thử · ${questionCount} câu hỏi.`);
 }
 
 async function main(): Promise<void> {
