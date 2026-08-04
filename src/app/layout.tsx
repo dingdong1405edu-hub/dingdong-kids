@@ -66,6 +66,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Không có JS thì framer-motion không bao giờ chạy, mà HTML server trả
+            về đã mang sẵn `opacity:0` inline → trang chủ trắng trơn. Bật lại
+            hiển thị cho mọi khối <Reveal> trong đúng trường hợp đó. */}
+        <noscript>
+          <style>{`.reveal-root{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

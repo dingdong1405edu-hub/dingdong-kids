@@ -114,16 +114,45 @@ function teach(s: Sound, category: string): TeachCard {
   };
 }
 
-/** Thẻ nghe: đọc từ ví dụ, trẻ chọn chữ cái tạo ra âm đầu. */
-function listen(s: Sound, distractors: string[]): ListenCard {
+/**
+ * Thẻ nghe: đọc từ ví dụ, trẻ chọn chữ cái tạo ra âm đầu.
+ * `prompt` đổi được vì với cụm phụ âm CUỐI thì câu hỏi phải là "kết thúc bằng
+ * âm nào" — hỏi sai chỗ là bé nhìn nhầm đầu từ.
+ */
+function listen(
+  s: Sound,
+  distractors: string[],
+  prompt = "Nghe và chọn chữ tạo ra âm này",
+): ListenCard {
   return {
     kind: "listen",
-    prompt: "Nghe và chọn chữ tạo ra âm này",
+    prompt,
     word: s.word,
     meaning: s.meaning,
     emoji: s.emoji,
     answer: s.letter,
     options: [s.letter, ...distractors],
+  };
+}
+
+/**
+ * Biến thể của thẻ nghe: bé nghe CẢ TỪ rồi chọn đúng mặt chữ giữa mấy từ trông
+ * na ná nhau (cap ↔ cape, come ↔ some). Dùng cho Magic E và sight words — nơi
+ * cái phải phân biệt là toàn bộ từ chứ không phải một chữ cái rời.
+ */
+function listenWord(
+  w: PicWord,
+  others: string[],
+  prompt = "Nghe rồi chọn đúng mặt chữ",
+): ListenCard {
+  return {
+    kind: "listen",
+    prompt,
+    word: w.word,
+    meaning: w.meaning,
+    emoji: w.emoji,
+    answer: w.word,
+    options: [w.word, ...others],
   };
 }
 
@@ -148,6 +177,9 @@ function discrim(a: Sound, b: Sound, note: string): DiscriminateCard {
     note,
   };
 }
+
+/** Thẻ so sánh dựng thẳng từ một cặp tối thiểu đã soạn sẵn trong dữ liệu. */
+const pairCard = (p: MinimalPair): DiscriminateCard => discrim(p.a, p.b, p.note);
 
 /** Dựng các thẻ nối vần từ một bộ RHYME_SETS. */
 function rhymeCards(setIndex: number): RhymeCard[] {
@@ -174,11 +206,15 @@ const letterOf = (list: Sound[], l: string): Sound => {
   if (!s) throw new Error(`Không tìm thấy âm: ${l}`);
   return s;
 };
+/** Toàn bộ kho từ ghép vần được: CVC cơ bản + từ có cụm phụ âm + từ có nguyên âm R. */
+const BLENDABLE: CvcWord[] = [...CVC_WORDS, ...BLEND_WORDS, ...FINAL_BLEND_WORDS, ...R_WORDS];
 const cvc = (w: string): CvcWord => {
-  const c = CVC_WORDS.find((x) => x.word === w);
-  if (!c) throw new Error(`Không tìm thấy từ CVC: ${w}`);
+  const c = BLENDABLE.find((x) => x.word === w);
+  if (!c) throw new Error(`Không tìm thấy từ ghép vần: ${w}`);
   return c;
 };
+/** Tra một sight word theo mặt chữ — gõ sai là hỏng ngay lúc build. */
+const sight = (w: string): Sound => letterOf(SIGHT_WORDS, w);
 
 // ── Danh sách bài học ────────────────────────────────────────────────────────
 
@@ -307,6 +343,109 @@ export const PHONICS_LESSONS: PhonicsLesson[] = [
     kind: "review",
     emoji: "🎵",
     cards: [...rhymeCards(0), ...rhymeCards(1), ...rhymeCards(2), ...rhymeCards(4)],
+  },
+  {
+    id: "phonics-initial-blends",
+    title: "Cụm phụ âm đầu · bl cl st tr",
+    subtitle: "Hai phụ âm dính liền — tuyệt đối không chèn “ơ” vào giữa",
+    kind: "blending",
+    emoji: "🤝",
+    cards: [
+      ...INITIAL_BLENDS.map((s) => teach(s, "Cụm phụ âm đầu")),
+      listen(letterOf(INITIAL_BLENDS, "bl"), ["br", "cl"], "Nghe từ — từ này BẮT ĐẦU bằng cụm nào?"),
+      listen(letterOf(INITIAL_BLENDS, "tr"), ["dr", "st"], "Nghe từ — từ này BẮT ĐẦU bằng cụm nào?"),
+      listen(letterOf(INITIAL_BLENDS, "sp"), ["st", "sk"], "Nghe từ — từ này BẮT ĐẦU bằng cụm nào?"),
+      discrim(
+        letterOf(INITIAL_BLENDS, "bl"),
+        letterOf(INITIAL_BLENDS, "br"),
+        "/l/ thì đầu lưỡi CHẠM lợi trên; /r/ thì cong lưỡi lên mà KHÔNG chạm vào đâu cả.",
+      ),
+      discrim(
+        letterOf(INITIAL_BLENDS, "tr"),
+        letterOf(DIGRAPHS, "ch"),
+        "“tr” tiếng Anh là HAI âm /t/ + /r/ dính nhau, không phải “tr” tiếng Việt (nghe gần như “ch”).",
+      ),
+      blend(cvc("flag"), ["flat", "frog"]),
+      blend(cvc("stop"), ["step", "shop"]),
+      blend(cvc("crab"), ["cab", "grab"]),
+      blend(cvc("clock"), ["block", "clap"]),
+      ...rhymeCards(5),
+    ],
+  },
+  {
+    id: "phonics-final-blends",
+    title: "Cụm phụ âm cuối · -nd -nt -mp -nk",
+    subtitle: "Đuôi từ có HAI phụ âm — nuốt mất một cái là sai nghĩa luôn",
+    kind: "blending",
+    emoji: "🔚",
+    cards: [
+      ...FINAL_BLENDS.map((s) => teach(s, "Cụm phụ âm cuối")),
+      listen(letterOf(FINAL_BLENDS, "-nd"), ["-nt", "-mp"], "Nghe từ — từ này KẾT THÚC bằng cụm nào?"),
+      listen(letterOf(FINAL_BLENDS, "-mp"), ["-nk", "-st"], "Nghe từ — từ này KẾT THÚC bằng cụm nào?"),
+      listen(letterOf(FINAL_BLENDS, "-ft"), ["-lt", "-sk"], "Nghe từ — từ này KẾT THÚC bằng cụm nào?"),
+      discrim(
+        letterOf(FINAL_BLENDS, "-nd"),
+        letterOf(FINAL_BLENDS, "-nt"),
+        "Cùng bắt đầu bằng /n/, khác ở âm chốt: /d/ CÓ rung, /t/ thì bật hơi không rung.",
+      ),
+      discrim(
+        letterOf(FINAL_BLENDS, "-nk"),
+        letterOf(FINAL_BLENDS, "-nt"),
+        "/ŋk/ đóng ở cuống họng (như “ưng”), /nt/ đóng ở đầu lưỡi trên lợi. Sờ tay lên cằm sẽ thấy khác.",
+      ),
+      blend(cvc("hand"), ["sand", "hat"]),
+      blend(cvc("tent"), ["ten", "test"]),
+      blend(cvc("jump"), ["just", "jug"]),
+      blend(cvc("mask"), ["mat", "map"]),
+      ...rhymeCards(6),
+    ],
+  },
+  {
+    id: "phonics-magic-e",
+    title: "Magic E · a_e i_e o_e u_e",
+    subtitle: "Chữ “e” cuối câm nhưng có phép: cap → cape, kit → kite",
+    kind: "vowels",
+    emoji: "🪄",
+    cards: [
+      ...MAGIC_E.map((s) => teach(s, "Magic E")),
+      ...MAGIC_E_PAIRS.map(pairCard),
+      ...MAGIC_E_SPELLING.map((c) => listenWord(c.heard, c.others)),
+      ...rhymeCards(7),
+    ],
+  },
+  {
+    id: "phonics-r-controlled",
+    title: "Nguyên âm có R · ar or er ir ur",
+    subtitle: "Cong lưỡi tới hết từ — bỏ mất /r/ là “car” thành “ca”",
+    kind: "vowels",
+    emoji: "🚗",
+    cards: [
+      ...R_CONTROLLED.map((s) => teach(s, "Nguyên âm có R")),
+      listen(letterOf(R_CONTROLLED, "ar"), ["or", "ir"], "Nghe từ — nguyên âm trong từ này viết thế nào?"),
+      listen(letterOf(R_CONTROLLED, "or"), ["ar", "ur"], "Nghe từ — nguyên âm trong từ này viết thế nào?"),
+      ...R_PAIRS.map(pairCard),
+      blend(cvc("car"), ["cat", "cap"]),
+      blend(cvc("corn"), ["cone", "coin"]),
+      blend(cvc("bird"), ["bed", "bad"]),
+      ...rhymeCards(3),
+      ...rhymeCards(8),
+    ],
+  },
+  {
+    id: "phonics-sight-words",
+    title: "Từ nhìn là đọc",
+    subtitle: "the · said · was · one · two — ghép vần ra sai, phải nhớ mặt chữ",
+    kind: "review",
+    emoji: "👀",
+    cards: [
+      // Chỉ dạy những từ PHÁ LUẬT nặng nhất; cả danh sách 30 từ vẫn tra được ở
+      // bảng tra âm, nhưng nhồi hết vào một bài thì bé ngồi xem 30 thẻ liền.
+      ...["the", "said", "was", "are", "have", "come", "one", "two", "some", "what", "who", "of"].map((w) =>
+        teach(sight(w), "Từ nhìn là đọc"),
+      ),
+      ...SIGHT_WORD_PAIRS.map(pairCard),
+      ...SIGHT_WORD_SPELLING.map((q) => listenWord(sight(q.word), q.others)),
+    ],
   },
 ];
 

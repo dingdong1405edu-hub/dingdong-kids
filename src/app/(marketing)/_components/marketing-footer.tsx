@@ -19,18 +19,21 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   youtube: <Youtube className="h-[19px] w-[19px]" aria-hidden="true" />,
 };
 
+// Mỗi nhãn phải trỏ tới MỘT đích riêng. Bản trước có 4 nhãn khác nhau cùng
+// dẫn về /#features — người đọc bấm ba lần vẫn thấy đúng một chỗ.
 const learnLinks = [
-  { label: "Từ vựng & ngữ pháp", href: "/#features" },
-  { label: "Ghép vần & phát âm", href: "/#features" },
-  { label: "Đọc & nghe hiểu", href: "/#features" },
-  { label: "Tập viết & luyện nói", href: "/#features" },
+  { label: "Bé học những gì", href: "/#features" },
+  { label: "Chặng Bé Tập Nói", href: "/#tap-noi" },
+  { label: "AI chấm bài", href: "/#ai" },
+  { label: "Lộ trình Cambridge", href: "/#levels" },
 ];
 
 const exploreLinks = [
-  { label: "Tính năng", href: "/#features" },
-  { label: "Cách học", href: "/#how" },
-  { label: "Lộ trình Cambridge", href: "/#levels" },
-  { label: "Bảng giá", href: "/payment" },
+  { label: "Cách bắt đầu", href: "/#how" },
+  { label: "Cam kết với bố mẹ", href: "/#cam-ket" },
+  { label: "Bảng giá", href: "/#pricing" },
+  { label: "Bảng giá chi tiết từng cấp", href: "/payment" },
+  { label: "Câu hỏi thường gặp", href: "/#faq" },
   { label: "Giới thiệu", href: "/gioi-thieu" },
 ];
 
@@ -62,6 +65,9 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
     { title: "Tài khoản", links: accountLinks },
   ];
 
+  // Năm bản quyền tính lúc render — hardcode "2026" sẽ cũ đi vào ngày 1/1 năm sau.
+  const year = new Date().getFullYear();
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -72,8 +78,8 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
               DingDong Kids
             </Link>
             <p>
-              Nền tảng học tiếng Anh cho trẻ em Việt: lộ trình Cambridge Young Learners, AI chấm
-              bài viết và luyện nói.
+              Nền tảng học tiếng Anh cho trẻ em Việt 3–15 tuổi: lộ trình Cambridge Young Learners,
+              ghép vần, và AI chấm bài viết cùng luyện nói. Chặng đầu miễn phí 100%.
             </p>
             <div className={styles.footerSocial}>
               {SOCIAL_LINKS.map((s) => (
@@ -111,7 +117,7 @@ export function MarketingFooter({ isAuthed = false }: { isAuthed?: boolean }) {
             <span aria-hidden>·</span>
             <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
           </div>
-          © 2026 DingDong Kids · Thanh toán an toàn qua PayOS
+          © {year} DingDong Kids · Thanh toán an toàn qua PayOS
         </div>
       </div>
     </footer>

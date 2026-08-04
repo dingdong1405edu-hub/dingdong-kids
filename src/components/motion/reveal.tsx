@@ -19,7 +19,10 @@ export function Reveal({ children, className, delay = 0, y = 22 }: RevealProps) 
   const reduced = useReducedMotion();
   return (
     <motion.div
-      className={className}
+      // `reveal-root` là móc cho quy tắc <noscript> trong app/layout.tsx: HTML
+      // do server trả về có sẵn `opacity:0` inline, nên nếu JS không chạy được
+      // thì phần lớn trang chủ sẽ trắng trơn. Quy tắc đó bật lại opacity.
+      className={className ? `reveal-root ${className}` : "reveal-root"}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-70px" }}

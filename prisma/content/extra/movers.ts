@@ -442,7 +442,7 @@ export const CHAPTERS: ChapterSeed[] = [
           word("boil", "/bɔɪl/", "đun sôi", "♨️"),
           word("taste", "/teɪst/", "nếm thử", "👅"),
           word("delicious", "/dɪˈlɪʃəs/", "ngon tuyệt", "😍"),
-          word("careful", "/ˈkeəfl/", "cẩn thận", "⚠️"),
+          word("careful", "/ˈkeəfəl/", "cẩn thận", "⚠️"),
           word("enjoy", "/ɪnˈdʒɔɪ/", "thích, tận hưởng", "😋"),
         ],
         sound: {

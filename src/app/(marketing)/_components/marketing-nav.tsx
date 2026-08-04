@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { GraduationCap, LogOut, Menu, X } from "lucide-react";
@@ -8,13 +8,22 @@ import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import styles from "../landing.module.css";
 
+// Giữ ĐÚNG 5 mục: rộng hơn nữa thì ở khoảng 980–1100px thanh nav tràn ra ngoài
+// (logo + 5 mục + 2 nút hành động đã chiếm gần hết bề ngang). Mục "Hỏi đáp" và
+// "Cách học" nằm ở footer.
 const LINKS = [
-  { href: "/#features", label: "Tính năng" },
-  { href: "/#how", label: "Cách học" },
-  { href: "/#levels", label: "Lộ trình Cambridge" },
+  { href: "/#features", label: "Bé học gì" },
+  { href: "/#tap-noi", label: "Bé Tập Nói" },
+  { href: "/#levels", label: "Lộ trình" },
   { href: "/#pricing", label: "Bảng giá" },
   { href: "/gioi-thieu", label: "Giới thiệu" },
 ];
+
+/** Menu mobile không bị giới hạn bề ngang nên liệt kê được đầy đủ hơn. */
+const MOBILE_LINKS = [...LINKS, { href: "/#faq", label: "Hỏi đáp" }];
+
+/** Ngưỡng đổi sang menu hamburger — PHẢI khớp @media trong landing.module.css. */
+const MOBILE_BREAKPOINT = 980;
 
 /** Anchor hash (#...) → thẻ <a>; route thuần (/gioi-thieu) → <Link> của Next. */
 const isRoute = (href: string) => href.startsWith("/") && !href.includes("#");
@@ -27,6 +36,7 @@ const isRoute = (href: string) => href.startsWith("/") && !href.includes("#");
 export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -41,8 +51,12 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    const onResize = () => window.innerWidth > 768 && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      toggleRef.current?.focus();
+    };
+    const onResize = () => window.innerWidth > MOBILE_BREAKPOINT && setOpen(false);
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", onResize);
     return () => {
@@ -53,7 +67,17 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
   }, [open]);
 
   const logout = () => signOut({ callbackUrl: "/" });
-  const close = () => setOpen(false);
+
+  /**
+   * Đóng menu. `returnFocus` dùng khi menu đóng bằng Esc / chạm nền: tiêu điểm
+   * bàn phím phải quay về nút hamburger, nếu không người dùng bàn phím bị "rơi"
+   * về đầu trang. KHÔNG trả tiêu điểm khi đóng do bấm vào một liên kết — lúc đó
+   * trình duyệt cần giữ tiêu điểm để nhảy tới đúng vùng nội dung.
+   */
+  const close = (returnFocus = false) => {
+    setOpen(false);
+    if (returnFocus) toggleRef.current?.focus();
+  };
 
   return (
     <>
@@ -62,7 +86,12 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
       aria-label="Điều hướng chính"
     >
       <div className={styles.navContainer}>
-        <Link href="/" className={styles.navLogo} aria-label="DingDong Kids — về trang chủ" onClick={close}>
+        <Link
+          href="/"
+          className={styles.navLogo}
+          aria-label="DingDong Kids — về trang chủ"
+          onClick={() => close()}
+        >
           <Logo className={styles.navLogoIcon} />
           <span>
             DingDong <b>Kids</b>
@@ -103,6 +132,7 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
             </>
           )}
           <button
+            ref={toggleRef}
             type="button"
             className={styles.mobileBtn}
             aria-label={open ? "Đóng menu" : "Mở menu"}
@@ -119,13 +149,13 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
         id="mobile-menu"
         className={`${styles.mobileMenu}${open ? ` ${styles.mobileMenuOpen}` : ""}`}
       >
-        {LINKS.map((l) =>
+        {MOBILE_LINKS.map((l) =>
           isRoute(l.href) ? (
-            <Link key={l.href} href={l.href} onClick={close}>
+            <Link key={l.href} href={l.href} onClick={() => close()}>
               {l.label}
             </Link>
           ) : (
-            <a key={l.href} href={l.href} onClick={close}>
+            <a key={l.href} href={l.href} onClick={() => close()}>
               {l.label}
             </a>
           ),
@@ -141,16 +171,16 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
             >
               <LogOut className="h-[18px] w-[18px]" aria-hidden="true" /> Đăng xuất
             </button>
-            <Link href="/dashboard" className={styles.mobileCta} onClick={close}>
+            <Link href="/dashboard" className={styles.mobileCta} onClick={() => close()}>
               <GraduationCap className="h-[18px] w-[18px]" aria-hidden="true" /> Vào học →
             </Link>
           </>
         ) : (
           <>
-            <Link href="/login" onClick={close}>
+            <Link href="/login" onClick={() => close()}>
               Đăng nhập
             </Link>
-            <Link href="/register" className={styles.mobileCta} onClick={close}>
+            <Link href="/register" className={styles.mobileCta} onClick={() => close()}>
               Học miễn phí →
             </Link>
           </>
@@ -166,7 +196,7 @@ export function MarketingNav({ isAuthed = false }: { isAuthed?: boolean }) {
       aria-hidden="true"
       tabIndex={-1}
       className={`${styles.mobileBackdrop}${open ? ` ${styles.mobileBackdropOpen}` : ""}`}
-      onClick={close}
+      onClick={() => close(true)}
     />
     </>
   );

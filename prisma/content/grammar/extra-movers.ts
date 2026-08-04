@@ -153,7 +153,7 @@ export const LESSON_GRAMMAR: LessonGrammarSeed[] = [
         mistakes: [
           mis("You stir the rice slowly.", "Stir the rice slowly.", "Câu sai bảo thì bỏ chủ ngữ “you”."),
           mis("Don’t touching the hot pan.", "Don’t touch the hot pan.", "Sau “Don’t” là động từ trần."),
-          mis("Finally taste it first.", "First, taste it. / Finally, taste it.", "“First” và “Finally” là hai bước khác nhau, đừng dùng lẫn trong một câu."),
+          mis("Wash please your hands.", "Wash your hands, please.", "“please” đứng CUỐI câu, không chen vào giữa."),
         ],
         examples: [
           ex("Khi mẹ dặn bước đầu tiên", "First, wash your hands, please.", "Đầu tiên, con rửa tay đi nhé."),

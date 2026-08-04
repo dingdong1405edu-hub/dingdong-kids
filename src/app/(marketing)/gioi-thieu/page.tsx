@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, GraduationCap, Rocket, Sparkles } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/site";
+import { CORE_FIRST_WORDS_COUNT } from "@/lib/first-words";
 import { DingMascot } from "@/components/marketing/ding-mascot";
 import { Reveal } from "@/components/motion/reveal";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -24,17 +25,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "vi_VN",
     siteName: SITE_NAME,
-    images: [{ url: "/ding-cover.png", width: 1376, height: 768, alt: "DingDong Kids — Tiếng Anh vui cho bé" }],
+    images: [
+      { url: "/og-cover.png", width: 1200, height: 630, alt: "DingDong Kids — Tiếng Anh vui cho bé" },
+    ],
   },
 };
 
-// Đối tượng người học
+// Đối tượng người học.
+// (Bản trước còn nguyên nhóm người lớn của DingDong HSK — "Sinh viên", "Người
+//  đi làm", "Du học sinh" — kèm emoji 🀄 quân mạt chược. Sản phẩm này dạy trẻ
+//  em tiếng Anh, không nhóm nào trong số đó đúng.)
 const audiences = [
-  { icon: "🎓", label: "Sinh viên" },
-  { icon: "💼", label: "Người đi làm" },
-  { icon: "✈️", label: "Du học sinh" },
-  { icon: "🀄", label: "Người mất gốc" },
+  { icon: "🧸", label: "Bé chưa biết chữ" },
+  { icon: "🌱", label: "Bé mẫu giáo" },
+  { icon: "🎒", label: "Bé tiểu học" },
   { icon: "🏆", label: "Luyện thi Cambridge" },
+  { icon: "👨‍👩‍👧", label: "Bố mẹ đồng hành" },
 ];
 
 // Nỗi đau người học (cột trái)
@@ -47,10 +53,10 @@ const painPoints = [
 
 // Giải pháp (cột phải)
 const solutions = [
-  "Lộ trình Pre-Starters → B1 bằng tiếng Việt, chia nhỏ từng bài, học như chơi.",
+  "Lộ trình Bé Tập Nói → B1 bằng tiếng Việt, chia nhỏ từng bài, học như chơi.",
   "AI chấm bài viết và bài nói, chỉ rõ lỗi ngữ pháp, từ vựng, trọng âm kèm bản sửa.",
   "Ghép vần từ âm sang từ: nghe âm, chọn chữ, đọc trơn — nền tảng để bé tự đọc.",
-  "XP, chuỗi ngày học, tim và chú gấu Ding giữ lửa cho bạn mỗi ngày.",
+  "XP, chuỗi ngày học, tim và chú gấu Ding giữ lửa cho bé mỗi ngày.",
 ];
 
 // 4 giá trị cốt lõi — tái dùng featureCard + tint có sẵn
@@ -59,33 +65,36 @@ const values = [
     icon: "🤖",
     cls: styles.iconAi,
     title: "Học cùng AI thật sự",
-    desc: "AI của DingDong không chỉ báo đúng hay sai: nó giải thích vì sao bạn sai và đưa bản sửa, như một gia sư kiên nhẫn luôn ở bên.",
+    desc: "AI của DingDong không chỉ báo đúng hay sai: nó chỉ rõ bé sai ở đâu, đưa bản sửa và giải thích bằng tiếng Việt — như một cô giáo kiên nhẫn luôn ở bên.",
   },
   {
     icon: "🇻🇳",
     cls: styles.iconExam,
-    title: "100% tiếng Việt, vì người Việt",
-    desc: "Mọi giải thích, mọi mẹo học đều bằng tiếng Việt tự nhiên, lưu ý đúng những lỗi người Việt hay mắc, như nhầm trọng âm từ với thanh 4.",
+    title: "100% tiếng Việt, vì trẻ em Việt",
+    desc: "Mọi giải thích đều bằng tiếng Việt dễ hiểu, và nhắm đúng lỗi trẻ Việt hay mắc: nuốt phụ âm cuối, quên -s số nhiều, thiếu mạo từ, đọc đều mọi âm tiết.",
   },
   {
     icon: "🐻",
     cls: styles.iconCommunity,
     title: "Nhẹ nhàng và vui mỗi ngày",
-    desc: "Giao diện ấm áp như tiệm gấu Ding, linh vật dễ thương, XP và chuỗi ngày học biến việc học thành thói quen chứ không phải áp lực.",
+    desc: "Chú gấu Ding, XP và chuỗi ngày học biến việc học thành thói quen vui chứ không phải áp lực. Chấm bài luôn khen trước khi sửa.",
   },
   {
     icon: "🎯",
     cls: styles.iconWriting,
     title: "Bám sát đề thi thật",
-    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format Pre-Starters đến B1 Preliminary. Bạn luyện đúng thứ sẽ gặp trong phòng thi.",
+    desc: "Từ vựng, đọc, nghe, viết, nói đều theo đúng format Cambridge từ Pre-Starters đến B1 Preliminary. Bé luyện đúng thứ sẽ gặp trong phòng thi.",
   },
 ];
 
-// SỐ LIỆU THẬT của nền tảng — đã đối chiếu với dữ liệu bài học, đừng phóng đại.
+// SỐ LIỆU THẬT của nền tảng — đếm từ chính nguồn dữ liệu, đừng gõ tay và đừng
+// phóng đại. (Bản trước có mục "15 · Tuổi phù hợp (từ 4)": một con số đếm lên
+// tới 15 mang nhãn "tuổi phù hợp" vừa khó hiểu vừa đã sai kể từ khi có chặng
+// Bé Tập Nói cho bé 3 tuổi.)
 const stats = [
-  { to: 6, suffix: "", label: "Cấp độ Pre-Starters → B1" },
-  { to: 15, suffix: "", label: "Tuổi phù hợp (từ 4)" },
+  { to: 7, suffix: "", label: "Chặng học, từ 3 đến 15 tuổi" },
   { to: 7, suffix: "", label: "Module kỹ năng" },
+  { to: CORE_FIRST_WORDS_COUNT, suffix: "", label: "Từ đầu đời học miễn phí" },
   { to: 2, suffix: "", label: "Kỹ năng AI chấm chi tiết" },
 ];
 
@@ -112,8 +121,8 @@ const milestones = [
   {
     year: "Mục tiêu",
     tag: "Lớn lên",
-    title: "Đồng hành cùng 10.000+ người học",
-    desc: "Chặng tiếp theo của DingDong: giúp hơn mười nghìn người Việt học tiếng Anh đến nơi đến chốn.",
+    title: "Đồng hành cùng 10.000 bạn nhỏ",
+    desc: "Chặng tiếp theo của DingDong: giúp hơn mười nghìn bạn nhỏ Việt Nam nói được tiếng Anh một cách tự nhiên.",
     target: true,
   },
 ];
@@ -125,10 +134,10 @@ const team = {
   role: "Những người Việt từng tự học tiếng Anh",
   tags: ["🎯 Bám sát chuẩn Cambridge YLE", "🇻🇳 Nội dung 100% tiếng Việt", "🤖 Ứng dụng AI vào việc học"],
   quote:
-    "“Chúng mình từng học tiếng Anh trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong là thứ chúng mình ước gì đã có ngày ấy: một lộ trình tử tế và một người đồng hành kiên nhẫn.”",
+    "“Chúng mình từng học tiếng Anh trong cô đơn và bỏ cuộc không biết bao nhiêu lần. DingDong Kids là thứ chúng mình ước gì đã có ngày bé: một lộ trình tử tế và một người đồng hành kiên nhẫn.”",
   paras: [
-    "DingDong Kids bắt đầu từ trải nghiệm rất thật: đứng trước hàng nghìn từ mới và cách phát âm lạ tai, học chữ rồi quên, nói thì sợ sai, luyện thi Cambridge mà chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng người học cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải.",
-    "Vì thế chúng mình gói tất cả vào DingDong Kids: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình, cùng một chú gấu Ding dễ thương để bạn mỉm cười mỗi khi mở app. Cảm ơn bạn đã ghé thăm. Hẹn gặp bạn ở bài học đầu tiên nhé!",
+    "DingDong Kids bắt đầu từ một trải nghiệm rất thật: đứng trước hàng nghìn từ mới và cách phát âm lạ tai, học chữ rồi quên, nói thì sợ sai, chẳng biết mình yếu ở đâu. Những năm tự học ấy dạy chúng mình rằng một đứa trẻ đang học tiếng Anh cần hai thứ: một lộ trình rõ ràng và ai đó chỉ ra lỗi sai ngay khi mắc phải — bằng giọng tử tế.",
+    "Vì thế chúng mình gói tất cả vào DingDong Kids: nội dung tiếng Việt gần gũi, AI chấm và sửa bài tận tình nhưng luôn khen trước khi sửa, cùng một chú gấu Ding dễ thương để bé mỉm cười mỗi lần mở bài học. Cảm ơn bố mẹ đã ghé thăm. Hẹn gặp bé ở bài học đầu tiên nhé!",
   ],
   sign: "— Đội ngũ DingDong Kids 🐻",
 };
@@ -141,8 +150,13 @@ export default async function AboutPage() {
 
   return (
     <div className={styles.page}>
+      <a href="#noi-dung" className={styles.skipLink}>
+        Bỏ qua điều hướng
+      </a>
+
       <MarketingNav isAuthed={isAuthed} />
 
+      <main id="noi-dung">
       {/* ============ HERO GIỚI THIỆU ============ */}
       <section
         className={`${styles.hero} ${styles.heroAbout}`}
@@ -209,8 +223,8 @@ export default async function AboutPage() {
                 Một nền tảng, trọn hành trình tiếng Anh
               </h2>
               <p className={styles.sectionSubtitle}>
-                Không còn cảnh nhảy giữa năm ứng dụng khác nhau. Tất cả những gì người Việt cần để
-                học tiếng Anh nghiêm túc, gói gọn trong một nơi ấm áp.
+                Không còn cảnh nhảy giữa năm ứng dụng khác nhau. Tất cả những gì bé cần để học
+                tiếng Anh nghiêm túc, gói gọn trong một nơi ấm áp.
               </p>
             </div>
           </Reveal>
@@ -218,8 +232,8 @@ export default async function AboutPage() {
           <Reveal>
             <p className={`${styles.aboutProse} ${styles.aboutProseLead}`}>
               Cái tên DingDong là tiếng chuông lảnh lót báo một điều vui sắp đến, còn chú gấu Ding
-              mũm mĩm là lời nhắc rằng học tiếng Anh có thể ấm áp và nhẹ nhàng như một trò chơi. DingDong
-              ra đời để bạn không phải học một mình nữa.
+              mũm mĩm là lời nhắc rằng học tiếng Anh có thể ấm áp và nhẹ nhàng như một trò chơi.
+              DingDong ra đời để bé không phải học một mình nữa.
             </p>
           </Reveal>
 
@@ -428,6 +442,7 @@ export default async function AboutPage() {
           </Reveal>
         </div>
       </section>
+      </main>
 
       <MarketingFooter isAuthed={isAuthed} />
 
