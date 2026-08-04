@@ -6,7 +6,7 @@ import type { TranscriptSegment } from "@/lib/transcript";
 
 const SPEAKER_STYLES: Record<string, string> = {
   A: "bg-primary/15 text-primary",
-  B: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
+  B: "bg-band-lav text-brand-grape",
 };
 
 function speakerStyle(speaker: string): string {
@@ -96,7 +96,7 @@ export function Tapescript({
                     {qs!.map((n) => (
                       <span
                         key={n}
-                        className="rounded-full bg-sunny/40 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-200"
+                        className="rounded-full bg-sunny/40 px-2 py-0.5 text-[11px] font-bold text-brand-gold"
                       >
                         Đáp án câu {n}
                       </span>

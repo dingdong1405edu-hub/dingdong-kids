@@ -186,7 +186,8 @@ export function FishingGame({ words, onDone }: VocabGameProps) {
               <span className="text-4xl" aria-hidden>
                 🪣
               </span>
-              <span className="font-display text-sm font-extrabold text-primary">
+              {/* Số cá là "phần thưởng đếm được" → huy hiệu vàng nắng. */}
+              <span className="rounded-full bg-band-sun px-3 py-0.5 font-display text-sm font-extrabold text-brand-gold">
                 {bucket} con
               </span>
             </div>
@@ -196,13 +197,14 @@ export function FishingGame({ words, onDone }: VocabGameProps) {
             type="button"
             onClick={replay}
             aria-label="Nghe lại từ"
-            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95"
           >
             <Volume2 className="h-9 w-9" />
           </button>
 
-          {/* Ao cá */}
-          <div className="relative w-full overflow-hidden rounded-3xl border-4 border-sky-300 bg-gradient-to-b from-sky-100 to-sky-300 p-3 dark:border-sky-500/40 dark:from-sky-900/40 dark:to-sky-800/40">
+          {/* Ao cá — `band-sky` + `brand-sky` tự thành mặt nước đêm ở chế độ tối,
+              nên bỏ hẳn cặp `dark:` viết tay trước đây. */}
+          <div className="relative w-full overflow-hidden rounded-3xl border-4 border-brand-sky/40 bg-gradient-to-b from-band-sky to-brand-sky/45 p-3">
             <div className="grid grid-cols-3 gap-2">
               <AnimatePresence>
                 {current.fishes.map((f, i) => {
@@ -236,7 +238,7 @@ export function FishingGame({ words, onDone }: VocabGameProps) {
                       }
                       className={cn(
                         "flex min-h-[6rem] w-full min-w-0 items-center justify-center rounded-2xl",
-                        "border-4 border-white/70 bg-white/80 shadow-md dark:bg-white/10",
+                        "border-4 border-card bg-card/90 shadow-soft",
                         wrongId === f.id && "animate-wrong",
                       )}
                     >
@@ -249,7 +251,7 @@ export function FishingGame({ words, onDone }: VocabGameProps) {
           </div>
 
           {caught && (
-            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

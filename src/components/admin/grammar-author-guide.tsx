@@ -24,10 +24,10 @@ function Field({ name, children }: { name: string; children: React.ReactNode }) 
 
 export function GrammarAuthorGuide() {
   return (
-    <Card className="border-violet-200 bg-violet-50/40 dark:border-violet-400/25 dark:bg-violet-500/10">
+    <Card className="border-brand-grape/40 bg-band-lav/40">
       <CardContent className="p-4">
         <details>
-          <summary className="cursor-pointer select-none text-sm font-bold text-violet-800 dark:text-violet-300">
+          <summary className="cursor-pointer select-none text-sm font-bold text-brand-grape">
             📘 Hướng dẫn thêm bài ngữ pháp (JSON) — bấm để mở
           </summary>
 
@@ -43,7 +43,7 @@ export function GrammarAuthorGuide() {
                 tra). Bài <b>test</b> được <b>tách riêng</b> (nút “Kiểm tra”); chấm xong sẽ hiện đáp
                 án và chỉ rõ câu sai, và chỉ khi đạt <b>≥ 80%</b> mới được điểm kinh nghiệm.
               </p>
-              <div className="rounded-lg border border-violet-300 bg-violet-100/60 p-3 text-[13px] text-violet-900 dark:border-violet-400/30 dark:bg-violet-500/15 dark:text-violet-200">
+              <div className="rounded-lg border border-brand-grape bg-band-lav/60 p-3 text-[13px] text-brand-grape">
                 <b>Bắt buộc về số lượng minigame:</b> mỗi điểm ngữ pháp (mỗi <b>section</b>) cần có
                 đủ <b>8 minigame</b> — 2× <b>chọn từ</b> (<code>fill_blank</code>), 2× <b>sắp xếp
                 câu</b> (<code>sentence_order</code>), 2× <b>dịch Việt→Trung</b> (
@@ -82,8 +82,8 @@ export function GrammarAuthorGuide() {
                   Với Pre-Starters/Starters thì thay bớt bằng picture_match / listen_pick.
                 </Field>
               </ul>
-              <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-400/25 dark:bg-violet-500/10">
-                <p className="font-medium text-violet-900 dark:text-violet-200">
+              <div className="rounded-lg border border-brand-grape/40 bg-band-lav/60 p-3">
+                <p className="font-medium text-brand-grape">
                   ⭐ breakdown — giải nghĩa từng phần công thức (nên có cho mọi bài)
                 </p>
                 <p className="mt-1 text-[12px] text-muted-foreground">
@@ -119,7 +119,7 @@ export function GrammarAuthorGuide() {
             <section className="space-y-3">
               <h3 className="font-semibold">3. Các loại bài tập (dùng cho exercises & test.questions)</h3>
 
-              <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-[13px] dark:border-amber-400/25 dark:bg-amber-500/10">
+              <div className="rounded-lg border border-brand-yellow/40 bg-band-sun/60 p-3 text-[13px]">
                 <b>Mẹo:</b> Mọi loại bài tập đều có thể thêm trường tùy chọn{" "}
                 <code className="rounded bg-muted px-1 py-0.5 font-mono text-[12px]">explanation</code>{" "}
                 — lời giải thích bằng tiếng Việt <b>tại sao đáp án đúng</b>. Khi học viên trả lời
@@ -186,8 +186,8 @@ export function GrammarAuthorGuide() {
 }`}</Code>
               </div>
 
-              <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3 dark:border-sky-400/25 dark:bg-sky-500/10">
-                <p className="font-medium text-sky-900 dark:text-sky-200">
+              <div className="rounded-lg border border-brand-sky/40 bg-band-sky/60 p-3">
+                <p className="font-medium text-brand-sky">
                   🧒 4 loại dành riêng cho trẻ nhỏ (chưa đọc thạo) — ưu tiên dùng ở Pre-Starters &amp; Starters
                 </p>
                 <Code>{`{ "type": "picture_match", "imageUrl": "...", "prompt": "Which one is a cat?",

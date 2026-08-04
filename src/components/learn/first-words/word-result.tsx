@@ -45,20 +45,21 @@ export function WordResult({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full space-y-4"
+      className="w-full space-y-5"
     >
       <StarRow value={result.stars} size="lg" animate />
 
-      <p className="text-center font-display text-xl font-extrabold">{result.praise}</p>
+      <p className="text-center font-display text-2xl font-extrabold text-foreground">{result.praise}</p>
 
       {result.tip && (
-        <p className="mx-auto max-w-sm rounded-2xl bg-muted/60 px-4 py-2.5 text-center text-[13px] font-semibold text-muted-foreground">
+        // Mẹo viết cho bố mẹ — nền vàng nắng nhạt, KHÔNG phải hộp báo lỗi đỏ.
+        <p className="mx-auto max-w-sm rounded-xl bg-band-sun px-4 py-3 text-center text-sm font-bold text-foreground/80">
           💡 {result.tip}
         </p>
       )}
 
       {showText && result.transcript !== undefined && (
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs font-semibold text-muted-foreground">
           Máy nghe được: <span className="font-primer">{result.transcript || "(không rõ)"}</span>
         </p>
       )}
@@ -68,17 +69,17 @@ export function WordResult({
         <Button
           variant="outline"
           onClick={onPlayModel}
-          className="btn-chunky h-14 rounded-2xl border-4 px-5 font-display font-extrabold"
+          className="btn-chunky h-14 border-4 px-6 text-base"
         >
-          <Volume2 className="mr-1.5 h-5 w-5" /> Giọng cô
+          <Volume2 className="mr-1.5 h-6 w-6" /> Giọng cô
         </Button>
         <Button
           variant="outline"
           onClick={onPlayMine}
           disabled={!hasRecording}
-          className="btn-chunky h-14 rounded-2xl border-4 px-5 font-display font-extrabold"
+          className="btn-chunky h-14 border-4 px-6 text-base"
         >
-          <Headphones className="mr-1.5 h-5 w-5" /> Giọng bé
+          <Headphones className="mr-1.5 h-6 w-6" /> Giọng bé
         </Button>
       </div>
 
@@ -87,16 +88,13 @@ export function WordResult({
           variant="outline"
           onClick={onRetry}
           aria-label="Nói lại từ này"
-          className="btn-chunky h-16 w-16 shrink-0 rounded-2xl border-4 p-0"
+          className="btn-chunky h-16 w-16 shrink-0 border-4 p-0"
         >
-          <RotateCcw className="h-7 w-7" strokeWidth={2.5} />
+          <RotateCcw className="h-8 w-8" strokeWidth={2.5} />
         </Button>
-        <Button
-          onClick={onNext}
-          className="btn-chunky h-16 flex-1 rounded-2xl font-display text-lg font-extrabold"
-        >
+        <Button onClick={onNext} className="btn-chunky h-16 flex-1 text-xl">
           {isLast ? "Xong rồi!" : "Từ tiếp theo"}
-          <ArrowRight className="ml-1.5 h-6 w-6" strokeWidth={2.5} />
+          <ArrowRight className="ml-1.5 h-7 w-7" strokeWidth={2.5} />
         </Button>
       </div>
     </motion.div>

@@ -69,7 +69,7 @@ export function TtsButton({
       disabled={off}
       title={title ?? (clean ? "Tạo audio đọc câu này" : "Nhập câu tiếng Anh trước đã")}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-sky bg-band-sky font-semibold text-brand-sky transition hover:bg-band-sky disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-brand-sky/20",
         size === "xs" ? "h-8 px-2 text-xs" : "px-3 py-1.5 text-sm",
         className,
       )}

@@ -13,6 +13,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/dieu-khoan" },
 };
 
+/**
+ * Trang chữ dài → ưu tiên DỄ ĐỌC hơn vui mắt: một thẻ trắng bo lớn nằm trên nền
+ * kem, dòng chữ giữ quanh 70 ký tự, tiêu đề mục bằng Baloo cho dễ quét mắt.
+ * Kiểu chữ của phần nội dung đặt bằng biến thể con ([&_h2], [&_li]…) để mã HTML
+ * bên trong vẫn là thẻ ngữ nghĩa thuần, không phải rắc class từng dòng.
+ */
+const PROSE =
+  "max-w-[70ch] text-[1.02rem] leading-[1.85] text-muted-foreground " +
+  "[&_h2]:mb-3 [&_h2]:mt-10 [&_h2]:font-display [&_h2]:text-[1.35rem] [&_h2]:text-foreground " +
+  "[&_p]:mb-4 [&_strong]:text-foreground " +
+  "[&_ul]:mb-4 [&_ul]:list-disc [&_ul]:space-y-2.5 [&_ul]:pl-6 [&_li]:marker:text-brand-gold " +
+  "[&_a]:font-bold [&_a]:text-brand-gold [&_a]:underline [&_a]:underline-offset-4";
+
 export default async function TermsPage() {
   const session = await auth();
 
@@ -20,11 +33,17 @@ export default async function TermsPage() {
     <div className={styles.page}>
       <MarketingNav isAuthed={!!session?.user} />
 
-      <main className={styles.legalMain}>
-        <h1 className={styles.legalTitle}>Điều khoản sử dụng</h1>
-        <p className={styles.legalUpdated}>Cập nhật lần cuối: 03/07/2026</p>
+      <main className="bg-band-cream pb-20 pt-32 md:pt-36">
+        <div className="container">
+          <article className="mx-auto max-w-3xl rounded-2xl bg-card p-6 shadow-soft-lg sm:p-10 md:p-12">
+            <h1 className="font-display text-[clamp(1.8rem,5vw,2.6rem)] text-foreground">
+              Điều khoản sử dụng
+            </h1>
+            <p className="mt-3 inline-block rounded-full bg-band-sun px-4 py-1.5 text-sm font-bold text-brand-gold">
+              Cập nhật lần cuối: 03/07/2026
+            </p>
 
-        <div className={styles.legalProse}>
+            <div className={`mt-8 ${PROSE}`}>
           <p>
             Chào mừng bạn đến với DingDong Kids. Khi tạo tài khoản hoặc sử dụng dịch vụ tại{" "}
             {SITE_URL.replace("https://", "")}, bạn đồng ý với các điều khoản dưới đây. Vui lòng
@@ -116,6 +135,8 @@ export default async function TermsPage() {
             <Link href="/chinh-sach">Chính sách bảo mật</Link> để biết cách chúng tôi xử lý dữ liệu
             của bạn.
           </p>
+            </div>
+          </article>
         </div>
       </main>
 

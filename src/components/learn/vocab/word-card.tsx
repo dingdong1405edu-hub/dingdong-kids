@@ -24,52 +24,54 @@ export function WordCard({ word }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-6 text-center">
-      <div className="flex flex-col items-center gap-2">
-        {/* Với trẻ chưa đọc thạo, ảnh là kênh truyền đạt chính (CLAUDE.md §6). */}
-        {word.imageUrl && (
-          <Image
-            src={word.imageUrl}
-            alt={word.meaning}
-            width={220}
-            height={220}
-            className="sticker mb-2 h-44 w-44 object-cover sm:h-52 sm:w-52"
-          />
-        )}
-        <div className="font-primer text-6xl font-bold sm:text-7xl">{word.word}</div>
-        {word.ipa && <div className="text-2xl text-muted-foreground">{word.ipa}</div>}
-        <div className="text-lg font-medium">{word.meaning}</div>
-        {word.partOfSpeech && (
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            {word.partOfSpeech}
+      {/* Khối thẻ từ — "ngôi sao" của phần Từ vựng: nền gradient nắng ấm, bo rất
+          tròn, từ tiếng Anh cỡ đại. Bé nhận ra thẻ trước cả khi kịp đọc chữ. */}
+      <div className="w-full max-w-md rounded-3xl bg-gradient-to-b from-band-sun to-card p-6 shadow-soft-lg sm:p-7">
+        <div className="flex flex-col items-center gap-2">
+          {/* Với trẻ chưa đọc thạo, ảnh là kênh truyền đạt chính (CLAUDE.md §6).
+              Nhún nhẹ để thẻ trông "sống", trẻ dán mắt vào hình lâu hơn. */}
+          {word.imageUrl && (
+            <Image
+              src={word.imageUrl}
+              alt={word.meaning}
+              width={220}
+              height={220}
+              className="sticker mb-2 h-44 w-44 animate-bob rounded-2xl object-cover sm:h-52 sm:w-52"
+            />
+          )}
+          <div className="font-primer text-6xl font-bold leading-none tracking-wide text-foreground sm:text-7xl">
+            {word.word}
           </div>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-1"
-          onClick={() => playWord({ word: word.word, audioUrl: word.audioUrl })}
-        >
-          <Volume2 className="mr-1.5 h-4 w-4" /> Nghe lại
-        </Button>
-        <WordReportButton wordId={word.id} word={word.word} />
+          {/* Phiên âm nhỏ hơn và màu chữ phụ — nó phục vụ bố mẹ, không phải bé. */}
+          {word.ipa && <div className="text-2xl font-semibold text-muted-foreground">{word.ipa}</div>}
+          <div className="font-display text-xl font-extrabold text-foreground">{word.meaning}</div>
+          {word.partOfSpeech && <div className="eyebrow text-brand-gold">{word.partOfSpeech}</div>}
+          {/* Nút loa TO và luôn thấy — với bé chưa đọc chữ, đây là nút chính. */}
+          <Button
+            size="lg"
+            className="mt-3"
+            onClick={() => playWord({ word: word.word, audioUrl: word.audioUrl })}
+          >
+            <Volume2 className="mr-1.5 h-6 w-6" /> Nghe lại
+          </Button>
+          <WordReportButton wordId={word.id} word={word.word} />
+        </div>
       </div>
 
       {word.examples.length > 0 && (
         <div className="w-full max-w-md space-y-3 text-left">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Ví dụ
-          </div>
+          <div className="eyebrow text-brand-gold">Ví dụ</div>
           {word.examples.map((ex, i) => (
             <button
               key={i}
               type="button"
               onClick={() => playWord({ word: ex.sentence, audioUrl: ex.audioUrl })}
-              className="block w-full rounded-lg border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-accent"
+              className="block w-full rounded-xl bg-card p-4 text-left shadow-soft transition-all duration-200 ease-toy hover:-translate-y-0.5 hover:shadow-soft-lg"
             >
               <div className="font-primer text-xl">
                 {markWord(ex.sentence, word.word).map((seg, j) =>
                   seg.match ? (
-                    <span key={j} className="font-bold text-primary">
+                    <span key={j} className="font-bold text-brand-gold">
                       {seg.text}
                     </span>
                   ) : (
@@ -77,7 +79,9 @@ export function WordCard({ word }: Props) {
                   )
                 )}
               </div>
-              {ex.meaning && <div className="mt-0.5 text-sm">{ex.meaning}</div>}
+              {ex.meaning && (
+                <div className="mt-0.5 text-sm text-muted-foreground">{ex.meaning}</div>
+              )}
             </button>
           ))}
         </div>

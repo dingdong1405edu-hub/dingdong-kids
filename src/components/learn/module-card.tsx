@@ -31,18 +31,18 @@ export function ModuleCard({
 }: ModuleCardProps) {
   if (!available) {
     return (
-      <Card className="sticker cursor-not-allowed opacity-60">
+      <Card className="sticker cursor-not-allowed bg-muted/60 opacity-70">
         <CardContent className="p-5">
           <div
             className={cn(
-              "mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-3xl grayscale",
+              "mb-3 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl grayscale",
               color,
             )}
           >
             {icon}
           </div>
           <div className="font-display text-lg font-extrabold">{title}</div>
-          <div className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
+          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
             <Lock className="h-3.5 w-3.5" /> Chưa mở khoá
           </div>
         </CardContent>
@@ -52,11 +52,12 @@ export function ModuleCard({
 
   return (
     <Link href={href} className="group block h-full">
-      <Card className="sticker h-full transition-all duration-200 hover:-translate-y-1.5 hover:border-primary/40">
+      <Card className="sticker h-full bg-card transition-all duration-200 ease-toy hover:-translate-y-1.5 hover:border-brand-gold/50 hover:shadow-soft-lg">
         <CardContent className="flex h-full flex-col p-5">
+          {/* Ô emoji to hơn chữ rất nhiều: bé chọn module bằng HÌNH, không bằng chữ. */}
           <div
             className={cn(
-              "mb-3 flex h-14 w-14 items-center justify-center rounded-2xl text-3xl transition-transform duration-200 group-hover:scale-110 group-hover:-rotate-6",
+              "mb-3 flex h-16 w-16 items-center justify-center rounded-2xl text-3xl shadow-soft transition-transform duration-200 ease-toy group-hover:scale-110 group-hover:-rotate-6",
               color,
             )}
           >
@@ -67,15 +68,15 @@ export function ModuleCard({
 
           {progress !== undefined ? (
             <div className="mt-4">
-              <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
+              <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-muted-foreground">
                 <span>Bé đã đi được</span>
-                <span className="text-primary">{progress}%</span>
+                <span className="font-display text-sm text-brand-gold">{progress}%</span>
               </div>
-              <Progress value={progress} className="h-2.5" />
+              <Progress value={progress} className="h-3" />
             </div>
           ) : (
             <div className="mt-auto pt-4">
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="inline-flex items-center gap-1 font-display text-xs font-extrabold text-brand-gold opacity-0 transition-opacity group-hover:opacity-100">
                 Học thôi! <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </div>

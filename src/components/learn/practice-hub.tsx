@@ -5,15 +5,24 @@ import { cn } from "@/lib/utils";
 
 export type Accent = "red" | "green" | "blue" | "amber" | "teal" | "rose" | "indigo" | "violet";
 
+/**
+ * Mỗi khu luyện tập một sắc riêng, lấy từ hệ `brand-*` / `band-*` (xem
+ * DESIGN-SYSTEM.md §2) thay cho bảng màu mặc định của Tailwind. Nhờ vậy KHÔNG
+ * cần cặp `dark:` viết tay nữa — nhóm token này tự dịu lại ở chế độ tối.
+ *
+ * `btn` đặt luôn `--edge` (màu gờ 3D dưới nút, tối hơn mặt nút một bậc) vì
+ * <Button> mặc định lấy gờ cam nắng đi với nút vàng; đổi mặt nút mà quên gờ thì
+ * nút trông như bị dán sai mảnh.
+ */
 const ACCENTS: Record<Accent, { text: string; iconBg: string; btn: string; banner: string }> = {
-  red: { text: "text-primary", iconBg: "bg-primary/10 text-primary", btn: "bg-primary hover:bg-primary/90", banner: "border-sky-100 from-sky-50 to-white dark:border-sky-400/20 dark:from-sky-500/10 dark:to-transparent" },
-  green: { text: "text-emerald-600", iconBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300", btn: "bg-emerald-600 hover:bg-emerald-700", banner: "border-emerald-100 from-emerald-50 to-white dark:border-emerald-400/20 dark:from-emerald-500/10 dark:to-transparent" },
-  blue: { text: "text-sky-600", iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300", btn: "bg-sky-600 hover:bg-sky-700", banner: "border-sky-100 from-sky-50 to-white dark:border-sky-400/20 dark:from-sky-500/10 dark:to-transparent" },
-  amber: { text: "text-amber-600", iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300", btn: "bg-amber-500 hover:bg-amber-600", banner: "border-amber-100 from-amber-50 to-white dark:border-amber-400/20 dark:from-amber-500/10 dark:to-transparent" },
-  teal: { text: "text-teal-600", iconBg: "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300", btn: "bg-teal-600 hover:bg-teal-700", banner: "border-teal-100 from-teal-50 to-white dark:border-teal-400/20 dark:from-teal-500/10 dark:to-transparent" },
-  rose: { text: "text-rose-600", iconBg: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300", btn: "bg-rose-500 hover:bg-rose-600", banner: "border-rose-100 from-rose-50 to-white dark:border-rose-400/20 dark:from-rose-500/10 dark:to-transparent" },
-  indigo: { text: "text-indigo-600", iconBg: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300", btn: "bg-indigo-600 hover:bg-indigo-700", banner: "border-indigo-100 from-indigo-50 to-white dark:border-indigo-400/20 dark:from-indigo-500/10 dark:to-transparent" },
-  violet: { text: "text-violet-600", iconBg: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300", btn: "bg-violet-600 hover:bg-violet-700", banner: "border-violet-100 from-violet-50 to-white dark:border-violet-400/20 dark:from-violet-500/10 dark:to-transparent" },
+  red: { text: "text-brand-coral", iconBg: "bg-brand-coral/15 text-brand-coral", btn: "bg-brand-coral text-white [--edge:hsl(6_72%_50%)]", banner: "border-2 border-brand-coral/30 from-band-coral to-card" },
+  green: { text: "text-brand-teal", iconBg: "bg-brand-lime/20 text-brand-teal", btn: "bg-brand-lime text-white [--edge:hsl(137_58%_38%)]", banner: "border-2 border-brand-lime/30 from-band-mint to-card" },
+  blue: { text: "text-brand-sky", iconBg: "bg-brand-sky/15 text-brand-sky", btn: "bg-brand-sky text-white [--edge:hsl(201_85%_38%)]", banner: "border-2 border-brand-sky/30 from-band-sky to-card" },
+  amber: { text: "text-brand-gold", iconBg: "bg-brand-gold/15 text-brand-gold", btn: "bg-sunny text-sunny-foreground [--edge:hsl(var(--c-sun))]", banner: "border-2 border-brand-honey/35 from-band-yel to-card" },
+  teal: { text: "text-brand-teal", iconBg: "bg-brand-teal/15 text-brand-teal", btn: "bg-brand-teal text-white [--edge:hsl(172_79%_28%)]", banner: "border-2 border-brand-teal/30 from-band-sky to-card" },
+  rose: { text: "text-brand-pink", iconBg: "bg-brand-pink/15 text-brand-pink", btn: "bg-brand-pink text-white [--edge:hsl(335_72%_49%)]", banner: "border-2 border-brand-pink/30 from-band-coral to-card" },
+  indigo: { text: "text-brand-blue", iconBg: "bg-brand-blue/15 text-brand-blue", btn: "bg-brand-blue text-white [--edge:hsl(222_72%_40%)]", banner: "border-2 border-brand-blue/30 from-band-lav to-card" },
+  violet: { text: "text-brand-grape", iconBg: "bg-brand-grape/15 text-brand-grape", btn: "bg-brand-grape text-white [--edge:hsl(261_72%_48%)]", banner: "border-2 border-brand-grape/30 from-band-lav to-card" },
 };
 
 interface PracticeHubProps {
@@ -50,17 +59,18 @@ export function PracticeHub({
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className={cn("relative overflow-hidden rounded-3xl border bg-gradient-to-br p-5 sm:p-6", a.banner)}>
+      <div className={cn("relative overflow-hidden rounded-3xl border bg-gradient-to-br p-5 shadow-soft sm:p-6", a.banner)}>
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className={cn("flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-soft", a.iconBg)}>
+            {/* Ô biểu tượng to như miếng dán — bé nhận ra khu luyện tập bằng hình. */}
+            <div className={cn("flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl shadow-soft-lg", a.iconBg)}>
               {icon}
             </div>
             <div>
               <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
                 Luyện <span className={a.text}>{title}</span>
               </h1>
-              <p className="mt-0.5 text-[15px] text-muted-foreground">{subtitle}</p>
+              <p className="mt-0.5 text-[15px] font-semibold text-muted-foreground">{subtitle}</p>
             </div>
           </div>
           {randomHref && (
@@ -71,7 +81,7 @@ export function PracticeHub({
             </Link>
           )}
         </div>
-        <div className="pointer-events-none absolute -right-4 -top-6 select-none text-[130px] leading-none opacity-[0.13] animate-emoji">
+        <div className="pointer-events-none absolute -right-4 -top-6 z-0 select-none text-[130px] leading-none opacity-[0.16] animate-emoji">
           {decoChar}
         </div>
       </div>
@@ -79,14 +89,16 @@ export function PracticeHub({
       {/* Hộp mách nhỏ */}
       {tips && tips.length > 0 && (
         <div className="sticker bg-card p-5">
-          <div className="mb-3 flex items-center gap-2 text-[13px] font-extrabold uppercase tracking-wide text-muted-foreground">
+          {/* Nhãn nhỏ in hoa. Không dùng class .eyebrow ở đây vì nó ép
+              display:inline-block, sẽ phá hàng ngang flex của dòng này. */}
+          <div className="mb-3 flex items-center gap-2 text-[13px] font-black uppercase tracking-[0.16em] text-muted-foreground">
             <Info className={cn("h-4 w-4", a.text)} /> Mách nhỏ trước khi làm
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {tips.map((t, i) => (
               <div key={i} className="flex items-start gap-2.5 text-[15px]">
                 <CheckCircle2 className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)} />
-                <span className="text-muted-foreground">{t}</span>
+                <span className="font-semibold text-muted-foreground">{t}</span>
               </div>
             ))}
           </div>
@@ -101,7 +113,7 @@ export function PracticeHub({
               <h2 className="flex items-center gap-2 font-display text-xl font-extrabold">
                 <ListChecks className={cn("h-5 w-5", a.text)} /> {gridTitle}
               </h2>
-              {gridSubtitle && <p className="mt-0.5 text-sm text-muted-foreground">{gridSubtitle}</p>}
+              {gridSubtitle && <p className="mt-0.5 text-sm font-semibold text-muted-foreground">{gridSubtitle}</p>}
             </div>
           )}
           {children}

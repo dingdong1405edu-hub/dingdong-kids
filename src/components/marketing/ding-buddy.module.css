@@ -16,19 +16,20 @@
   user-select: none;
 }
 
-/* ===== Bong bóng thoại (chỉ DingBuddy) ===== */
+/* ===== Bong bóng thoại (chỉ DingBuddy) =====
+   Nền/chữ lấy theo token thẻ nên bong bóng tự đúng màu ở cả chế độ tối. */
 .bubble {
   position: relative;
   max-width: calc(var(--ding-size, 88px) * 2.4);
-  background: #fff;
-  color: #2b3350;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
   font-weight: 800;
   font-size: calc(var(--ding-size, 88px) * 0.17);
   letter-spacing: 0.02em;
   text-align: center;
   padding: calc(var(--ding-size, 88px) * 0.08) calc(var(--ding-size, 88px) * 0.16);
   border-radius: calc(var(--ding-size, 88px) * 0.22);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 6px 16px hsl(var(--shadow-hue) / 0.16);
   animation: bbFloaty 3.2s ease-in-out infinite;
 }
 .bubble::after {
@@ -39,22 +40,25 @@
   transform: translateX(-50%);
   border-left: calc(var(--ding-size, 88px) * 0.08) solid transparent;
   border-right: calc(var(--ding-size, 88px) * 0.08) solid transparent;
-  border-top: calc(var(--ding-size, 88px) * 0.09) solid #fff;
+  border-top: calc(var(--ding-size, 88px) * 0.09) solid hsl(var(--card));
 }
 @keyframes bbFloaty {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(calc(var(--ding-size, 88px) * -0.05)); }
 }
 
-/* ===== Stage (khung vuông chứa Ding) — tự chứa palette để dùng độc lập ===== */
+/* ===== Stage (khung vuông chứa Ding) — tự chứa palette để dùng độc lập =====
+   Bảng màu KHỚP tông mật ong của hệ thiết kế (brand-honey #F2B93A, chữ cacao
+   #3D2410). Cố tình ghi hex thay vì token ngữ nghĩa: đây là hình VẼ, nét và mắt
+   phải giữ nguyên màu ở chế độ tối, nếu đảo theo token thì gấu mất mặt. */
 .stage {
-  --fur: #f6c76a;        /* lông vàng mật */
-  --fur-d: #e0a63f;      /* vùng tối của lông */
-  --muzzle: #fff3dc;     /* mõm sáng */
-  --ink: #3a2a18;        /* nét viền nâu đậm (ấm hơn đen) */
-  --rose: #ff9fb0;
-  --rose-d: #ff7d95;
-  --spark: #ffe27a;
+  --fur: #f2b93a;        /* lông vàng mật — = brand-honey */
+  --fur-d: #d99b1b;      /* vùng tối của lông */
+  --muzzle: #fbebc8;     /* mõm sáng kem */
+  --ink: #3d2410;        /* nét viền nâu cacao (ấm hơn đen) */
+  --rose: #f58ca0;       /* má hồng */
+  --rose-d: #ee6c86;
+  --spark: #ffd43b;      /* = brand-yellow */
 
   position: relative;
   width: var(--ding-size, 88px);
@@ -98,7 +102,8 @@
   width: 52%;
   height: 6%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.16);
+  /* Bóng ám nâu cacao, không ám xám — bóng xám trên nền kem trông bẩn. */
+  background: hsl(var(--shadow-hue) / 0.2);
   border-radius: 50%;
   filter: blur(3px);
 }

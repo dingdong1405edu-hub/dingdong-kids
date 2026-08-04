@@ -78,6 +78,64 @@ export function splitWords(text: string): string[] {
   return text.trim().split(/\s+/).filter(Boolean);
 }
 
+export interface WordCoverage {
+  /** Khớp hay không theo TỪNG từ của câu mẫu, đúng thứ tự — để tô màu câu. */
+  flags: boolean[];
+  /** Các từ trong câu mẫu, đã chuẩn hoá (cùng độ dài với `flags`). */
+  words: string[];
+  matched: number;
+  total: number;
+  /** `matched / total`. Câu mẫu rỗng → 0. */
+  ratio: number;
+}
+
+/**
+ * Bé nhắc lại được BAO NHIÊU PHẦN của câu mẫu?
+ *
+ * Dùng cho bài "nói theo phim": ta biết TRƯỚC câu đích, nên chấm được bằng phép
+ * so khớp máy móc thay vì hỏi AI — vừa tức thì, vừa không tốn một lượt gọi trả
+ * tiền cho mỗi câu.
+ *
+ * Cách khớp: duyệt từng từ của câu mẫu, tìm về phía trước trong bản ghi nhận
+ * dạng kể từ con trỏ hiện tại. Nhờ vậy:
+ *  • Bé nói THỪA từ ("um… I like it") vẫn khớp — từ thừa bị bỏ qua.
+ *  • Bé nói THIẾU một từ thì chỉ từ đó trượt, phần còn lại vẫn tính.
+ *  • THỨ TỰ được tôn trọng: nói ngược câu thì không ăn điểm toàn phần.
+ * Việc so từng từ vẫn đi qua `isAnswerAcceptable` nên sai lệch nhỏ (máy nghe
+ * "cat" thành "cap") vẫn được chấp nhận — máy nghe giọng trẻ em vốn kém.
+ */
+export function wordCoverage(said: string, target: string): WordCoverage {
+  const words = splitWords(normalizeAnswer(target)).filter(Boolean);
+  const heard = splitWords(normalizeAnswer(said)).filter(Boolean);
+
+  const flags: boolean[] = [];
+  let cursor = 0;
+  for (const w of words) {
+    let hit = -1;
+    for (let i = cursor; i < heard.length; i++) {
+      if (isAnswerAcceptable(heard[i], [w])) {
+        hit = i;
+        break;
+      }
+    }
+    if (hit >= 0) {
+      flags.push(true);
+      cursor = hit + 1;
+    } else {
+      flags.push(false);
+    }
+  }
+
+  const matched = flags.filter(Boolean).length;
+  return {
+    flags,
+    words,
+    matched,
+    total: words.length,
+    ratio: words.length === 0 ? 0 : matched / words.length,
+  };
+}
+
 /**
  * Ước lượng SỐ ÂM TIẾT của một từ tiếng Anh — dùng để gợi ý chỗ ngắt khi dạy
  * trẻ đọc và để xếp độ khó từ vựng.

@@ -81,7 +81,7 @@ export function RhymeMatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
               disabled={disabled || matched.has(i)}
               className={cn(
                 cell,
-                matched.has(i) && "animate-pop-in border-green-500 bg-green-50 dark:bg-green-500/15",
+                matched.has(i) && "animate-pop-in border-brand-lime bg-band-mint",
                 !matched.has(i) && selectedLeft === i && "border-primary bg-primary/10",
                 !matched.has(i) && selectedLeft !== i && "border-primary/20 hover:border-primary/50",
               )}
@@ -101,8 +101,8 @@ export function RhymeMatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
               disabled={disabled || matched.has(r.i)}
               className={cn(
                 cell,
-                matched.has(r.i) && "animate-pop-in border-green-500 bg-green-50 dark:bg-green-500/15",
-                wrongFlash === r.i && "animate-wrong border-red-400 bg-red-50 dark:bg-red-500/15",
+                matched.has(r.i) && "animate-pop-in border-brand-lime bg-band-mint",
+                wrongFlash === r.i && "animate-wrong border-brand-coral bg-band-coral",
                 !matched.has(r.i) && wrongFlash !== r.i && "border-primary/20 hover:border-primary/50",
               )}
             >

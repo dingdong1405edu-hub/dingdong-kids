@@ -179,7 +179,7 @@ export function PeekabooGame({ words, onDone }: VocabGameProps) {
             type="button"
             onClick={replay}
             aria-label="Nghe lại từ"
-            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95"
           >
             <Volume2 className="h-9 w-9" />
           </button>
@@ -200,8 +200,10 @@ export function PeekabooGame({ words, onDone }: VocabGameProps) {
                     isOpen && isTarget
                       ? "animate-pop-in border-sunny bg-card"
                       : isOpen
-                        ? "border-primary/30 bg-card"
-                        : "border-amber-700/40 bg-gradient-to-b from-amber-500 to-amber-700",
+                        ? "border-border bg-card"
+                        // Cánh cửa gỗ dựng bằng mật ong → vàng đậm (brand-*), tự
+                        // dịu lại ở chế độ tối thay vì chói như amber mặc định.
+                        : "border-brand-gold/50 bg-gradient-to-b from-brand-honey to-brand-gold shadow-soft",
                     solved && !isTarget && "opacity-40",
                   )}
                 >
@@ -238,7 +240,7 @@ export function PeekabooGame({ words, onDone }: VocabGameProps) {
                         <span className="text-5xl" aria-hidden>
                           🚪
                         </span>
-                        <span className="h-2 w-2 rounded-full bg-amber-200" aria-hidden />
+                        <span className="h-2.5 w-2.5 rounded-full bg-brand-yellow" aria-hidden />
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -248,7 +250,7 @@ export function PeekabooGame({ words, onDone }: VocabGameProps) {
           </div>
 
           {solved && (
-            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

@@ -98,7 +98,7 @@ export function UserManagePanel({
         }
       >
         <RotateCcw className="h-4 w-4" />
-        <Heart className="h-4 w-4 text-rose-500" /> Reset tim
+        <Heart className="h-4 w-4 text-brand-coral" /> Reset tim
       </Button>
     </div>
   );

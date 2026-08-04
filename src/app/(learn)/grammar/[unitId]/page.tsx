@@ -50,7 +50,7 @@ export default async function GrammarUnitPage({ params }: Props) {
           {unit.theme && <p className="font-primer text-muted-foreground">{unit.theme}</p>}
         </div>
         <Link href={`/grammar/${unitId}/review`} className="shrink-0">
-          <Button variant="outline" size="sm" className="gap-1.5 border-violet-300 text-violet-700 dark:border-violet-400/25 dark:text-violet-300">
+          <Button variant="outline" size="sm" className="gap-1.5 border-brand-grape text-brand-grape">
             <Repeat className="h-4 w-4" /> Ôn cả chủ đề
           </Button>
         </Link>
@@ -75,7 +75,7 @@ export default async function GrammarUnitPage({ params }: Props) {
                   <div
                     className={`flex h-11 w-11 items-center justify-center rounded-2xl font-bold ${
                       done
-                        ? "bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-300"
+                        ? "bg-band-mint text-brand-teal"
                         : available
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground"
@@ -99,13 +99,13 @@ export default async function GrammarUnitPage({ params }: Props) {
                       </Button>
                     </Link>
                     <Link href={`${base}/review`}>
-                      <Button size="sm" variant="outline" className="gap-1.5 border-violet-300 text-violet-700 dark:border-violet-400/25 dark:text-violet-300">
+                      <Button size="sm" variant="outline" className="gap-1.5 border-brand-grape text-brand-grape">
                         <Repeat className="h-4 w-4" /> Ôn tập
                       </Button>
                     </Link>
                     {hasTest && (
                       <Link href={`${base}/test`}>
-                        <Button size="sm" variant="outline" className="gap-1.5 border-amber-300 text-amber-700 dark:border-amber-400/25 dark:text-amber-300">
+                        <Button size="sm" variant="outline" className="gap-1.5 border-brand-yellow text-brand-gold">
                           <ClipboardCheck className="h-4 w-4" /> Kiểm tra
                         </Button>
                       </Link>

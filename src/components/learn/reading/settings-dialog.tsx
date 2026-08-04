@@ -114,7 +114,7 @@ export function SettingsDialog({ open, onOpenChange, settings, onChange, hasAudi
               >
                 <span
                   className={cn(
-                    "h-5 w-5 rounded-full bg-white shadow transition-transform",
+                    "h-5 w-5 rounded-full bg-card shadow transition-transform",
                     settings.readAloud && "translate-x-5",
                   )}
                 />

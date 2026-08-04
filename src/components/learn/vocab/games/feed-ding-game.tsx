@@ -374,8 +374,10 @@ export function FeedDingGame({ words, onDone }: VocabGameProps) {
         totalRounds={rounds.length}
       >
         <div className="flex flex-col items-center gap-4">
-          {/* ---- Ding ngồi giữa: chạm vào Ding là nghe lại món bạn ấy đòi ---- */}
-          <div className="flex flex-col items-center gap-2">
+          {/* ---- Ding ngồi giữa: chạm vào Ding là nghe lại món bạn ấy đòi ----
+               Khối màu kem-mật ong sau lưng Ding tách nhân vật khỏi phần chọn
+               món bên dưới, để mắt bé biết "đây là bạn gấu, kia là đồ chọn". */}
+          <div className="flex w-full flex-col items-center gap-2 rounded-3xl bg-gradient-to-b from-band-sun to-band-coral py-3 shadow-soft">
             <button
               ref={dingRef}
               type="button"
@@ -385,8 +387,10 @@ export function FeedDingGame({ words, onDone }: VocabGameProps) {
             >
               <DingBuddy size={124} pose={pose} message={bubble} className="mx-auto" />
             </button>
-            <span className="flex items-center gap-1.5 rounded-full bg-sunny/20 px-3 py-1 text-sm font-bold text-sunny-foreground">
-              <Volume2 className="h-4 w-4" /> Chạm vào Ding để nghe lại
+            {/* `text-foreground` chứ KHÔNG phải `text-sunny-foreground`: ở chế độ
+                tối, chữ của nền vàng là màu nâu rất tối — đặt trên nền mờ sẽ mất hút. */}
+            <span className="flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-sm font-bold text-foreground shadow-soft">
+              <Volume2 className="h-4 w-4 text-brand-gold" /> Chạm vào Ding để nghe lại
             </span>
           </div>
 
@@ -460,7 +464,7 @@ export function FeedDingGame({ words, onDone }: VocabGameProps) {
               (Ô của món đúng lúc này đã bay vào Ding và mờ hẳn, nên chữ phải
               hiện ở đây thì bé mới thấy.) */}
           {phase === "cheer" && (
-            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

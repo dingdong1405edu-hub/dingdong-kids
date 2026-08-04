@@ -57,7 +57,7 @@ export default async function MaterialsPage({
         </span>
         <div className="relative">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/25">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card/20 ring-1 ring-white/25">
               <Library className="h-6 w-6" />
             </div>
             <div>

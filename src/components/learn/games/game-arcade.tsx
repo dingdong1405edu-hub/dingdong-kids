@@ -24,6 +24,19 @@ import { primeSpeech } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 import type { VocabWordCard } from "@/types";
 
+/**
+ * Màu nền cho từng ô trò chơi, xoay vòng theo thứ tự. Viết NGUYÊN chuỗi class
+ * (không ghép động) để Tailwind quét ra khi build production.
+ */
+const TILE_TINTS = [
+  "bg-band-sky",
+  "bg-band-coral",
+  "bg-band-mint",
+  "bg-band-lav",
+  "bg-band-yel",
+  "bg-band-sun",
+];
+
 export interface ArcadePack {
   id: string;
   title: string;
@@ -45,7 +58,9 @@ export function GameArcade({ packs }: { packs: ArcadePack[] }) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-4 text-center">
         <DingBuddy size={110} pose="idle" />
-        <h1 className="font-display text-2xl font-extrabold">Sân chơi đang dọn dẹp 🧹</h1>
+        <h1 className="font-display text-2xl font-extrabold text-foreground">
+          Sân chơi đang dọn dẹp 🧹
+        </h1>
         <p className="text-[15px] text-muted-foreground">
           Chưa có bộ từ nào để chơi. Bé học vài bài Từ vựng trước rồi quay lại nhé!
         </p>
@@ -61,11 +76,12 @@ export function GameArcade({ packs }: { packs: ArcadePack[] }) {
         <button
           type="button"
           onClick={() => setView({ kind: "pick-game" })}
-          className="mb-2 inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-card px-4 text-sm font-bold text-muted-foreground shadow-soft transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Thoát trò chơi
         </button>
-        <div className="mb-1 font-display text-lg font-extrabold">
+        {/* Tên trò đang chơi đặt trên dải màu kem để tách khỏi khu vực chơi. */}
+        <div className="mb-3 rounded-2xl bg-band-cream px-4 py-2 font-display text-lg font-extrabold text-foreground shadow-soft">
           {emoji} {title}
           <span className="ml-2 text-sm font-semibold text-muted-foreground">
             · {view.pack.title}

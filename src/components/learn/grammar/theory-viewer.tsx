@@ -19,40 +19,40 @@ function isImageUrl(u?: string): boolean {
  *  công thức ứng với lời giải nghĩa nào bên dưới. Đánh theo vị trí ô. */
 const PART_COLORS = [
   {
-    chip: "border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-500/45 dark:bg-sky-500/15 dark:text-sky-100",
-    badge: "bg-sky-500 text-white",
+    chip: "border-brand-sky bg-band-sky text-brand-sky",
+    badge: "bg-brand-sky text-white",
     accent: "border-l-sky-400 dark:border-l-sky-500/50",
-    pill: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
+    pill: "bg-band-sky text-brand-sky",
   },
   {
-    chip: "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-500/45 dark:bg-rose-500/15 dark:text-rose-100",
-    badge: "bg-rose-500 text-white",
+    chip: "border-brand-coral bg-band-coral text-brand-coral",
+    badge: "bg-brand-coral text-white",
     accent: "border-l-rose-400 dark:border-l-rose-500/50",
-    pill: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200",
+    pill: "bg-band-coral text-brand-coral",
   },
   {
-    chip: "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500/45 dark:bg-emerald-500/15 dark:text-emerald-100",
-    badge: "bg-emerald-500 text-white",
+    chip: "border-brand-teal bg-band-mint text-brand-teal",
+    badge: "bg-brand-teal text-white",
     accent: "border-l-emerald-400 dark:border-l-emerald-500/50",
-    pill: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
+    pill: "bg-band-mint text-brand-teal",
   },
   {
-    chip: "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-500/45 dark:bg-amber-500/15 dark:text-amber-100",
-    badge: "bg-amber-500 text-white",
+    chip: "border-brand-yellow bg-band-sun text-brand-gold",
+    badge: "bg-brand-yellow text-white",
     accent: "border-l-amber-400 dark:border-l-amber-500/50",
-    pill: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
+    pill: "bg-band-sun text-brand-gold",
   },
   {
-    chip: "border-violet-300 bg-violet-50 text-violet-900 dark:border-violet-500/45 dark:bg-violet-500/15 dark:text-violet-100",
-    badge: "bg-violet-500 text-white",
+    chip: "border-brand-grape bg-band-lav text-brand-grape",
+    badge: "bg-brand-grape text-white",
     accent: "border-l-violet-400 dark:border-l-violet-500/50",
-    pill: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200",
+    pill: "bg-band-lav text-brand-grape",
   },
   {
-    chip: "border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 dark:border-fuchsia-500/45 dark:bg-fuchsia-500/15 dark:text-fuchsia-100",
-    badge: "bg-fuchsia-500 text-white",
+    chip: "border-brand-pink bg-band-lav text-brand-pink",
+    badge: "bg-brand-pink text-white",
     accent: "border-l-fuchsia-400 dark:border-l-fuchsia-500/50",
-    pill: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-500/20 dark:text-fuchsia-200",
+    pill: "bg-band-lav text-brand-pink",
   },
 ] as const;
 
@@ -157,7 +157,7 @@ export function TheoryViewer({ section }: { section: TheorySection }) {
 
       {/* Khung công thức — mỗi ô là một chip có màu riêng */}
       {chips.length > 0 && (
-        <div className="relative rounded-3xl border-2 border-primary/25 bg-gradient-to-br from-sky-50 to-white px-4 py-6 shadow-soft dark:border-primary/30 dark:from-primary/15 dark:to-transparent">
+        <div className="relative rounded-3xl border-2 border-primary/25 bg-gradient-to-br from-band-sky to-white px-4 py-6 shadow-soft dark:border-primary/30 dark:from-primary/15 dark:to-transparent">
           <span className="absolute -top-3 left-4 rounded-full bg-primary px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-primary-foreground">
             Mẫu câu
           </span>
@@ -243,8 +243,8 @@ export function TheoryViewer({ section }: { section: TheorySection }) {
 
       {/* Khi nào dùng */}
       {section.usage && (
-        <div className="rounded-2xl border-2 border-sky-200 bg-sky-50/70 px-4 py-3 dark:border-sky-500/30 dark:bg-sky-500/10">
-          <SectionLabel icon={Target} className="mb-1 text-sky-700 dark:text-sky-300">
+        <div className="rounded-2xl border-2 border-brand-sky/40 bg-band-sky/70 px-4 py-3">
+          <SectionLabel icon={Target} className="mb-1 text-brand-sky">
             Khi nào dùng?
           </SectionLabel>
           <p className="whitespace-pre-line text-[17px] leading-relaxed text-foreground/90">
@@ -266,25 +266,25 @@ export function TheoryViewer({ section }: { section: TheorySection }) {
       {/* Lỗi các bạn hay quên */}
       {section.mistakes && section.mistakes.length > 0 && (
         <div className="space-y-2.5">
-          <SectionLabel icon={AlertTriangle} className="text-orange-600 dark:text-orange-400">
+          <SectionLabel icon={AlertTriangle} className="text-brand-sun">
             Bạn nào cũng hay quên chỗ này
           </SectionLabel>
           {section.mistakes.map((m, i) => (
             <div
               key={i}
-              className="space-y-1.5 rounded-2xl border-2 border-orange-200 bg-orange-50/60 px-4 py-3 dark:border-orange-500/30 dark:bg-orange-500/10"
+              className="space-y-1.5 rounded-2xl border-2 border-brand-sun/40 bg-band-coral/60 px-4 py-3"
             >
               {m.wrong && (
                 <div className="flex items-start gap-2">
-                  <span className="mt-0.5 font-extrabold text-orange-500">✕</span>
-                  <span className="font-primer text-base text-orange-700/90 line-through decoration-orange-400/70 dark:text-orange-200/90">
+                  <span className="mt-0.5 font-extrabold text-brand-sun">✕</span>
+                  <span className="font-primer text-base text-brand-sun/90 line-through decoration-brand-sun/70">
                     {m.wrong}
                   </span>
                 </div>
               )}
               {m.right && (
                 <div className="flex items-start gap-2">
-                  <span className="mt-0.5 font-extrabold text-emerald-600 dark:text-emerald-400">✓</span>
+                  <span className="mt-0.5 font-extrabold text-brand-teal">✓</span>
                   <LookupText text={m.right} className="text-base font-bold" />
                   <SpeakButton text={m.right} className="h-9 w-9" label="Nghe câu đúng" />
                 </div>
@@ -298,13 +298,13 @@ export function TheoryViewer({ section }: { section: TheorySection }) {
       {/* Ví dụ theo tình huống */}
       {section.examples.length > 0 && (
         <div className="space-y-2.5">
-          <SectionLabel icon={Sparkles} className="text-amber-600 dark:text-amber-400">
+          <SectionLabel icon={Sparkles} className="text-brand-gold">
             Nghe thử trong đời thật
           </SectionLabel>
           {section.examples.map((ex, i) => (
             <Card key={i} className="overflow-hidden border-l-[6px] border-l-sunny">
               <CardContent className="space-y-2 p-4">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-band-sun px-2.5 py-0.5 text-xs font-bold text-brand-gold">
                   <MapPin className="h-3 w-3" /> {ex.situation}
                 </div>
                 {isImageUrl(ex.imageUrl) && (
@@ -321,7 +321,7 @@ export function TheoryViewer({ section }: { section: TheorySection }) {
                 </div>
                 <div className="text-[15px] text-foreground/80">{ex.meaning}</div>
                 {ex.note && (
-                  <div className="flex items-start gap-1.5 rounded-2xl bg-amber-50 px-3 py-2 text-[13px] text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                  <div className="flex items-start gap-1.5 rounded-2xl bg-band-sun px-3 py-2 text-[13px] text-brand-gold">
                     <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     <span>{ex.note}</span>
                   </div>

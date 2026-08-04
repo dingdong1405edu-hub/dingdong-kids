@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "pub-*.r2.dev" },
+      // Ảnh bìa phim của khu "Xem hoạt hình" (thumbnail YouTube).
+      { protocol: "https", hostname: "i.ytimg.com" },
     ],
   },
   experimental: {

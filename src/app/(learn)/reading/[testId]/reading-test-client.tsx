@@ -319,10 +319,10 @@ export function ReadingTestClient({
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold tabular-nums",
-              overTime ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" : "bg-muted",
+              overTime ? "bg-band-sun text-brand-gold" : "bg-muted",
             )}
           >
-            <Clock className={cn("h-4 w-4", overTime ? "text-amber-600 dark:text-amber-300" : "text-muted-foreground")} />
+            <Clock className={cn("h-4 w-4", overTime ? "text-brand-gold" : "text-muted-foreground")} />
             {formatDuration(elapsed)}
             <span className="hidden text-xs font-normal text-muted-foreground sm:inline">
               / gợi ý {formatDuration(test.timeLimit)}
@@ -362,7 +362,7 @@ export function ReadingTestClient({
                     title={c.name}
                     className={cn(
                       "h-6 w-6 rounded-full border-2 transition-transform",
-                      highlightColor === c.value ? "scale-110 border-foreground" : "border-black/10 dark:border-white/20",
+                      highlightColor === c.value ? "scale-110 border-foreground" : "border-black/10",
                     )}
                     style={{ backgroundColor: c.value }}
                   />
@@ -435,7 +435,7 @@ export function ReadingTestClient({
                     Câu hỏi · {total}
                   </span>
                   {submitted ? (
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    <span className="rounded-full bg-band-mint px-2.5 py-0.5 text-xs font-bold text-brand-teal">
                       {Math.round(result?.score ?? 0)}% · {correctCount}/{total}
                     </span>
                   ) : (
@@ -577,7 +577,7 @@ function SegButton({
       onClick={onClick}
       className={cn(
         "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold transition-colors",
-        active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted",
+        active ? "bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:bg-muted",
       )}
     >
       <Icon className="h-4 w-4" /> {label}

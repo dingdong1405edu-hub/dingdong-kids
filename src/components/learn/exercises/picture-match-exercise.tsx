@@ -67,9 +67,9 @@ export function PictureMatchExerciseUI({ exercise, onAnswer, disabled }: Props) 
             className={cn(
               "btn-chunky min-h-[64px] rounded-2xl border-4 bg-card p-4 font-primer text-2xl font-bold transition-colors",
               picked === null && "border-primary/20 hover:border-primary/50 hover:bg-primary/5",
-              picked === i && i === exercise.correct && "animate-pop-in border-green-500 bg-green-50 dark:bg-green-500/15",
-              picked === i && i !== exercise.correct && "animate-wrong border-red-400 bg-red-50 dark:bg-red-500/15",
-              picked !== null && picked !== i && i === exercise.correct && "border-green-400 bg-green-50/60 dark:bg-green-500/10",
+              picked === i && i === exercise.correct && "animate-pop-in border-brand-lime bg-band-mint",
+              picked === i && i !== exercise.correct && "animate-wrong border-brand-coral bg-band-coral",
+              picked !== null && picked !== i && i === exercise.correct && "border-brand-lime bg-band-mint/60",
               picked !== null && picked !== i && i !== exercise.correct && "border-transparent opacity-50",
             )}
           >

@@ -142,7 +142,7 @@ export function QuestionRows({
                         aria-label="Chọn đáp án đúng"
                         className={cn(
                           "shrink-0 rounded-full p-0.5",
-                          correct ? "text-green-600" : "text-muted-foreground/40 hover:text-muted-foreground"
+                          correct ? "text-brand-teal" : "text-muted-foreground/40 hover:text-muted-foreground"
                         )}
                       >
                         <CheckCircle2 className="h-5 w-5" />

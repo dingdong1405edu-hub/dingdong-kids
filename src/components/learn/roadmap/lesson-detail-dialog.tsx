@@ -66,7 +66,7 @@ export function LessonDetailDialog({ lesson, levelLabel, levelSlug, theme, locke
                 {levelLabel} · Bài {lesson?.order}
               </div>
               <div className="mt-1.5 flex items-center gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-card/20 text-3xl backdrop-blur">
                   <span aria-hidden>{lesson?.icon ?? "📘"}</span>
                 </div>
                 <DialogHeader className="space-y-0.5 text-left">
@@ -97,13 +97,13 @@ export function LessonDetailDialog({ lesson, levelLabel, levelSlug, theme, locke
 
           {/* Thông tin: chặng · XP · số kỹ năng đã xong */}
           <div className="relative z-10 mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold">
-            <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-white/15 px-2.5 py-1 backdrop-blur">
+            <span className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-card/15 px-2.5 py-1 backdrop-blur">
               🗺️ {lesson?.chapter ? `Chặng ${lesson.chapterOrder} · ${lesson.chapter}` : "Chưa phân chặng"}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-full bg-card/15 px-2.5 py-1 backdrop-blur">
               <Star className="h-3.5 w-3.5 fill-white" /> +{lesson?.xpReward ?? 20} XP
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 tabular-nums backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-full bg-card/15 px-2.5 py-1 tabular-nums backdrop-blur">
               {doneCount}/{total} kỹ năng
             </span>
           </div>
@@ -130,7 +130,9 @@ export function LessonDetailDialog({ lesson, levelLabel, levelSlug, theme, locke
               <Link
                 href={upgradeHref}
                 className={cn(
-                  "btn-chunky mt-1 inline-flex w-full items-center justify-center gap-2 px-4 py-3 text-sm font-extrabold text-white",
+                  // Gờ 3D lấy sắc cacao mờ thay vì cam nắng mặc định của .btn-chunky:
+                  // mặt nút đổi màu theo từng cấp nên gờ phải trung tính mới hợp mọi thế giới.
+                  "btn-chunky mt-1 inline-flex w-full items-center justify-center gap-2 px-4 py-3 font-display text-sm font-extrabold text-white [--edge:hsl(var(--shadow-hue)/0.45)]",
                   theme.accentBg
                 )}
               >

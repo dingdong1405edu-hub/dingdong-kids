@@ -20,8 +20,8 @@ export function ExamResults({
         className={cn(
           "flex items-center justify-between gap-4 p-5",
           passed
-            ? "bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-500/10 dark:to-transparent"
-            : "bg-gradient-to-br from-amber-50 to-white dark:from-amber-500/10 dark:to-transparent",
+            ? "bg-gradient-to-br from-band-mint to-white dark:to-transparent"
+            : "bg-gradient-to-br from-band-sun to-white dark:to-transparent",
         )}
       >
         <div className="flex items-center gap-3">
@@ -29,8 +29,8 @@ export function ExamResults({
             className={cn(
               "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl",
               passed
-                ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
-                : "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300",
+                ? "bg-band-mint text-brand-teal"
+                : "bg-band-sun text-brand-gold",
             )}
           >
             <Trophy className="h-7 w-7" />
@@ -40,7 +40,7 @@ export function ExamResults({
               <span
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold",
-                  passed ? "bg-emerald-600 text-white" : "bg-amber-500 text-white",
+                  passed ? "bg-brand-teal text-white" : "bg-brand-yellow text-white",
                 )}
               >
                 {passed ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
@@ -57,7 +57,7 @@ export function ExamResults({
           <div
             className={cn(
               "font-display text-4xl font-extrabold",
-              passed ? "text-emerald-600 dark:text-emerald-300" : "text-amber-600 dark:text-amber-300",
+              passed ? "text-brand-teal" : "text-brand-gold",
             )}
           >
             {overall}
@@ -83,7 +83,7 @@ export function ExamResults({
               </div>
             )}
             {s.score === null && (
-              <div className="text-xs text-amber-600 dark:text-amber-300">Phần này chưa chấm được</div>
+              <div className="text-xs text-brand-gold">Phần này chưa chấm được</div>
             )}
           </div>
         ))}

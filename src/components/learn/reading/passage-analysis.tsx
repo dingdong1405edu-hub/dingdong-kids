@@ -47,12 +47,12 @@ export function PassageAnalysis({
   if (translationLines.length === 0 && sentences.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-3xl border-2 border-sky-200 bg-gradient-to-b from-sky-50/70 to-white shadow-soft dark:border-sky-500/25 dark:from-sky-500/10 dark:to-transparent">
+    <div className="overflow-hidden rounded-3xl border-2 border-brand-sky/40 bg-gradient-to-b from-band-sky/70 to-white shadow-soft dark:to-transparent">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 border-b border-sky-100 bg-sky-50/70 px-4 py-3 text-left text-sm font-bold text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/15 dark:text-sky-300"
+        className="flex w-full items-center gap-2 border-b border-brand-sky/40 bg-band-sky/70 px-4 py-3 text-left text-sm font-bold text-brand-sky"
       >
         <BookOpenText className="h-4 w-4 shrink-0" />
         <span className="flex-1">Dịch &amp; giảng bài đọc</span>
@@ -63,10 +63,10 @@ export function PassageAnalysis({
         <div className="space-y-4 p-4">
           {translationLines.length > 0 && (
             <section className="space-y-1.5">
-              <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-sky-600 dark:text-sky-300">
+              <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand-sky">
                 <Languages className="h-3.5 w-3.5" /> Cả bài nói gì?
               </h4>
-              <div className="space-y-1.5 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <div className="space-y-1.5 text-[15px] leading-relaxed text-foreground">
                 {translationLines.map((line, i) => (
                   <p key={i}>{line}</p>
                 ))}
@@ -76,17 +76,17 @@ export function PassageAnalysis({
 
           {sentences.length > 0 && (
             <section className="space-y-2">
-              <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-sky-600 dark:text-sky-300">
+              <h4 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand-sky">
                 <ListTree className="h-3.5 w-3.5" /> Từng câu một
               </h4>
               <ol className="space-y-2.5">
                 {sentences.map((s, i) => (
                   <li
                     key={i}
-                    className="rounded-2xl border border-sky-100 bg-white/70 p-3 dark:border-sky-500/15 dark:bg-white/[0.03]"
+                    className="rounded-2xl border border-brand-sky/40 bg-card/70 p-3/[0.03]"
                   >
                     <div className="flex gap-2">
-                      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[11px] font-bold text-sky-600 dark:bg-sky-500/20 dark:text-sky-300">
+                      <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-band-sky text-[11px] font-bold text-brand-sky">
                         {i + 1}
                       </span>
                       <div className="min-w-0 flex-1 space-y-1">
@@ -98,7 +98,7 @@ export function PassageAnalysis({
                         </div>
                         {s.vi && <p className="text-sm italic text-muted-foreground">{s.vi}</p>}
                         {s.note && (
-                          <p className="rounded-xl bg-sky-50 px-2.5 py-1.5 text-xs leading-relaxed text-sky-800 dark:bg-sky-500/10 dark:text-sky-200">
+                          <p className="rounded-xl bg-band-sky px-2.5 py-1.5 text-xs leading-relaxed text-brand-sky">
                             {s.note}
                           </p>
                         )}

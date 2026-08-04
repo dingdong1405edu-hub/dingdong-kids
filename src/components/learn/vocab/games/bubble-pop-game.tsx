@@ -37,14 +37,16 @@ const MIN_WORDS = 3;
 /**
  * Màu bong bóng — viết NGUYÊN chuỗi class Tailwind (không ghép chuỗi động, ghép
  * động thì Tailwind không quét ra và bong bóng sẽ mất màu khi build production).
+ * Dùng `brand-*` chứ không dùng bảng màu mặc định của Tailwind: nhóm brand tự hạ
+ * chroma ở chế độ tối nên bong bóng không chói mắt bé khi học buổi tối.
  */
 const BUBBLE_COLORS = [
-  "from-sky-200 to-sky-400",
-  "from-rose-200 to-rose-400",
-  "from-amber-200 to-amber-400",
-  "from-emerald-200 to-emerald-400",
-  "from-violet-200 to-violet-400",
-  "from-orange-200 to-orange-400",
+  "from-brand-sky/55 to-brand-sky",
+  "from-brand-pink/50 to-brand-pink",
+  "from-brand-yellow/60 to-brand-honey",
+  "from-brand-lime/55 to-brand-lime",
+  "from-brand-grape/50 to-brand-grape",
+  "from-brand-coral/55 to-brand-coral",
 ];
 
 /** Lời khen xoay vòng — trẻ chán rất nhanh nếu lúc nào cũng một câu. */
@@ -341,7 +343,8 @@ export function BubblePopGame({ words, onDone }: VocabGameProps) {
             aria-label="Nghe lại từ"
             className={cn(
               "btn-chunky flex h-24 w-24 items-center justify-center rounded-full",
-              "bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95",
+              // Vàng nắng = nút hành động chính của cả hệ thiết kế.
+              "bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95",
             )}
           >
             <Volume2 className="h-11 w-11" />
@@ -350,26 +353,26 @@ export function BubblePopGame({ words, onDone }: VocabGameProps) {
             Bấm loa để nghe lại
           </p>
 
-          {/* "Hồ nước" chứa bong bóng */}
+          {/* "Hồ nước" chứa bong bóng — nền `band-sky` nên tự thành xanh đêm ở
+              chế độ tối, không cần cặp `dark:` viết tay. */}
           <div
             className={cn(
               "relative w-full overflow-hidden rounded-3xl p-3 sm:p-5",
-              "bg-gradient-to-b from-sky-50 to-cyan-100/80",
-              "dark:from-sky-950/50 dark:to-slate-900/70",
+              "bg-gradient-to-b from-band-sky to-brand-sky/35",
             )}
           >
             {/* Bọt nước trang trí — chỉ để nền có sức sống, bé không chạm được */}
             <span
               aria-hidden
-              className="animate-float-y pointer-events-none absolute left-4 top-6 h-6 w-6 rounded-full bg-white/50"
+              className="animate-float-y pointer-events-none absolute left-4 top-6 h-6 w-6 rounded-full bg-card/60"
             />
             <span
               aria-hidden
-              className="animate-float-y2 pointer-events-none absolute right-6 top-1/3 h-4 w-4 rounded-full bg-white/40"
+              className="animate-float-y2 pointer-events-none absolute right-6 top-1/3 h-4 w-4 rounded-full bg-card/50"
             />
             <span
               aria-hidden
-              className="animate-float-y pointer-events-none absolute bottom-5 left-1/3 h-3 w-3 rounded-full bg-white/40"
+              className="animate-float-y pointer-events-none absolute bottom-5 left-1/3 h-3 w-3 rounded-full bg-card/50"
             />
 
             <div className="relative grid grid-cols-2 justify-items-center gap-3 sm:grid-cols-4 sm:gap-4">
@@ -423,15 +426,17 @@ export function BubblePopGame({ words, onDone }: VocabGameProps) {
                         "relative flex h-28 w-28 items-center justify-center rounded-full sm:h-32 sm:w-32",
                         "bg-gradient-to-br",
                         b.color,
-                        "ring-4 ring-white/60 dark:ring-white/20",
-                        "shadow-[0_6px_0_0_rgba(0,0,0,0.12)]",
+                        // Viền sáng + gờ nâu cacao: bong bóng nổi hẳn khỏi mặt hồ
+                        // ở CẢ hai chế độ màu (bóng đen thuần trông bẩn trên nền kem).
+                        "ring-4 ring-card/70",
+                        "shadow-chunky-sm",
                         solved && !isTarget && "opacity-45",
                       )}
                     >
                       {/* Vệt sáng cho ra chất bong bóng xà phòng */}
                       <span
                         aria-hidden
-                        className="pointer-events-none absolute left-[18%] top-[14%] h-5 w-7 -rotate-12 rounded-full bg-white/70 blur-[1px]"
+                        className="pointer-events-none absolute left-[18%] top-[14%] h-5 w-7 -rotate-12 rounded-full bg-card/75 blur-[1px]"
                       />
                       <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full sm:h-24 sm:w-24">
                         <WordVisual word={b.word} emojiClass="text-5xl sm:text-6xl" quiz />
@@ -446,7 +451,7 @@ export function BubblePopGame({ words, onDone }: VocabGameProps) {
           {/* Chữ chỉ hiện SAU khi chích trúng — trước đó mà hiện thì bé dò chữ
               chứ không nghe nữa. */}
           {solved && (
-            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

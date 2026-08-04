@@ -47,18 +47,18 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b bg-card px-4 py-3">
-        <DingAvatar className="h-9 w-9" />
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card shadow-soft-xl">
+      {/* Header — dải vàng nắng để bé thấy ngay "đây là chỗ hỏi bạn Ding" */}
+      <div className="flex items-center gap-3 border-b-2 border-border bg-band-yel px-4 py-3">
+        <DingAvatar className="h-10 w-10 animate-bob" />
         <div className="min-w-0 flex-1 leading-tight">
-          <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+          <div className="flex items-center gap-1.5 font-display text-[1.05rem] font-extrabold text-foreground">
             Ding
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Online
+            <span className="inline-flex items-center gap-1 rounded-full bg-band-mint px-2 py-0.5 text-[10px] font-extrabold text-brand-teal">
+              <span className="h-1.5 w-1.5 animate-dot-pulse rounded-full bg-brand-lime" /> Online
             </span>
           </div>
-          <div className="truncate text-[11px] text-muted-foreground">
+          <div className="truncate text-[11px] font-semibold text-muted-foreground">
             Trợ lý học tiếng Anh
           </div>
         </div>
@@ -68,18 +68,18 @@ export function ChatPanel({
             onClick={reset}
             disabled={isStreaming}
             aria-label="Xoá hội thoại"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground disabled:opacity-40"
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-card/70 text-muted-foreground transition-colors hover:bg-card hover:text-brand-coral disabled:opacity-40"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-[18px] w-[18px]" />
           </button>
         )}
         <button
           type="button"
           onClick={onClose}
           aria-label="Đóng trợ lý"
-          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground"
+          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-card/70 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
         >
-          <X className="h-4 w-4" />
+          <X className="h-[18px] w-[18px]" />
         </button>
       </div>
 
@@ -87,12 +87,12 @@ export function ChatPanel({
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-3.5 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-2 text-center">
-            <DingAvatar className="h-14 w-14 text-2xl" />
+            <DingAvatar className="h-20 w-20 animate-bob text-4xl" />
             <div>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="font-display text-[1.05rem] font-extrabold text-foreground">
                 Chào {firstName ? firstName : "bạn"}! Mình là Ding 🐻
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">
                 Hỏi mình bất cứ điều gì về tiếng Anh — từ vựng, ngữ pháp, ghép vần, phát âm hay
                 cách ôn thi Cambridge nhé!
               </p>
@@ -103,7 +103,7 @@ export function ChatPanel({
                   key={s}
                   type="button"
                   onClick={() => send(s)}
-                  className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+                  className="rounded-full border-2 border-border bg-band-sky px-3.5 py-1.5 text-xs font-bold text-brand-blue transition-all duration-200 ease-toy hover:-translate-y-0.5 hover:shadow-soft"
                 >
                   {s}
                 </button>
@@ -122,14 +122,14 @@ export function ChatPanel({
         )}
 
         {error && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
+          <p className="rounded-xl border-2 border-destructive/40 bg-band-coral px-3 py-2 text-center text-xs font-bold text-brand-coral">
             {error}
           </p>
         )}
       </div>
 
       {/* Input */}
-      <div className="border-t bg-background/60 p-2.5">
+      <div className="border-t-2 border-border bg-muted/60 p-2.5">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -144,8 +144,9 @@ export function ChatPanel({
             rows={1}
             placeholder="Nhập câu hỏi cho Ding…"
             className={cn(
-              "max-h-28 min-h-[40px] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm",
-              "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              // Cùng ngôn ngữ với <Input>: viền dày 2px, bo lớn, focus vàng nắng.
+              "max-h-28 min-h-[48px] flex-1 resize-none rounded-lg border-2 border-input bg-card px-3.5 py-3 text-sm font-semibold text-foreground",
+              "placeholder:font-medium placeholder:text-muted-foreground/70 focus-visible:border-brand-yellow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-yellow/30"
             )}
           />
           <Button
@@ -154,12 +155,12 @@ export function ChatPanel({
             onClick={submit}
             disabled={!input.trim() || isStreaming}
             aria-label="Gửi"
-            className="h-10 w-10 shrink-0 rounded-xl"
+            className="shrink-0"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           </Button>
         </div>
-        <p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
+        <p className="mt-1.5 px-1 text-[10px] font-semibold text-muted-foreground">
           Ding là AI nên đôi khi có thể nhầm — hãy kiểm tra lại thông tin quan trọng.
         </p>
       </div>

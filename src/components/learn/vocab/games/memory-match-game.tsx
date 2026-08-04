@@ -174,10 +174,14 @@ export function MemoryMatchGame({ words, onDone }: VocabGameProps) {
                   // Ô chơi ≥ 96px (nguyên tắc 4)
                   "relative flex aspect-square w-full min-w-0 items-center justify-center rounded-2xl border-4",
                   isMatched
-                    ? "animate-pop-in border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15"
+                    // Ăn đôi = xanh lá thương hiệu; nền dùng cùng màu pha loãng
+                    // nên hợp cả nền kem lẫn nền cacao, không cần cặp `dark:`.
+                    ? "animate-pop-in border-brand-lime bg-brand-lime/15 shadow-soft"
                     : isFaceUp
-                      ? "border-primary/40 bg-card"
-                      : "border-primary/20 bg-gradient-to-br from-primary/80 to-primary",
+                      ? "border-brand-honey/60 bg-card shadow-soft"
+                      // Mặt sau thẻ: khối tím–xanh đậm để bàn cờ trông như bộ bài
+                      // đồ chơi, chứ không phải ô trống chờ bấm.
+                      : "border-brand-grape/40 bg-gradient-to-br from-brand-grape to-brand-blue shadow-soft",
                 )}
               >
                 {/* Nội dung phải xoay ngược lại để không bị lộn khi thẻ lật */}
@@ -195,7 +199,7 @@ export function MemoryMatchGame({ words, onDone }: VocabGameProps) {
                       )}
                     </>
                   ) : (
-                    <span className="text-4xl text-primary-foreground/90" aria-hidden>
+                    <span className="text-4xl" aria-hidden>
                       ⭐
                     </span>
                   )}
@@ -205,7 +209,7 @@ export function MemoryMatchGame({ words, onDone }: VocabGameProps) {
           })}
         </div>
 
-        <p className="text-center text-sm font-semibold text-muted-foreground">
+        <p className="w-fit self-center rounded-full bg-band-sun px-4 py-1 text-center font-display text-sm font-extrabold text-brand-gold">
           Đã tìm được {matched.length}/{totalPairs} đôi
         </p>
       </GameShell>

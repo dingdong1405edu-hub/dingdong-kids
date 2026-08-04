@@ -26,9 +26,9 @@ export function ReadingPalette({ total, answered, flagged, current, correctness,
               // xác, và đặt nhỏ hơn thì nút tròn bị base CSS kéo thành bầu dục.
               "relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
               c === true
-                ? "border-emerald-500 bg-emerald-500 text-white"
+                ? "border-brand-teal bg-brand-teal text-white"
                 : c === false
-                  ? "border-rose-400 bg-rose-400 text-white"
+                  ? "border-brand-coral bg-brand-coral text-white"
                   : i === current
                     ? "border-primary bg-primary text-primary-foreground"
                     : answered[i]

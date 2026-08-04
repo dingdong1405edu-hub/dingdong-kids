@@ -140,23 +140,23 @@ export function FlashcardPhase({ flashcards, closeHref, label, onReviewTheory, o
             exit={{ y: 100, opacity: 0 }}
             className={`fixed bottom-0 left-0 right-0 z-40 max-h-[55dvh] overflow-y-auto border-t p-6 ${
               feedback === "correct"
-                ? "border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/15"
-                : "border-orange-200 bg-orange-50 dark:border-orange-500/25 dark:bg-orange-500/15"
+                ? "border-brand-lime/40 bg-band-mint"
+                : "border-brand-sun/40 bg-band-coral"
             }`}
           >
             <div className="mx-auto flex max-w-2xl items-start justify-between gap-4">
               <div className="flex min-w-0 items-start gap-3">
                 {feedback === "correct" ? (
-                  <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-green-600 dark:text-green-300" />
+                  <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-brand-teal" />
                 ) : (
-                  <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-orange-500 dark:text-orange-300" />
+                  <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-brand-sun" />
                 )}
                 <div className="min-w-0 space-y-1">
                   <div
                     className={`font-display text-lg font-extrabold ${
                       feedback === "correct"
-                        ? "text-green-700 dark:text-green-300"
-                        : "text-orange-600 dark:text-orange-300"
+                        ? "text-brand-teal"
+                        : "text-brand-sun"
                     }`}
                   >
                     {feedback === "correct" ? PRAISE[index % PRAISE.length] : "Gần đúng rồi! Bé xem lại nhé 🌟"}
@@ -175,7 +175,7 @@ export function FlashcardPhase({ flashcards, closeHref, label, onReviewTheory, o
                 onClick={advanceAfterAnswer}
                 className={cn(
                   "btn-chunky shrink-0 px-6 font-extrabold",
-                  feedback === "correct" && "bg-green-600 hover:bg-green-700",
+                  feedback === "correct" && "bg-brand-lime hover:bg-brand-lime",
                 )}
               >
                 Tiếp tục

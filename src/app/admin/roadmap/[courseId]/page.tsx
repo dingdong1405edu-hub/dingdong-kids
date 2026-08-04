@@ -230,7 +230,7 @@ export default async function AdminCoursePage({ params }: Props) {
                 name="chapterId"
                 defaultValue={course.chapters[0]?.id ?? ""}
                 disabled={course.chapters.length === 0}
-                className="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-full items-center rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-soft focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">(Chưa phân chương)</option>
                 {course.chapters.map((ch) => (

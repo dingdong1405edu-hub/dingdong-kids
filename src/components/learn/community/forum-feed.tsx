@@ -68,7 +68,7 @@ function StatBox({ icon, value, label, live }: { icon: ReactNode; value: string;
       <div className="min-w-0 leading-tight">
         <div className="flex items-center gap-1.5 text-base font-extrabold tabular-nums">
           {value}
-          {live && <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />}
+          {live && <span className="h-2 w-2 animate-pulse rounded-full bg-brand-teal" />}
         </div>
         <div className="truncate text-[11px] text-muted-foreground">{label}</div>
       </div>
@@ -122,7 +122,7 @@ function ThreadRow({
     <article
       className={cn(
         "sticker bg-card p-4 transition-colors hover:border-primary/40",
-        thread.pinned && "border-amber-300 bg-amber-50/50 dark:border-amber-400/30 dark:bg-amber-500/5",
+        thread.pinned && "border-brand-yellow bg-band-sun/50",
       )}
     >
       <div className="flex gap-3">
@@ -146,18 +146,18 @@ function ThreadRow({
           {/* Title + badges */}
           <button onClick={onToggleExpand} className="mt-1 block text-left">
             <h3 className="text-[15px] font-bold leading-snug hover:text-primary">
-              {thread.pinned && <Pin className="mr-1 inline h-3.5 w-3.5 text-amber-500" />}
+              {thread.pinned && <Pin className="mr-1 inline h-3.5 w-3.5 text-brand-gold" />}
               {thread.title}
             </h3>
           </button>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             {thread.hot && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:bg-rose-500/20 dark:text-rose-300">
+              <span className="inline-flex items-center gap-1 rounded-full bg-band-coral px-2 py-0.5 text-[10px] font-bold text-brand-coral">
                 <Flame className="h-3 w-3" /> Sôi nổi
               </span>
             )}
             {thread.solved && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">
+              <span className="inline-flex items-center gap-1 rounded-full bg-band-mint px-2 py-0.5 text-[10px] font-bold text-brand-teal">
                 <CheckCircle2 className="h-3 w-3" /> Đã giải đáp
               </span>
             )}
@@ -177,7 +177,7 @@ function ThreadRow({
           <div className="mt-2.5 flex items-center gap-4 text-xs text-muted-foreground">
             <button
               onClick={onToggleLike}
-              className={cn("inline-flex items-center gap-1 transition-colors hover:text-rose-500", liked && "text-rose-500")}
+              className={cn("inline-flex items-center gap-1 transition-colors hover:text-brand-coral", liked && "text-brand-coral")}
             >
               <Heart className={cn("h-4 w-4", liked && "fill-current")} /> {thread.likes + (liked ? 1 : 0)}
             </button>
@@ -448,7 +448,7 @@ export function ForumFeed({
                 )}
               >
                 {c.label}
-                <span className={cn("rounded-full px-1.5 text-[10px]", active ? "bg-white/20" : "bg-muted")}>{c.count}</span>
+                <span className={cn("rounded-full px-1.5 text-[10px]", active ? "bg-card/20" : "bg-muted")}>{c.count}</span>
               </button>
             );
           })}

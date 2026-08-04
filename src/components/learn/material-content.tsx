@@ -78,9 +78,9 @@ function Block({ block }: { block: MaterialBlock }) {
 
     case "note":
       return (
-        <div className="flex gap-3 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 dark:border-amber-400/30 dark:bg-amber-500/15">
-          <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-500 dark:text-amber-300" />
-          <p className="text-[17px] leading-relaxed text-amber-900 dark:text-amber-100">{block.text}</p>
+        <div className="flex gap-3 rounded-2xl border-2 border-brand-yellow/40 bg-band-sun p-4">
+          <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold" />
+          <p className="text-[17px] leading-relaxed text-brand-gold">{block.text}</p>
         </div>
       );
 

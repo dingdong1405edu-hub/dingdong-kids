@@ -205,7 +205,7 @@ export function EggHatchGame({ words, onDone }: VocabGameProps) {
             🥚
           </motion.span>
         </div>
-        <p className="animate-pop-in font-display text-2xl font-extrabold text-primary">
+        <p className="animate-pop-in rounded-2xl bg-band-sun px-5 py-2 font-display text-2xl font-extrabold text-brand-gold shadow-soft">
           Nở rồi! Bé ấp giỏi quá 🎉
         </p>
       </div>
@@ -223,34 +223,38 @@ export function EggHatchGame({ words, onDone }: VocabGameProps) {
         totalRounds={rounds.length}
       >
         <div className="flex flex-col items-center gap-4">
-          {/* Quả trứng — rung lắc mạnh dần theo số vết nứt */}
-          <motion.div
-            animate={{ rotate: [-3 - cracks, 3 + cracks, -3 - cracks] }}
-            transition={{ duration: Math.max(0.5, 1.6 - cracks * 0.25), repeat: Infinity }}
-            className="relative text-[7rem] leading-none"
-          >
-            🥚
-            {cracks > 0 && (
-              <span className="absolute inset-0 flex items-center justify-center text-[7rem] opacity-70">
-                {"⚡".repeat(Math.min(cracks, 3))}
-              </span>
-            )}
-          </motion.div>
-          <div className="w-40 rounded-full bg-muted">
-            <div
-              className="h-2 rounded-full bg-sunny transition-all duration-500"
-              style={{ width: `${crackPct}%` }}
-            />
+          {/* Ổ trứng: khối màu ấm bọc quanh quả trứng để phần thưởng đang lớn dần
+              trông như một sân khấu riêng, không lẫn vào nền trang. */}
+          <div className="flex w-full flex-col items-center gap-2 rounded-3xl bg-gradient-to-b from-band-yel to-band-sun py-4 shadow-soft">
+            {/* Quả trứng — rung lắc mạnh dần theo số vết nứt */}
+            <motion.div
+              animate={{ rotate: [-3 - cracks, 3 + cracks, -3 - cracks] }}
+              transition={{ duration: Math.max(0.5, 1.6 - cracks * 0.25), repeat: Infinity }}
+              className="relative text-[7rem] leading-none"
+            >
+              🥚
+              {cracks > 0 && (
+                <span className="absolute inset-0 flex items-center justify-center text-[7rem] opacity-70">
+                  {"⚡".repeat(Math.min(cracks, 3))}
+                </span>
+              )}
+            </motion.div>
+            <div className="w-40 rounded-full bg-card/70">
+              <div
+                className="h-3 rounded-full bg-brand-coral transition-all duration-500"
+                style={{ width: `${crackPct}%` }}
+              />
+            </div>
+            <p className="font-display text-sm font-extrabold text-brand-gold">
+              {cracks}/{rounds.length} vết nứt
+            </p>
           </div>
-          <p className="text-sm font-semibold text-muted-foreground">
-            {cracks}/{rounds.length} vết nứt
-          </p>
 
           <button
             type="button"
             onClick={replay}
             aria-label="Nghe lại từ"
-            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95"
           >
             <Volume2 className="h-9 w-9" />
           </button>
@@ -286,7 +290,7 @@ export function EggHatchGame({ words, onDone }: VocabGameProps) {
           </AnimatePresence>
 
           {solved && (
-            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

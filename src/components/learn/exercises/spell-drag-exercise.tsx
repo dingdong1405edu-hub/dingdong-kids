@@ -94,8 +94,8 @@ export function SpellDragExerciseUI({ exercise, onAnswer, disabled }: Props) {
             className={cn(
               "flex h-14 w-12 items-center justify-center rounded-xl border-4 font-primer text-3xl font-bold",
               checked === null && "border-primary/30 bg-card",
-              checked === true && "border-green-500 bg-green-50 dark:bg-green-500/15",
-              checked === false && "border-red-400 bg-red-50 dark:bg-red-500/15",
+              checked === true && "border-brand-lime bg-band-mint",
+              checked === false && "border-brand-coral bg-band-coral",
             )}
           >
             {t.ch}

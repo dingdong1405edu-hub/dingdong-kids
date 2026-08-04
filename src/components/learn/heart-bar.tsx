@@ -30,9 +30,9 @@ export function HeartBar({ hearts, maxHearts = 5, unlimited = false }: HeartBarP
 
   if (unlimited) {
     return (
-      <div className="flex items-center gap-1 text-rose-500" title="Tim không giới hạn">
-        <Heart className="h-7 w-7 fill-rose-500 drop-shadow-sm" />
-        <span className="font-display text-lg font-extrabold leading-none">∞</span>
+      <div className="flex items-center gap-1.5 text-brand-coral" title="Tim không giới hạn">
+        <Heart className="h-7 w-7 fill-brand-coral drop-shadow-[0_2px_0_hsl(var(--shadow-hue)/0.18)]" />
+        <span className="font-display text-xl font-extrabold leading-none">∞</span>
       </div>
     );
   }
@@ -45,9 +45,10 @@ export function HeartBar({ hearts, maxHearts = 5, unlimited = false }: HeartBarP
           <Heart
             key={i}
             className={cn(
-              "h-7 w-7 transition-all duration-200",
+              "h-7 w-7 transition-all duration-200 ease-toy",
               filled
-                ? "fill-rose-500 text-rose-500 drop-shadow-sm"
+                // San hô thương hiệu thay đỏ mặc định — cùng tông với nút "nguy hiểm".
+                ? "fill-brand-coral text-brand-coral drop-shadow-[0_2px_0_hsl(var(--shadow-hue)/0.18)]"
                 : "scale-90 fill-muted-foreground/20 text-muted-foreground/40",
               // Quả tim vừa nhận được sẽ nảy lên.
               gained && filled && i === hearts - 1 && "animate-star-pop",

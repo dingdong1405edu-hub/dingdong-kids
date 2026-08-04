@@ -173,7 +173,7 @@ function SpeakButton({ text, label = "Nghe lại" }: { text: string; label?: str
     <Button
       type="button"
       variant="outline"
-      className="btn-chunky gap-2 rounded-2xl border-2 px-5 py-3 font-display text-base font-extrabold"
+      size="lg"
       onClick={() => playWord({ word: text })}
     >
       <Volume2 className="h-5 w-5" /> {label}
@@ -201,8 +201,10 @@ function ChoiceButton({
       className={cn(
         "flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-3xl border-4 px-4 py-3 text-center transition-all duration-150 active:translate-y-[2px]",
         state === "idle" && "border-border bg-card hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-soft",
-        state === "right" && "animate-pop-in border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15",
-        state === "wrong" && "border-rose-300 bg-rose-50 dark:bg-rose-500/15",
+        // Phản hồi đúng/sai dùng .animate-correct / .animate-wrong dựng sẵn: nảy
+        // xanh bạc hà khi đúng, rung hồng san hô khi sai — cả hai đã tự lo chế độ tối.
+        state === "right" && "animate-correct",
+        state === "wrong" && "animate-wrong",
         state === "dim" && "border-border/60 bg-card opacity-50",
       )}
     >
@@ -277,9 +279,7 @@ export function RoadmapPhonicsPlayer({ title, content, closeHref, passThreshold,
         </span>
         <h2 className="font-display text-xl font-extrabold">Phần Ghép vần chưa có nội dung</h2>
         <Link href={closeHref}>
-          <Button variant="outline" className="btn-chunky rounded-2xl border-2">
-            Quay lại bài học
-          </Button>
+          <Button variant="outline">Quay lại bài học</Button>
         </Link>
       </div>
     );
@@ -305,11 +305,11 @@ export function RoadmapPhonicsPlayer({ title, content, closeHref, passThreshold,
               </div>
             )}
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="btn-chunky flex-1 rounded-2xl border-2" onClick={restart}>
+              <Button variant="outline" className="flex-1" onClick={restart}>
                 <RotateCcw className="mr-1.5 h-4 w-4" /> Chơi lại
               </Button>
               <Link href={closeHref} className="flex-1">
-                <Button className="btn-chunky w-full rounded-2xl font-extrabold">Quay lại bài học</Button>
+                <Button className="w-full">Quay lại bài học</Button>
               </Link>
             </div>
           </CardContent>
@@ -431,7 +431,7 @@ function TeachView({ card, onNext }: { card: TeachCard; onNext: () => void }) {
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <SpeakButton text={card.word} label="Nghe lại" />
-        <Button className="btn-chunky flex-1 gap-1.5 rounded-2xl py-3 font-display text-base font-extrabold" onClick={onNext}>
+        <Button size="lg" className="flex-1" onClick={onNext}>
           Tiếp tục <ArrowRight className="h-5 w-5" />
         </Button>
       </div>
@@ -492,7 +492,7 @@ function QuizView({
             type="button"
             onClick={() => playWord({ word: speakText })}
             aria-label="Nghe lại từ"
-            className="btn-chunky flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            className="btn-chunky flex h-24 w-24 items-center justify-center rounded-full bg-sunny text-sunny-foreground [--edge:hsl(var(--c-sun))]"
           >
             <Volume2 className="h-10 w-10" />
           </button>
@@ -634,7 +634,7 @@ function DiscriminateView({
           type="button"
           onClick={() => playWord({ word: played.word })}
           aria-label="Nghe lại"
-          className="btn-chunky flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground"
+          className="btn-chunky flex h-24 w-24 items-center justify-center rounded-full bg-sunny text-sunny-foreground [--edge:hsl(var(--c-sun))]"
         >
           <Volume2 className="h-10 w-10" />
         </button>
@@ -697,9 +697,10 @@ function Feedback({
     <div
       className={cn(
         "animate-pop-in space-y-3 rounded-3xl border-4 p-4",
-        ok
-          ? "border-emerald-300 bg-emerald-50 dark:bg-emerald-500/10"
-          : "border-amber-300 bg-amber-50 dark:bg-amber-500/10",
+        // Đúng → dải bạc hà viền xanh lá; chưa đúng → dải nắng viền mật ong (KHÔNG
+        // dùng sắc đỏ: với trẻ, "gần đúng rồi" phải trông ấm áp chứ không báo động).
+        // band-*/brand-* tự đổi theo chế độ tối nên bỏ hẳn cặp dark: thủ công.
+        ok ? "border-brand-lime bg-band-mint" : "border-brand-honey bg-band-sun",
       )}
     >
       <div className="flex items-center gap-2 font-display text-lg font-extrabold">
@@ -710,7 +711,7 @@ function Feedback({
       </div>
 
       {reveal && (
-        <div className="flex items-center gap-3 rounded-2xl bg-white/70 p-3 dark:bg-black/20">
+        <div className="flex items-center gap-3 rounded-2xl bg-card/70 p-3">
           <span className="text-4xl" aria-hidden>
             {reveal.emoji}
           </span>
@@ -723,10 +724,7 @@ function Feedback({
 
       {note && <p className="text-[15px] leading-relaxed text-muted-foreground">💡 {note}</p>}
 
-      <Button
-        className="btn-chunky w-full gap-1.5 rounded-2xl py-3 font-display text-base font-extrabold"
-        onClick={onNext}
-      >
+      <Button size="lg" className="w-full" onClick={onNext}>
         Tiếp tục <ArrowRight className="h-5 w-5" />
       </Button>
     </div>

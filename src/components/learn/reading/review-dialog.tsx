@@ -92,12 +92,12 @@ export function ReviewDialog({
 
           {flagged.length > 0 && (
             <div className="space-y-2">
-              <span className="flex items-center gap-1.5 text-sm font-bold text-amber-600 dark:text-amber-300">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-brand-gold">
                 <Flag className="h-4 w-4" /> Bé đã đánh dấu ({flagged.length})
               </span>
               <Chips
                 nums={flagged}
-                className="border-sunny bg-sunny/20 text-amber-600 dark:text-amber-300"
+                className="border-sunny bg-sunny/20 text-brand-gold"
                 onJump={onJump}
                 onOpenChange={onOpenChange}
               />
@@ -105,7 +105,7 @@ export function ReviewDialog({
           )}
 
           {unanswered.length === 0 && (
-            <p className="rounded-2xl bg-emerald-50 px-3 py-2.5 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <p className="rounded-2xl bg-band-mint px-3 py-2.5 text-sm font-semibold text-brand-teal">
               Tuyệt vời — bé đã làm hết tất cả các câu! 🎉
             </p>
           )}

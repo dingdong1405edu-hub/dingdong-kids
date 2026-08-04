@@ -36,7 +36,8 @@ export function FirstWordsWorldCard({ totalStars, maxStars, doneUnits, totalUnit
       className="h-full"
     >
       <Link href={FIRST_WORDS_LEVEL.href} className="group block h-full">
-        <div className="flex h-full flex-col overflow-hidden rounded-3xl border-2 border-fuchsia-200 bg-card shadow-soft transition-all duration-200 hover:-translate-y-1.5 hover:shadow-soft-lg dark:border-fuchsia-500/30">
+        {/* Viền hồng thương hiệu để thẻ miễn phí này nổi hẳn khỏi 6 thẻ cấp Cambridge */}
+        <div className="flex h-full flex-col overflow-hidden rounded-3xl border-2 border-brand-pink/35 bg-card shadow-soft transition-all duration-200 hover:-translate-y-1.5 hover:shadow-soft-lg">
           {/* Cover */}
           <div className={cn("relative h-36 overflow-hidden bg-gradient-to-br", FIRST_WORDS_LEVEL.cardCover)}>
             <span
@@ -46,13 +47,13 @@ export function FirstWordsWorldCard({ totalStars, maxStars, doneUnits, totalUnit
               {FIRST_WORDS_LEVEL.emoji}
             </span>
             <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white/25 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur">
+              <span className="rounded-full bg-card/25 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur">
                 {FIRST_WORDS_LEVEL.labelEn}
               </span>
-              <span className="rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+              <span className="rounded-full bg-card/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
                 {FIRST_WORDS_LEVEL.age}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-fuchsia-600 shadow">
+              <span className="inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-brand-pink shadow-soft">
                 <Sparkles className="h-3 w-3" /> Miễn phí
               </span>
             </div>

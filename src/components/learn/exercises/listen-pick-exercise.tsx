@@ -53,11 +53,11 @@ export function ListenPickExerciseUI({ exercise, onAnswer, disabled }: Props) {
             disabled={disabled}
             aria-label={`Lựa chọn ${i + 1}`}
             className={cn(
-              "overflow-hidden rounded-2xl border-4 bg-card transition-colors",
+              "answer-tile overflow-hidden",
               picked === null && "border-primary/20 hover:border-primary/50",
-              picked === i && i === exercise.correct && "animate-pop-in border-green-500",
-              picked === i && i !== exercise.correct && "animate-wrong border-red-400",
-              picked !== null && picked !== i && i === exercise.correct && "border-green-400",
+              picked === i && i === exercise.correct && "animate-pop-in border-brand-lime",
+              picked === i && i !== exercise.correct && "animate-wrong border-brand-coral",
+              picked !== null && picked !== i && i === exercise.correct && "border-brand-lime",
               picked !== null && picked !== i && i !== exercise.correct && "border-transparent opacity-50",
             )}
           >

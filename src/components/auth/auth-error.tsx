@@ -31,9 +31,9 @@ function AuthErrorInner() {
   return (
     <div
       role="alert"
-      className="mb-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+      className="mb-4 flex items-start gap-2.5 rounded-xl border-2 border-destructive/40 bg-band-coral px-3.5 py-3 text-sm font-semibold text-brand-coral"
     >
-      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
       <span className="leading-relaxed">{message}</span>
     </div>
   );

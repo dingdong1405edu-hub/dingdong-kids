@@ -26,6 +26,8 @@ import { EXAMS } from "./exams";
 // vẫn cần một cổng kiểm — nó là cấp DUY NHẤT bé chưa biết chữ nào học được.
 import { FIRST_WORDS_UNITS, TOTAL_FIRST_WORDS, REVIEW_UNIT_ID } from "@/lib/first-words";
 import { PHONICS_LESSONS } from "@/lib/phonics-lessons";
+// Khu "Xem hoạt hình" (Trải nghiệm) — cũng là nội dung tĩnh trong src/lib.
+import { CARTOONS, CARTOON_LEVEL_LABEL, lineDuration } from "@/lib/cartoons";
 
 const MODULES: Record<string, ChapterSeed[]> = CHAPTERS_BY_KEY;
 
@@ -446,6 +448,92 @@ function checkFirstWords(): void {
 }
 
 /**
+ * Khu "Xem hoạt hình". Bắt đúng những lỗi khiến phim "mở lên bị hụt":
+ * mốc thời gian sai thứ tự, câu chồng lên nhau, câu dài quá sức nhớ của bé.
+ *
+ * Mốc thời gian là thứ DUY NHẤT quyết định bài chạy đúng hay hỏng, mà lại
+ * không kiểm được bằng typecheck — nên cổng này là bắt buộc trước khi mở phim.
+ */
+function checkCartoons(): void {
+  const open = CARTOONS.filter((c) => c.published);
+  console.log(`\n▸ Xem hoạt hình: ${CARTOONS.length} phim (${open.length} đã mở cho bé)`);
+  if (CARTOONS.length === 0) {
+    warn("Xem hoạt hình", "CHƯA CÓ PHIM NÀO — bắt mốc thời gian ở /admin/hoat-hinh");
+    return;
+  }
+  if (open.length === 0) {
+    warn("Xem hoạt hình", "chưa phim nào `published: true` — trang /hoat-hinh sẽ trống");
+  }
+
+  const ids = new Set<string>();
+  const videos = new Map<string, string>();
+
+  for (const c of CARTOONS) {
+    const where = `Hoạt hình · ${c.id}`;
+    if (!c.id?.trim()) fail("Xem hoạt hình", "phim thiếu `id`");
+    if (ids.has(c.id)) fail(where, "TRÙNG `id` với phim khác — phim sau sẽ ghi đè tiến độ phim trước");
+    ids.add(c.id);
+    // Cùng một video xuất hiện hai lần = bé xem lại đúng nội dung cũ mà tưởng
+    // phim mới; tiến độ cũng chia đôi vô nghĩa.
+    const owner = videos.get(c.youtubeId);
+    if (owner) fail(where, `dùng chung \`youtubeId\` với phim "${owner}"`);
+    else videos.set(c.youtubeId, c.id);
+
+    if (!/^[\w-]{11}$/.test(c.youtubeId ?? "")) {
+      fail(where, `\`youtubeId\` phải là mã 11 ký tự của YouTube, đang là "${c.youtubeId}"`);
+    }
+    if (!c.title?.trim()) fail(where, "thiếu `title` (tiếng Việt)");
+    if (!c.titleEn?.trim()) fail(where, "thiếu `titleEn`");
+    if (!c.emoji?.trim()) fail(where, "thiếu `emoji`");
+    if (!c.channel?.trim()) fail(where, "thiếu `channel` — phải ghi rõ kênh gốc");
+    if (!CARTOON_LEVEL_LABEL[c.level]) {
+      fail(where, `\`level\` không hợp lệ: "${c.level}"`);
+    }
+    // Gradient phải là class literal, nếu không Tailwind JIT không quét ra và
+    // thẻ phim hiện ra trắng trơn khi ảnh bìa YouTube chưa về.
+    if (!/^from-\S+\s+via-\S+\s+to-\S+$/.test(c.cover ?? "")) {
+      fail(where, `\`cover\` phải có dạng "from-… via-… to-…", đang là "${c.cover}"`);
+    }
+
+    if (!c.lines?.length) {
+      fail(where, "phim không có câu nào — bé mở ra không có gì để nói");
+      continue;
+    }
+    if (c.lines.length > 40) {
+      warn(where, `${c.lines.length} câu là quá dài cho một buổi — 10–20 câu là vừa`);
+    }
+
+    let prevEnd = -Infinity;
+    for (const [i, l] of c.lines.entries()) {
+      const at = `${where} · câu ${i + 1}`;
+      if (!Number.isFinite(l.start) || l.start < 0) fail(at, "`start` không hợp lệ");
+      if (!Number.isFinite(l.end)) fail(at, "`end` không hợp lệ");
+      if (l.end <= l.start) fail(at, `\`end\` (${l.end}) phải LỚN HƠN \`start\` (${l.start})`);
+      // Câu phải xếp tăng dần và không chồng nhau: trình chơi tua thẳng tới
+      // `start` rồi dừng ở `end`, câu chồng nhau là bé nghe lại nửa câu trước.
+      if (l.start < prevEnd) {
+        fail(at, `bắt đầu ở ${l.start}s, CHỒNG lên câu trước (kết thúc ${prevEnd}s)`);
+      }
+      prevEnd = l.end;
+
+      const dur = lineDuration(l);
+      if (dur > 12) {
+        fail(at, `dài ${dur.toFixed(1)}s — bé không nhớ nổi cả câu để nhắc lại (trần 12s)`);
+      } else if (dur > 6) {
+        warn(at, `hơi dài (${dur.toFixed(1)}s) — câu 2–5 giây là dễ nói theo nhất`);
+      }
+      if (dur < 0.6) warn(at, `rất ngắn (${dur.toFixed(1)}s) — kiểm lại mốc có bị hụt không`);
+
+      if (!l.text?.trim()) fail(at, "thiếu `text` — không có câu thì không chấm được");
+      if (!l.vi?.trim()) fail(at, "thiếu nghĩa tiếng Việt (`vi`)");
+      // Câu quá dài thì máy nghe giọng trẻ em sai nhiều hơn → bé bị chấm oan.
+      const words = (l.text ?? "").trim().split(/\s+/).filter(Boolean).length;
+      if (words > 12) warn(at, `${words} từ — dài quá sức nhắc lại của bé, nên tách câu`);
+    }
+  }
+}
+
+/**
  * Đề thi thử. Bắt đúng những lỗi khiến đề "mở lên không làm được": tiểu phần
  * không có gì để làm, phần nghe không có lời thoại, trích dẫn không có thật.
  */
@@ -584,6 +672,7 @@ const LIBRARIES: Record<string, () => void> = {
   vocab: checkVocabLibrary,
   "first-words": checkFirstWords,
   phonics: checkPhonics,
+  cartoons: checkCartoons,
   exams: checkExams,
 };
 

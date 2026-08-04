@@ -7,7 +7,8 @@ export function DingAvatar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-orange-300 text-base shadow-sm ring-1 ring-amber-300/60",
+        // Vàng nắng → cam nắng: đúng bộ lông của gấu Ding trong <Logo>.
+        "flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-yellow to-brand-sun text-base shadow-soft ring-2 ring-brand-honey/50",
         className
       )}
       aria-hidden
@@ -47,7 +48,7 @@ export function ChatMessage({
     return (
       <div className="flex items-end gap-2">
         <DingAvatar className="h-8 w-8" />
-        <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-muted px-4 py-3">
+        <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-muted px-4 py-3">
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
           <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
@@ -61,10 +62,10 @@ export function ChatMessage({
       {!isUser && <DingAvatar className="h-8 w-8" />}
       <div
         className={cn(
-          "max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+          "max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm font-semibold leading-relaxed shadow-soft",
           isUser
-            ? "rounded-br-sm bg-primary text-primary-foreground"
-            : "rounded-bl-sm bg-muted text-foreground"
+            ? "rounded-br-md bg-sunny text-sunny-foreground"
+            : "rounded-bl-md bg-muted text-foreground"
         )}
       >
         {renderInline(content)}

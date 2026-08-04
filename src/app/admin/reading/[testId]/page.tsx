@@ -326,7 +326,7 @@ export default async function AdminReadingDetailPage({ params }: Props) {
                     )}
                   </div>
                   {q.supportingQuote && (
-                    <p className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-800 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    <p className="rounded-md border border-brand-teal/40 bg-band-mint px-2 py-1 text-xs text-brand-teal">
                       📍 <span>{q.supportingQuote}</span>
                     </p>
                   )}

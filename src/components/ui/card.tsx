@@ -1,11 +1,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Thẻ nội dung: khối trắng bo góc rất lớn (26px), KHÔNG viền cứng — chỉ một
+ * lớp bóng nâu mềm để nổi khỏi nền kem. Viền xám trên nền ấm luôn trông bẩn,
+ * nên tách lớp bằng bóng đổ thay vì bằng nét.
+ */
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-xl border border-border/70 bg-card text-card-foreground shadow-soft", className)}
+      className={cn("rounded-xl bg-card text-card-foreground shadow-soft", className)}
       {...props}
     />
   )
@@ -23,7 +28,7 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("font-semibold leading-none tracking-tight", className)}
+      className={cn("font-display text-lg font-extrabold leading-tight tracking-tight", className)}
       {...props}
     />
   )
@@ -34,7 +39,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  <p ref={ref} className={cn("text-sm font-semibold text-muted-foreground", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 

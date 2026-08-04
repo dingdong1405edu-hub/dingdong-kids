@@ -107,9 +107,9 @@ export function SectionPanel({ lessonId, skill, level, sectionId, published, ini
         </span>
         {hasContent ? (
           published ? (
-            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-500/15 dark:text-green-300 dark:hover:bg-green-500/15">Đang hiện</Badge>
+            <Badge className="bg-band-mint text-brand-teal hover:bg-band-mint dark:hover:bg-brand-lime/15">Đang hiện</Badge>
           ) : (
-            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/15">Bản nháp</Badge>
+            <Badge className="bg-band-sun text-brand-gold hover:bg-band-sun dark:hover:bg-brand-yellow/15">Bản nháp</Badge>
           )
         ) : (
           <Badge variant="outline" className="text-muted-foreground">Chưa có nội dung</Badge>

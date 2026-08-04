@@ -1,17 +1,22 @@
 /* Ding — chú gấu con vàng mật, linh vật lớn của DingDong Kids (dùng ở hero
    trang chủ và trang giới thiệu). Mắt dõi theo con trỏ, cười mở khi con trỏ
-   lại gần. Nền panel dùng màu thương hiệu xanh biển. */
+   lại gần.
+
+   Bảng màu gấu KHỚP tông mật ong của hệ thiết kế (brand-honey #F2B93A, nét
+   cacao #3D2410, má #F58CA0, mõm #FBEBC8). Phần THÂN GẤU ghi hex cố định — đây
+   là hình vẽ, nét và mắt phải giữ nguyên màu ở chế độ tối. Phần KHUNG (nền
+   panel, bong bóng, lấp lánh) dùng token nên tự dịu lại khi trời tối. */
 
 .wrap {
-  --brand: #1f8fd6;
-  --fur: #f6c76a;
-  --fur-d: #e0a63f;
-  --muzzle: #fff3dc;
-  --ink: #3a2a18;
-  --rose: #ff9fb0;
-  --rose-d: #ff7d95;
-  --spark: #ffe27a;
-  --orange: #f5a623;
+  --brand: hsl(var(--c-sky));
+  --fur: #f2b93a;
+  --fur-d: #d99b1b;
+  --muzzle: #fbebc8;
+  --ink: #3d2410;
+  --rose: #f58ca0;
+  --rose-d: #ee6c86;
+  --spark: hsl(var(--c-yellow));
+  --orange: hsl(var(--c-sun));
 
   position: relative;
   width: 100%;
@@ -30,13 +35,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 1.75rem;
+  /* Bo rất tròn theo --radius của hệ thiết kế (khung lớn = radius + 14px). */
+  border-radius: calc(var(--radius) + 14px);
   background-color: var(--brand);
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 50px 50px;
-  box-shadow: 0 24px 60px -20px rgba(16, 70, 110, 0.55);
+  box-shadow: 0 24px 60px -20px hsl(var(--shadow-hue) / 0.45);
 }
 
 /* Bare mode — only the mascot, no boxed olive-grid backdrop */
@@ -54,16 +60,16 @@
   transform: translateX(-50%) rotate(5deg);
   z-index: 30;
   max-width: 220px;
-  background: #fff;
-  color: #2b3350;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
   font-weight: 800;
   font-size: 17px;
   line-height: 1.4;
   letter-spacing: 0.04em;
   text-align: center;
   padding: 12px 20px;
-  border-radius: 22px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 26px hsl(var(--shadow-hue) / 0.18);
   animation: floaty 3.2s ease-in-out infinite;
 }
 .bubble b {
@@ -77,7 +83,7 @@
   transform: translateX(-50%);
   border-left: 13px solid transparent;
   border-right: 13px solid transparent;
-  border-top: 14px solid #fff;
+  border-top: 14px solid hsl(var(--card));
 }
 @keyframes floaty {
   0%, 100% { transform: translateX(-50%) rotate(5deg) translateY(0); }
@@ -117,10 +123,10 @@
 .b { left: 48%; animation-delay: 1s; height: 115%; }
 .c { left: 76%; animation-delay: 2s; }
 
-/* Chế độ "bare" (ngồi trên nền hero sáng): nét đậm màu thương hiệu cho rõ. */
+/* Chế độ "bare" (ngồi trên nền hero sáng): nét đậm màu thương hiệu cho rõ.
+   Token brand-sky đã tự dịu lại ở chế độ tối nên không cần khối .dark riêng. */
 .bare .steam { top: -12%; height: 46%; width: 84%; }
-.bare .wisp { stroke: rgba(31, 143, 214, 0.7); stroke-width: 8; }
-:global(.dark) .bare .wisp { stroke: rgba(125, 200, 245, 0.6); }
+.bare .wisp { stroke: hsl(var(--c-sky) / 0.7); stroke-width: 8; }
 @keyframes rise {
   0%   { opacity: 0;   transform: translateY(20%) scale(0.7); }
   25%  { opacity: 0.8; }
@@ -135,7 +141,8 @@
   width: 66%;
   height: 3%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.18);
+  /* Bóng ám nâu cacao thay vì đen tuyền — hợp với nền kem. */
+  background: hsl(var(--shadow-hue) / 0.22);
   border-radius: 50%;
   filter: blur(3px);
   z-index: 0;

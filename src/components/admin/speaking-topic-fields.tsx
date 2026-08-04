@@ -247,16 +247,16 @@ export function SpeakingTopicForm({
       <input type="hidden" name="hints" value={JSON.stringify(cleanHints)} />
 
       {/* JSON quick-fill */}
-      <div className="rounded-xl border border-violet-200 bg-violet-50/40 dark:border-violet-400/25 dark:bg-violet-500/10">
+      <div className="rounded-xl border border-brand-grape/40 bg-band-lav/40">
         <button
           type="button"
           onClick={() => setShowJson((v) => !v)}
-          className="flex w-full items-center gap-2 px-3 py-2 text-sm font-semibold text-violet-700 dark:text-violet-300"
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm font-semibold text-brand-grape"
         >
           <Braces className="h-4 w-4" /> Điền nhanh bằng JSON (dán 1 lần cho mọi ô chữ)
         </button>
         {showJson && (
-          <div className="space-y-3 border-t border-violet-200 p-3 dark:border-violet-400/25">
+          <div className="space-y-3 border-t border-brand-grape/40 p-3">
             <Textarea
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
@@ -264,7 +264,7 @@ export function SpeakingTopicForm({
               className="min-h-32 font-mono text-xs"
             />
             <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" onClick={applyJson} className="gap-1 bg-violet-600 hover:bg-violet-700">
+              <Button type="button" size="sm" onClick={applyJson} className="gap-1 bg-brand-grape hover:bg-brand-grape">
                 <Wand2 className="h-4 w-4" /> Áp dụng vào form
               </Button>
               <Button type="button" size="sm" variant="outline" onClick={() => setJsonText(TEMPLATE_JSON)} className="gap-1">
@@ -277,7 +277,7 @@ export function SpeakingTopicForm({
 
             {/* Guide */}
             <details className="rounded-lg border bg-card/70 p-2 text-xs">
-              <summary className="cursor-pointer font-medium text-violet-700 dark:text-violet-300">Hướng dẫn viết JSON</summary>
+              <summary className="cursor-pointer font-medium text-brand-grape">Hướng dẫn viết JSON</summary>
               <div className="mt-2 space-y-2 text-muted-foreground">
                 <p>
                   Dán một <b>object</b> JSON. Các khoá hỗ trợ (đều không bắt buộc trừ <code>question</code>):
@@ -295,7 +295,7 @@ export function SpeakingTopicForm({
                 <p>
                   <b>MP3</b> giám khảo hỏi và <b>ảnh</b> đại diện <u>không</u> nằm trong JSON — tải tệp riêng ở dưới.
                 </p>
-                <pre className="overflow-x-auto rounded bg-zinc-900 p-2 text-[11px] leading-snug text-zinc-100">
+                <pre className="overflow-x-auto rounded bg-muted p-2 text-[11px] leading-snug text-muted-foreground">
                   {TEMPLATE_JSON}
                 </pre>
               </div>
@@ -369,7 +369,7 @@ export function SpeakingTopicForm({
       {/* Outline */}
       <div className="space-y-1">
         <Label className="flex items-center gap-1.5">
-          <ListTree className="h-4 w-4 text-emerald-600" /> Gợi ý dàn ý bài nói (mỗi ý một dòng)
+          <ListTree className="h-4 w-4 text-brand-teal" /> Gợi ý dàn ý bài nói (mỗi ý một dòng)
         </Label>
         <Textarea
           name="outline"
@@ -389,7 +389,7 @@ export function SpeakingTopicForm({
         {audioUrl ? (
           <div className="rounded-xl border bg-muted/30 p-3">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <Music2 className="h-4 w-4 text-teal-600" /> Audio hiện tại
+              <Music2 className="h-4 w-4 text-brand-teal" /> Audio hiện tại
             </div>
             <audio controls src={audioUrl} className="w-full" />
             <div className="mt-2 flex items-center gap-3">
@@ -486,7 +486,7 @@ export function SpeakingTopicForm({
           onClick={generateTranscriptFromAudio}
           disabled={busy || !audioUrl.trim()}
           title={!audioUrl.trim() ? "Cần có audio ở trên trước" : undefined}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-brand-sky bg-band-sky px-3 py-1.5 text-sm font-semibold text-brand-sky transition hover:bg-band-sky disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-brand-sky/20"
         >
           {transcribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileAudio className="h-4 w-4" />}
           {transcribing ? "Đang tạo transcript…" : "Tạo transcript từ audio (Deepgram)"}
@@ -496,7 +496,7 @@ export function SpeakingTopicForm({
       {/* Hints */}
       <div className="space-y-2">
         <Label className="flex items-center gap-1.5">
-          <Lightbulb className="h-4 w-4 text-amber-500" /> Gợi ý từ/cụm nên dùng
+          <Lightbulb className="h-4 w-4 text-brand-gold" /> Gợi ý từ/cụm nên dùng
         </Label>
         <div className="space-y-2">
           {hints.map((h, i) => (

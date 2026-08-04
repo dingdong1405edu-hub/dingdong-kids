@@ -34,11 +34,11 @@ function parseVocab(line: string): VocabRow | null {
 export function TranscriptExplanation({ text }: { text: string }) {
   const lines = text.split(/\r?\n/);
   return (
-    <div className="overflow-hidden rounded-3xl border-2 border-violet-200 bg-gradient-to-b from-violet-50/70 to-white shadow-soft dark:border-violet-500/25 dark:from-violet-500/10 dark:to-transparent">
-      <div className="flex items-center gap-2 border-b border-violet-100 bg-violet-50/70 px-4 py-3 text-sm font-bold text-violet-700 dark:border-violet-500/20 dark:bg-violet-500/15 dark:text-violet-300">
+    <div className="overflow-hidden rounded-3xl border-2 border-brand-grape/40 bg-gradient-to-b from-band-lav/70 to-white shadow-soft dark:to-transparent">
+      <div className="flex items-center gap-2 border-b border-brand-grape/40 bg-band-lav/70 px-4 py-3 text-sm font-bold text-brand-grape">
         <BookOpenText className="h-4 w-4" /> Dịch &amp; giảng lời thoại
       </div>
-      <div className="space-y-1.5 p-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
+      <div className="space-y-1.5 p-4 text-[15px] leading-relaxed text-foreground">
         {lines.map((raw, i) => {
           const line = raw.trim();
           if (!line) return <div key={i} className="h-1" aria-hidden />;
@@ -47,7 +47,7 @@ export function TranscriptExplanation({ text }: { text: string }) {
             return (
               <div
                 key={i}
-                className="pt-1.5 text-xs font-bold uppercase tracking-wide text-violet-600 dark:text-violet-300"
+                className="pt-1.5 text-xs font-bold uppercase tracking-wide text-brand-grape"
               >
                 {header[1]}
               </div>
@@ -58,7 +58,7 @@ export function TranscriptExplanation({ text }: { text: string }) {
             if (!v) {
               return (
                 <div key={i} className="flex gap-1.5 pl-1">
-                  <span className="text-violet-400 dark:text-violet-300">•</span>
+                  <span className="text-brand-grape">•</span>
                   <span>{line.replace(/^•\s*/, "")}</span>
                 </div>
               );
@@ -66,10 +66,10 @@ export function TranscriptExplanation({ text }: { text: string }) {
             return (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-2xl bg-white/70 px-3 py-2 dark:bg-white/[0.04]"
+                className="flex items-center gap-2 rounded-2xl bg-card/70 px-3 py-2/[0.04]"
               >
                 <div className="min-w-0 flex-1">
-                  <span className="font-primer text-base font-bold text-violet-700 dark:text-violet-200">{v.en}</span>
+                  <span className="font-primer text-base font-bold text-brand-grape">{v.en}</span>
                   {v.ipa && <span className="ml-1.5 text-xs text-muted-foreground">{v.ipa}</span>}
                   <span className="block text-sm">{v.vi}</span>
                 </div>

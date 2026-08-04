@@ -12,15 +12,15 @@ const PAGE_SIZE = 200;
 const ACTION_META: Record<string, { label: string; cls: string }> = {
   CREATE: {
     label: "Tạo",
-    cls: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400",
+    cls: "bg-band-mint text-brand-teal",
   },
   UPDATE: {
     label: "Sửa",
-    cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+    cls: "bg-band-sun text-brand-gold",
   },
   DELETE: {
     label: "Xóa",
-    cls: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400",
+    cls: "bg-band-coral text-brand-coral",
   },
 };
 

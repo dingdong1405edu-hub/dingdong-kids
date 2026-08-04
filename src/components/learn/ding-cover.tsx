@@ -25,15 +25,18 @@ export function DingCover({ className, seed = "dingdong" }: { className?: string
       )}
     >
       {/* Emoji chủ đề — to, hơi nghiêng cho có nhịp. */}
-      <span className="select-none text-5xl leading-none drop-shadow-sm [transform:rotate(-6deg)]">
+      <span className="relative z-10 select-none text-6xl leading-none drop-shadow-[0_3px_0_hsl(var(--shadow-hue)/0.18)] [transform:rotate(-6deg)]">
         {coverEmoji(seed)}
       </span>
       {/* Ding (chú gấu con) ló ra góc dưới như một miếng dán. */}
-      <span className="absolute -bottom-1 right-1.5 select-none text-2xl leading-none opacity-90">
+      <span className="absolute -bottom-1 right-1.5 z-10 select-none text-2xl leading-none opacity-90">
         🐻
       </span>
-      {/* Bong bóng sáng mờ cho bìa bớt phẳng. */}
-      <span className="pointer-events-none absolute -left-6 -top-8 h-20 w-20 rounded-full bg-white/25" />
+      {/* Bong bóng sáng cho bìa bớt phẳng. Trắng mờ viết bằng hsl literal (không
+          phải token ngữ nghĩa) vì đây là ÁNH SÁNG phủ lên nền gradient màu —
+          ở chế độ tối nó vẫn phải sáng, không được đảo thành nâu. */}
+      <span className="pointer-events-none absolute -left-6 -top-8 h-24 w-24 rounded-full bg-[hsl(0_0%_100%/0.28)]" />
+      <span className="pointer-events-none absolute -bottom-10 -right-4 h-20 w-20 rounded-full bg-[hsl(0_0%_100%/0.16)]" />
     </div>
   );
 }

@@ -28,26 +28,28 @@ export function ChapterBanner({ index, title, unchaptered = false, theme, done, 
     >
       <div className="relative z-10 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/80">
+          <div className="eyebrow text-[11px] text-white/80">
             {unchaptered ? "Bài lẻ" : `Chặng ${index}`}
           </div>
           <div className="truncate font-display text-xl font-extrabold leading-tight">{title}</div>
         </div>
 
         <div className="flex shrink-0 flex-col items-center gap-1">
-          <span className="text-2xl leading-none drop-shadow-sm" aria-hidden>
+          <span className="text-2xl leading-none drop-shadow-soft" aria-hidden>
             {complete ? "🎉" : theme.emoji}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-extrabold tabular-nums backdrop-blur">
+          <span className="inline-flex items-center gap-1 rounded-full bg-card/20 px-2.5 py-0.5 font-display text-[11px] font-extrabold tabular-nums backdrop-blur">
             {complete && <Check className="h-3 w-3" strokeWidth={3} />}
             {done}/{total}
           </span>
         </div>
       </div>
 
-      {/* Thanh tiến độ nhỏ của chặng */}
-      <div className="relative z-10 mt-2.5 h-1.5 overflow-hidden rounded-full bg-black/15">
-        <div className="h-full rounded-full bg-white/90 transition-all" style={{ width: `${pct}%` }} />
+      {/* Thanh tiến độ nhỏ của chặng. Rãnh & thanh đều là lớp trắng trong suốt:
+          banner luôn nằm trên nền màu đậm của cấp nên cách này đọc rõ ở cả hai
+          chế độ sáng/tối, không cần cặp dark: thủ công. */}
+      <div className="relative z-10 mt-2.5 h-2 overflow-hidden rounded-full bg-card/25">
+        <div className="h-full rounded-full bg-card/90 transition-all" style={{ width: `${pct}%` }} />
       </div>
 
       {/* Emoji trang trí mờ ở góc */}

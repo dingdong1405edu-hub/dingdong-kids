@@ -184,7 +184,7 @@ export function SelectionLookup({
                       className={cn(
                         "flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors",
                         st === "saved"
-                          ? "text-emerald-600 dark:text-emerald-400"
+                          ? "text-brand-teal"
                           : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
                       )}
                     >

@@ -36,30 +36,31 @@ export function GlobalReview({ words, reviews }: Props) {
     <div className="mx-auto max-w-2xl space-y-5">
       <Link
         href="/vocab"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm font-extrabold text-muted-foreground transition-colors hover:text-brand-gold"
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại Từ vựng
       </Link>
 
-      <Card>
+      <Card className="rounded-3xl shadow-soft-lg">
         <CardContent className="space-y-4 p-6 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-            <Sparkles className="h-7 w-7" />
+          {/* Ôn tập mang màu oải hương — tách khỏi khối vàng "học bài mới". */}
+          <div className="mx-auto flex h-20 w-20 animate-bob items-center justify-center rounded-3xl bg-band-lav text-brand-grape">
+            <Sparkles className="h-10 w-10" />
           </div>
-          <h1 className="text-2xl font-bold">Ôn tập tổng hợp</h1>
+          <h1 className="font-display text-2xl font-extrabold">Ôn tập tổng hợp</h1>
           {words.length > 0 ? (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[15px] text-muted-foreground">
                 Có <b>{words.length}</b> từ đến hạn ôn trên khắp các bài. Ôn ngay bằng flashcard
                 &amp; mini-game để nhớ lâu hơn.
               </p>
-              <Button className="w-full" onClick={() => setStarted(true)}>
-                <Sparkles className="mr-1.5 h-4 w-4" /> Bắt đầu ôn {words.length} từ
+              <Button size="lg" className="w-full" onClick={() => setStarted(true)}>
+                <Sparkles className="mr-1.5 h-5 w-5" /> Bắt đầu ôn {words.length} từ
               </Button>
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[15px] text-muted-foreground">
                 Hiện chưa có từ nào đến hạn ôn. Hãy học thêm từ mới ở các bài, hệ thống sẽ tự xếp
                 lịch ôn cho bạn.
               </p>

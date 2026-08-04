@@ -116,7 +116,7 @@ export function VocabWordForm({ lessonId, unitId, word, onSaved, onCancel }: Pro
         </Label>
         <ImageUpload name="__vocabImage" defaultValue={imageUrl} onValueChange={setImageUrl} />
         {!imageUrl.trim() && (
-          <p className="flex items-start gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+          <p className="flex items-start gap-1.5 rounded-md border border-brand-yellow bg-band-sun px-2.5 py-1.5 text-xs text-brand-gold">
             <ImageOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>
               Từ này chưa có ảnh. Trẻ nhỏ học bằng HÌNH là chính — hãy thêm ảnh trước khi xuất bản bài.

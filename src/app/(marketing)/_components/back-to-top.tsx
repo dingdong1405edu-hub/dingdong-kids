@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
-import styles from "../landing.module.css";
 
 /** Nút cuộn lên đầu trang — hiện khi cuộn quá 1 màn hình. */
 export function BackToTop() {
@@ -20,9 +19,13 @@ export function BackToTop() {
       type="button"
       aria-label="Lên đầu trang"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`${styles.backToTop}${visible ? ` ${styles.backToTopVisible}` : ""}`}
+      // Viên kẹo vàng có gờ 3D, cùng ngôn ngữ với nút CTA của cả trang.
+      // Khi ẩn thì tắt cả pointer-events để không chặn thao tác ở góc màn hình.
+      className={`btn-chunky fixed bottom-6 right-6 z-[900] inline-flex h-14 w-14 items-center justify-center rounded-full bg-sunny text-sunny-foreground transition-all duration-300 ease-toy max-sm:bottom-[18px] max-sm:right-[18px] ${
+        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+      }`}
     >
-      <ArrowUp className="h-5 w-5" aria-hidden="true" />
+      <ArrowUp className="h-6 w-6" aria-hidden="true" />
     </button>
   );
 }

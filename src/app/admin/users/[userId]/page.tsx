@@ -179,7 +179,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <Star className="h-5 w-5 text-amber-500" />
+            <Star className="h-5 w-5 text-brand-gold" />
             <div>
               <div className="text-xs text-muted-foreground">XP · Cấp {level}</div>
               <div className="text-lg font-bold">{user.xp}</div>
@@ -188,7 +188,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <Flame className="h-5 w-5 text-orange-500" />
+            <Flame className="h-5 w-5 text-brand-sun" />
             <div>
               <div className="text-xs text-muted-foreground">Chuỗi ngày</div>
               <div className="text-lg font-bold">{user.streakDays}</div>
@@ -197,7 +197,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <Heart className="h-5 w-5 text-rose-500" />
+            <Heart className="h-5 w-5 text-brand-coral" />
             <div>
               <div className="text-xs text-muted-foreground">Tim</div>
               <div className="flex items-center text-lg font-bold">
@@ -208,7 +208,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <Crown className="h-5 w-5 text-violet-500" />
+            <Crown className="h-5 w-5 text-brand-grape" />
             <div>
               <div className="text-xs text-muted-foreground">Cấp độ mục tiêu</div>
               <div className="text-lg font-bold">{levelLabel(user.level)}</div>
@@ -290,7 +290,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{planName ?? typeLabel}</span>
                         {active ? (
-                          <Badge variant="outline" className="border-green-300 text-green-700 dark:border-green-400/30 dark:text-green-400">
+                          <Badge variant="outline" className="border-brand-lime text-brand-teal">
                             Còn hạn
                           </Badge>
                         ) : (

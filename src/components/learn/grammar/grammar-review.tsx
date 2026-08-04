@@ -30,9 +30,9 @@ const TYPE_LABEL = EXERCISE_TYPE_LABEL;
 /** Màu điểm. Mức thấp dùng CAM ẤM chứ không đỏ gắt — trẻ nhìn con số của mình,
  *  màu đỏ dễ khiến bé thấy như bị mắng. */
 function scoreTone(pct: number): string {
-  if (pct >= 80) return "text-green-600 dark:text-green-400";
-  if (pct >= 50) return "text-amber-600 dark:text-amber-400";
-  return "text-orange-600 dark:text-orange-400";
+  if (pct >= 80) return "text-brand-teal";
+  if (pct >= 50) return "text-brand-gold";
+  return "text-brand-sun";
 }
 
 /**
@@ -144,14 +144,14 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
 
           {/* Đúng / Cần xem lại / Để lát nữa */}
           <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-2xl bg-green-50 p-3 dark:bg-green-500/15">
-              <CheckCircle2 className="mx-auto h-6 w-6 text-green-600 dark:text-green-300" />
-              <div className="mt-1 font-display text-xl font-extrabold text-green-700 dark:text-green-300">{correct}</div>
+            <div className="rounded-2xl bg-band-mint p-3">
+              <CheckCircle2 className="mx-auto h-6 w-6 text-brand-teal" />
+              <div className="mt-1 font-display text-xl font-extrabold text-brand-teal">{correct}</div>
               <div className="text-[11px] font-semibold text-muted-foreground">Đúng</div>
             </div>
-            <div className="rounded-2xl bg-orange-50 p-3 dark:bg-orange-500/15">
-              <XCircle className="mx-auto h-6 w-6 text-orange-500 dark:text-orange-300" />
-              <div className="mt-1 font-display text-xl font-extrabold text-orange-600 dark:text-orange-300">{wrong}</div>
+            <div className="rounded-2xl bg-band-coral p-3">
+              <XCircle className="mx-auto h-6 w-6 text-brand-sun" />
+              <div className="mt-1 font-display text-xl font-extrabold text-brand-sun">{wrong}</div>
               <div className="text-[11px] font-semibold text-muted-foreground">Xem lại</div>
             </div>
             <div className="rounded-2xl bg-muted p-3">

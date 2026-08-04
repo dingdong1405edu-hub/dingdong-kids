@@ -57,17 +57,17 @@ export default async function AdminPage() {
   ]);
 
   const sections: { href: string; label: string; icon: LucideIcon; count: number; cls: string }[] = [
-    { href: "/admin/vocab", label: "Từ vựng", icon: BookOpen, count: vocabCount, cls: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300" },
-    { href: "/admin/grammar", label: "Ngữ pháp", icon: SpellCheck, count: grammarCount, cls: "bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300" },
-    { href: "/admin/reading", label: "Đọc hiểu", icon: BookText, count: readingCount, cls: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300" },
-    { href: "/admin/listening", label: "Nghe hiểu", icon: Headphones, count: listeningCount, cls: "bg-teal-100 text-teal-600 dark:bg-teal-500/15 dark:text-teal-300" },
-    { href: "/admin/writing", label: "Luyện viết", icon: PenLine, count: writingCount, cls: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300" },
-    { href: "/admin/speaking", label: "Luyện nói", icon: Mic, count: speakingCount, cls: "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300" },
-    { href: "/admin/exam", label: "Đề thi thử", icon: GraduationCap, count: examCount, cls: "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300" },
-    { href: "/admin/materials", label: "Tài liệu", icon: Library, count: materialCount, cls: "bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-500/15 dark:text-fuchsia-300" },
-    { href: "/admin/roadmap", label: "Lộ trình", icon: Route, count: roadmapLessonCount, cls: "bg-lime-100 text-lime-600 dark:bg-lime-500/15 dark:text-lime-300" },
-    { href: "/admin/users", label: "Người dùng", icon: Users, count: userCount, cls: "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300" },
-    { href: "/admin/subscriptions", label: "Gói & Quyền lợi", icon: CreditCard, count: subscriptionCount, cls: "bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-300" },
+    { href: "/admin/vocab", label: "Từ vựng", icon: BookOpen, count: vocabCount, cls: "bg-band-sky text-brand-blue" },
+    { href: "/admin/grammar", label: "Ngữ pháp", icon: SpellCheck, count: grammarCount, cls: "bg-band-lav text-brand-grape" },
+    { href: "/admin/reading", label: "Đọc hiểu", icon: BookText, count: readingCount, cls: "bg-band-mint text-brand-teal" },
+    { href: "/admin/listening", label: "Nghe hiểu", icon: Headphones, count: listeningCount, cls: "bg-band-mint text-brand-teal" },
+    { href: "/admin/writing", label: "Luyện viết", icon: PenLine, count: writingCount, cls: "bg-band-coral text-brand-coral" },
+    { href: "/admin/speaking", label: "Luyện nói", icon: Mic, count: speakingCount, cls: "bg-band-lav text-brand-grape" },
+    { href: "/admin/exam", label: "Đề thi thử", icon: GraduationCap, count: examCount, cls: "bg-band-sun text-brand-gold" },
+    { href: "/admin/materials", label: "Tài liệu", icon: Library, count: materialCount, cls: "bg-band-lav text-brand-pink" },
+    { href: "/admin/roadmap", label: "Lộ trình", icon: Route, count: roadmapLessonCount, cls: "bg-band-mint text-brand-teal" },
+    { href: "/admin/users", label: "Người dùng", icon: Users, count: userCount, cls: "bg-band-sky text-brand-sky" },
+    { href: "/admin/subscriptions", label: "Gói & Quyền lợi", icon: CreditCard, count: subscriptionCount, cls: "bg-band-mint text-brand-teal" },
   ];
 
   return (
@@ -79,20 +79,20 @@ export default async function AdminPage() {
 
       {/* Top stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Users} cls="bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300" label="Người dùng" value={userCount} />
+        <StatCard icon={Users} cls="bg-band-sky text-brand-sky" label="Người dùng" value={userCount} />
         <StatCard
           icon={BookOpen}
-          cls="bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300"
+          cls="bg-band-sky text-brand-blue"
           label="Bài học / Đơn vị"
           value={vocabCount + grammarCount + roadmapLessonCount}
         />
         <StatCard
           icon={BookText}
-          cls="bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300"
+          cls="bg-band-mint text-brand-teal"
           label="Đề luyện tập"
           value={readingCount + listeningCount + writingCount + speakingCount}
         />
-        <StatCard icon={Activity} cls="bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300" label="Lượt làm bài" value={attemptCount} />
+        <StatCard icon={Activity} cls="bg-band-sun text-brand-gold" label="Lượt làm bài" value={attemptCount} />
       </div>
 
       {/* Manage sections */}
@@ -120,7 +120,7 @@ export default async function AdminPage() {
         {/* Ghép vần (Phonics) là nội dung CỐ ĐỊNH trong mã nguồn, không có CRUD —
             ghi rõ ở đây để admin không đi tìm trang quản lý không tồn tại. */}
         <div className="mt-4 flex items-start gap-3 rounded-xl border border-dashed p-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-band-coral text-brand-sun">
             <AudioLines className="h-5 w-5" />
           </div>
           <div className="min-w-0 text-sm">

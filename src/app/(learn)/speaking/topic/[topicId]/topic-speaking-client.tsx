@@ -56,9 +56,9 @@ type Phase = "idle" | "recording" | "grading" | "done";
 // ----- helpers -----
 
 function scoreColor(score: number) {
-  if (score >= 80) return { text: "text-emerald-600", bar: "bg-emerald-500", ring: "#10b981" };
-  if (score >= 60) return { text: "text-amber-600", bar: "bg-amber-500", ring: "#f59e0b" };
-  return { text: "text-rose-600", bar: "bg-rose-500", ring: "#f43f5e" };
+  if (score >= 80) return { text: "text-brand-teal", bar: "bg-brand-teal", ring: "#10b981" };
+  if (score >= 60) return { text: "text-brand-gold", bar: "bg-brand-yellow", ring: "#f59e0b" };
+  return { text: "text-brand-coral", bar: "bg-brand-coral", ring: "#f43f5e" };
 }
 
 /** Đếm số tăng dần (count-up) khi hiện điểm. */
@@ -240,12 +240,12 @@ function TopicRecorder({
         {recording && (
           <>
             <motion.span
-              className="absolute inset-0 rounded-full bg-rose-500/30"
+              className="absolute inset-0 rounded-full bg-brand-coral/30"
               animate={{ scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.span
-              className="absolute inset-0 rounded-full bg-rose-500/20"
+              className="absolute inset-0 rounded-full bg-brand-coral/20"
               animate={{ scale: [1, 1.35, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
             />
@@ -257,8 +257,8 @@ function TopicRecorder({
           disabled={disabled}
           whileTap={{ scale: 0.92 }}
           whileHover={{ scale: disabled ? 1 : 1.04 }}
-          className={`relative flex h-24 w-24 items-center justify-center rounded-full text-white shadow-lg transition-colors disabled:opacity-50 ${
-            recording ? "bg-rose-500" : "bg-indigo-600 hover:bg-indigo-700"
+          className={`relative flex h-24 w-24 items-center justify-center rounded-full text-white shadow-soft-lg transition-colors disabled:opacity-50 ${
+            recording ? "bg-brand-coral" : "bg-brand-grape hover:bg-brand-grape"
           }`}
           aria-label={recording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
         >
@@ -273,7 +273,7 @@ function TopicRecorder({
       </div>
       <div className="text-center" role="status" aria-live="polite">
         {recording ? (
-          <div className="font-mono text-lg font-bold text-rose-600">
+          <div className="font-mono text-lg font-bold text-brand-coral">
             <span className="sr-only">Đang ghi âm </span>
             {fmtTime(elapsed)}
           </div>
@@ -435,11 +435,11 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
       </div>
 
       {/* Topic banner */}
-      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white p-5 dark:from-indigo-500/10 dark:to-transparent">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-band-lav to-white p-5 dark:to-transparent">
         <div className="flex items-start gap-4">
           <DingBuddy size={70} pose={good ? "cheer" : "idle"} className="shrink-0" />
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold uppercase tracking-wide text-indigo-500">
+            <div className="text-xs font-bold uppercase tracking-wide text-brand-grape">
               Trả lời câu hỏi · Cambridge Speaking
             </div>
             <h1 className="font-display mt-0.5 text-lg font-extrabold">
@@ -459,7 +459,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
       {/* Question card */}
       <div className="sticker p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Button onClick={play} size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={play} size="sm" className="gap-2 bg-brand-grape hover:bg-brand-grape">
             <Volume2 className={`h-4 w-4 ${playing ? "animate-pulse" : ""}`} /> Nghe câu hỏi
           </Button>
           {topic.questionVi && (
@@ -480,7 +480,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             <button
               type="button"
               onClick={() => setShowOutline((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-teal bg-band-mint px-3 py-1.5 text-sm font-semibold text-brand-teal transition hover:bg-band-mint dark:hover:bg-brand-teal/20"
             >
               <ListTree className="h-4 w-4" /> {showOutline ? "Ẩn dàn ý" : "Gợi ý dàn ý"}
             </button>
@@ -493,7 +493,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-3 whitespace-pre-line rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-sm text-emerald-900 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  <div className="mt-3 whitespace-pre-line rounded-xl border border-brand-teal/40 bg-band-mint/50 p-3 text-sm text-brand-teal">
                     {topic.outline}
                   </div>
                 </motion.div>
@@ -508,7 +508,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             <button
               type="button"
               onClick={() => setShowHints((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-yellow bg-band-sun px-3 py-1.5 text-sm font-semibold text-brand-gold transition hover:bg-band-sun dark:hover:bg-brand-yellow/20"
             >
               <Lightbulb className="h-4 w-4" /> {showHints ? "Ẩn gợi ý" : "Xem gợi ý"}
             </button>
@@ -623,8 +623,8 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
             {/* Overall feedback */}
             {result.overallFeedback && (
-              <div className="rounded-2xl border bg-indigo-50/60 p-4 text-sm dark:bg-indigo-500/10">
-                <div className="mb-1 flex items-center gap-1.5 font-semibold text-indigo-700 dark:text-indigo-300">
+              <div className="rounded-2xl border bg-band-lav/60 p-4 text-sm">
+                <div className="mb-1 flex items-center gap-1.5 font-semibold text-brand-grape">
                   <Sparkles className="h-4 w-4" /> Lời nhắn cho bé
                 </div>
                 <p className="text-muted-foreground">{result.overallFeedback}</p>
@@ -635,14 +635,14 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             {(result.strengths.length > 0 || result.improvements.length > 0) && (
               <div className="grid gap-3 sm:grid-cols-2">
                 {result.strengths.length > 0 && (
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-400/25 dark:bg-emerald-500/10">
-                    <div className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                  <div className="rounded-2xl border border-brand-teal/40 bg-band-mint/50 p-4">
+                    <div className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-brand-teal">
                       <CheckCircle2 className="h-4 w-4" /> Điểm mạnh
                     </div>
                     <ul className="space-y-1 text-sm text-muted-foreground">
                       {result.strengths.map((s, i) => (
                         <li key={i} className="flex gap-1.5">
-                          <span className="text-emerald-500">•</span>
+                          <span className="text-brand-teal">•</span>
                           {s}
                         </li>
                       ))}
@@ -650,14 +650,14 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
                   </div>
                 )}
                 {result.improvements.length > 0 && (
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-400/25 dark:bg-amber-500/10">
-                    <div className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-300">
+                  <div className="rounded-2xl border border-brand-yellow/40 bg-band-sun/50 p-4">
+                    <div className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-brand-gold">
                       <AlertCircle className="h-4 w-4" /> Lần sau bé thử nhé
                     </div>
                     <ul className="space-y-1 text-sm text-muted-foreground">
                       {result.improvements.map((s, i) => (
                         <li key={i} className="flex gap-1.5">
-                          <span className="text-amber-500">•</span>
+                          <span className="text-brand-gold">•</span>
                           {s}
                         </li>
                       ))}
@@ -680,16 +680,16 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
             {result.annotations.length > 0 && (
               <Collapsible
                 title={`Chỗ bé có thể nói hay hơn (${result.annotations.length})`}
-                icon={<AlertCircle className="h-4 w-4 text-rose-500" />}
+                icon={<AlertCircle className="h-4 w-4 text-brand-coral" />}
                 defaultOpen
               >
                 <div className="space-y-3">
                   {result.annotations.map((a, i) => (
                     <div key={i} className="rounded-lg border bg-muted/30 p-3">
                       <div className="flex flex-wrap items-center gap-2 font-primer">
-                        <span className="rounded bg-rose-100 px-1.5 py-0.5 text-rose-700 line-through dark:bg-rose-500/15 dark:text-rose-300">{a.original}</span>
+                        <span className="rounded bg-band-coral px-1.5 py-0.5 text-brand-coral line-through">{a.original}</span>
                         <span className="text-muted-foreground">→</span>
-                        <span className="rounded bg-emerald-100 px-1.5 py-0.5 font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                        <span className="rounded bg-band-mint px-1.5 py-0.5 font-medium text-brand-teal">
                           {a.correction}
                         </span>
                         {a.type && <Badge variant="outline" className="text-[11px]">{a.type}</Badge>}
@@ -703,19 +703,19 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
             {/* Corrected version */}
             {result.correctedVersion && result.correctedVersion !== result.transcript && (
-              <Collapsible title="Cả câu nói hay hơn" icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}>
+              <Collapsible title="Cả câu nói hay hơn" icon={<CheckCircle2 className="h-4 w-4 text-brand-teal" />}>
                 <p className="font-primer leading-relaxed">{result.correctedVersion}</p>
               </Collapsible>
             )}
 
             {/* Sample answers */}
             {topic.sampleAnswer && (
-              <Collapsible title="Câu trả lời mẫu" icon={<Sparkles className="h-4 w-4 text-indigo-500" />}>
+              <Collapsible title="Câu trả lời mẫu" icon={<Sparkles className="h-4 w-4 text-brand-grape" />}>
                 <p className="font-primer leading-relaxed">{topic.sampleAnswer}</p>
               </Collapsible>
             )}
             {result.sampleAnswer && (
-              <Collapsible title="Một cách nói khác cho bé" icon={<Sparkles className="h-4 w-4 text-violet-500" />}>
+              <Collapsible title="Một cách nói khác cho bé" icon={<Sparkles className="h-4 w-4 text-brand-grape" />}>
                 <p className="font-primer leading-relaxed">{result.sampleAnswer}</p>
               </Collapsible>
             )}
@@ -729,7 +729,7 @@ export function TopicSpeakingClient({ topic }: { topic: TopicData }) {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              <Button onClick={reset} className="btn-chunky gap-2 bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={reset} className="btn-chunky gap-2 bg-brand-grape hover:bg-brand-grape">
                 <RotateCcw className="h-4 w-4" /> Nói lại lần nữa
               </Button>
               <Link href="/speaking">

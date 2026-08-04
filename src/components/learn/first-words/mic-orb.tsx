@@ -22,7 +22,7 @@ interface Props {
   disabled?: boolean;
 }
 
-const R = 62;
+const R = 70;
 const C = 2 * Math.PI * R;
 
 export function MicOrb({ state, maxSeconds, onStart, onStop, disabled }: Props) {
@@ -30,31 +30,32 @@ export function MicOrb({ state, maxSeconds, onStart, onStop, disabled }: Props) 
   const checking = state === "checking";
 
   return (
-    <div className="relative flex h-40 w-40 items-center justify-center">
+    <div className="relative flex h-44 w-44 items-center justify-center">
       {/* Sóng lan ra khi đang thu — tín hiệu "máy đang nghe bé nói" */}
       {recording &&
         [0, 1, 2].map((i) => (
           <motion.span
             key={i}
             aria-hidden
-            className="absolute rounded-full bg-rose-400/30"
-            initial={{ width: 128, height: 128, opacity: 0.55 }}
-            animate={{ width: 190, height: 190, opacity: 0 }}
+            className="absolute rounded-full bg-brand-coral/30"
+            initial={{ width: 144, height: 144, opacity: 0.55 }}
+            animate={{ width: 214, height: 214, opacity: 0 }}
             transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.5, ease: "easeOut" }}
           />
         ))}
 
       {/* Vòng đếm ngược tới lúc tự dừng */}
       {recording && (
-        <svg className="absolute h-[140px] w-[140px] -rotate-90" viewBox="0 0 140 140" aria-hidden>
-          <circle cx="70" cy="70" r={R} fill="none" stroke="currentColor" strokeWidth="7" className="text-white/35" />
+        <svg className="absolute h-[158px] w-[158px] -rotate-90" viewBox="0 0 158 158" aria-hidden>
+          {/* Rãnh của vòng đếm dùng `text-muted` để thấy rõ trên nền kem lẫn nền đêm cacao. */}
+          <circle cx="79" cy="79" r={R} fill="none" stroke="currentColor" strokeWidth="8" className="text-muted" />
           <motion.circle
-            cx="70"
-            cy="70"
+            cx="79"
+            cy="79"
             r={R}
             fill="none"
             stroke="currentColor"
-            strokeWidth="7"
+            strokeWidth="8"
             strokeLinecap="round"
             className="text-sunny"
             strokeDasharray={C}
@@ -78,21 +79,24 @@ export function MicOrb({ state, maxSeconds, onStart, onStop, disabled }: Props) 
             : { duration: 2.2, repeat: Infinity, ease: "easeInOut" }
         }
         className={cn(
-          "relative flex h-32 w-32 items-center justify-center rounded-full text-white shadow-soft-lg",
-          "ring-8 ring-white/70 transition-colors disabled:opacity-80 dark:ring-white/10",
+          // Ba trạng thái = ba MÀU khác hẳn nhau, vì bé không đọc được nhãn:
+          // nho–xanh "mời bấm" · san hô "đang nghe bé" · mật ong "cô đang nghĩ".
+          // Viền ngoài lấy màu mặt thẻ nên tự hợp cả chế độ sáng lẫn tối.
+          "relative flex h-36 w-36 items-center justify-center rounded-full text-white shadow-soft-xl",
+          "ring-8 ring-card transition-colors disabled:opacity-80",
           recording
-            ? "bg-gradient-to-b from-rose-400 to-rose-600"
+            ? "bg-gradient-to-b from-brand-coral to-brand-pink"
             : checking
-              ? "bg-gradient-to-b from-slate-400 to-slate-600"
-              : "bg-gradient-to-b from-fuchsia-400 to-violet-600",
+              ? "bg-gradient-to-b from-brand-honey to-brand-gold"
+              : "bg-gradient-to-b from-brand-grape to-brand-blue",
         )}
       >
         {checking ? (
-          <Loader2 className="h-14 w-14 animate-spin" strokeWidth={2.5} />
+          <Loader2 className="h-16 w-16 animate-spin" strokeWidth={2.5} />
         ) : recording ? (
-          <Square className="h-12 w-12 fill-white" strokeWidth={2.5} />
+          <Square className="h-14 w-14 fill-current" strokeWidth={2.5} />
         ) : (
-          <Mic className="h-14 w-14" strokeWidth={2.5} />
+          <Mic className="h-16 w-16" strokeWidth={2.5} />
         )}
       </motion.button>
     </div>

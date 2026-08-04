@@ -24,9 +24,9 @@ export function PassStatus({ score, threshold = ROADMAP_PASS_THRESHOLD, showScor
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-display text-sm font-extrabold",
-        passed
-          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-          : "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+        // Đạt → dải bạc hà + chữ xanh ngọc; chưa đạt → dải nắng + chữ mật ong.
+        // Cả hai nhóm token đã tự đổi theo chế độ tối nên bỏ hẳn cặp dark: thủ công.
+        passed ? "bg-band-mint text-brand-teal" : "bg-band-sun text-brand-gold",
         className,
       )}
     >

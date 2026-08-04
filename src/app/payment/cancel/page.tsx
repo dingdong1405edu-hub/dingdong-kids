@@ -8,7 +8,7 @@ export default function PaymentCancelPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-border/70 bg-card p-8 text-center shadow-soft">
-        <XCircle className="mx-auto h-16 w-16 text-rose-500" />
+        <XCircle className="mx-auto h-16 w-16 text-brand-coral" />
 
         <h1 className="mt-5 text-2xl font-bold">Đã huỷ thanh toán</h1>
         <p className="mt-2 text-sm text-muted-foreground">

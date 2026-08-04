@@ -117,12 +117,14 @@ export function ChapterPath({
           );
         })}
 
+        {/* Nét đường CHƯA đi qua lấy màu chữ phụ (nâu mocha) — hoà với nền kem và
+            tự dịu lại ở chế độ tối, nên không cần cặp dark: thủ công. */}
         <svg
           width={COL_W}
           height={height}
           viewBox={`0 0 ${COL_W} ${height}`}
           fill="none"
-          className="absolute inset-0 text-zinc-300 dark:text-zinc-700"
+          className="absolute inset-0 text-muted-foreground/45"
           aria-hidden
         >
           {/* Đường nền: nét chấm tròn như những viên đá lát */}

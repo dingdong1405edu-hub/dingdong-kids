@@ -90,9 +90,9 @@ export default async function ExamPage() {
         <div>
           <h2 className="font-display mb-3 text-lg font-bold">Luyện riêng từng kỹ năng</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <PracticeLink href="/reading" icon={<BookText className="h-5 w-5 text-emerald-600" />} label="Đọc hiểu" />
-            <PracticeLink href="/listening" icon={<Headphones className="h-5 w-5 text-teal-600" />} label="Nghe hiểu" />
-            <PracticeLink href="/writing" icon={<PenLine className="h-5 w-5 text-violet-600" />} label="Tập viết" />
+            <PracticeLink href="/reading" icon={<BookText className="h-5 w-5 text-brand-teal" />} label="Đọc hiểu" />
+            <PracticeLink href="/listening" icon={<Headphones className="h-5 w-5 text-brand-teal" />} label="Nghe hiểu" />
+            <PracticeLink href="/writing" icon={<PenLine className="h-5 w-5 text-brand-grape" />} label="Tập viết" />
           </div>
         </div>
       </div>

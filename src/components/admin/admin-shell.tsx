@@ -14,6 +14,7 @@ import {
   MessagesSquare,
   GraduationCap,
   Library,
+  Clapperboard,
   Route,
   Users,
   CreditCard,
@@ -52,6 +53,7 @@ const GROUPS: AdminNavGroup[] = [
       { href: "/admin/speaking/topics", label: "Nói theo chủ đề", icon: MessagesSquare },
       { href: "/admin/exam", label: "Thi thử", icon: GraduationCap },
       { href: "/admin/materials", label: "Tài liệu", icon: Library },
+      { href: "/admin/hoat-hinh", label: "Hoạt hình (bắt mốc)", icon: Clapperboard },
     ],
   },
   {
@@ -77,7 +79,7 @@ function NavBody({ pathname, onNavigate }: { pathname: string; onNavigate?: () =
   return (
     <div className="flex h-full flex-col">
       <Link href="/" className="flex h-16 items-center gap-2.5 border-b px-5" aria-label="DingDong Kids — về trang chủ">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
           <Shield className="h-5 w-5" />
         </div>
         <div className="leading-tight">
@@ -145,7 +147,7 @@ export function AdminShell({ userName, children }: { userName: string; children:
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 max-w-[82%] bg-card shadow-2xl">
+          <aside className="absolute inset-y-0 left-0 w-72 max-w-[82%] bg-card shadow-soft-xl">
             <button
               onClick={() => setOpen(false)}
               aria-label="Đóng menu"

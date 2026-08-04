@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ambient } from "@/components/motion/ambient";
-import { Logo } from "@/components/shared/logo";
+import { Logo, Wordmark } from "@/components/shared/logo";
 import { AuthError } from "@/components/auth/auth-error";
 import { registerAction, type RegisterState } from "@/server/actions/auth";
 import {
@@ -56,20 +56,31 @@ export default function RegisterPage() {
   const busy = pending || signingIn;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10">
       <div className="absolute inset-0 aurora-bg" />
       <Ambient />
-      <div className="animate-fade-up relative w-full max-w-md">
+
+      {/* Chữ cái & bong bóng bay quanh thẻ đăng ký — cùng ngôn ngữ trang trí với
+          trang đăng nhập để hai trang cảm giác là một chỗ. */}
+      <div className="deco" aria-hidden="true">
+        <b className="left-[8%] top-[18%] text-[4rem] text-brand-pink/25 [--rot:11deg]">g</b>
+        <b className="right-[8%] top-[13%] text-[4.5rem] text-brand-sun/25 [--rot:-13deg] [animation-delay:-4s]">D</b>
+        <b className="bottom-[14%] left-[13%] text-[3.2rem] text-brand-grape/22 [--rot:-7deg] [animation-delay:-7s]">o</b>
+        <b className="bottom-[20%] right-[12%] text-[3.6rem] text-brand-teal/25 [--rot:9deg] [animation-delay:-2s]">K</b>
+        <s className="left-[15%] top-[58%] h-28 w-28 bg-brand-lime/22" />
+        <s className="right-[18%] top-[70%] h-24 w-24 bg-brand-coral/20 [animation-delay:-6s]" />
+      </div>
+
+      <div className="animate-fade-up relative z-10 w-full max-w-md">
         <div className="mb-6 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo className="h-11 w-11" />
-            <span className="font-display text-lg font-extrabold tracking-tight">
-              DingDong <span className="text-primary">Kids</span>
-            </span>
+          <Link href="/" className="flex flex-col items-center gap-2">
+            {/* Gấu Ding nhún nhẹ như đang vẫy chào bé */}
+            <Logo className="h-20 w-20 animate-bob drop-shadow-[0_8px_0_hsl(var(--shadow-hue)/0.12)]" />
+            <Wordmark className="text-[1.4rem]" />
           </Link>
         </div>
 
-        <Card className="border-border/60 shadow-soft-lg">
+        <Card className="rounded-2xl border-2 border-border shadow-soft-xl">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-2xl font-extrabold">Tạo tài khoản 🎈</CardTitle>
             <CardDescription>Bắt đầu hành trình học tiếng Anh của bé</CardDescription>
@@ -131,12 +142,16 @@ export default function RegisterPage() {
                 </div>
 
                 {state.error && (
-                  <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  <p
+                    role="alert"
+                    className="rounded-xl border-2 border-destructive/40 bg-band-coral px-3.5 py-2.5 text-sm font-bold text-brand-coral"
+                  >
                     {state.error}
                   </p>
                 )}
 
-                <Button type="submit" className="btn-chunky h-12 w-full text-[15px]" disabled={busy}>
+                {/* Hồng kẹo: đăng ký là hành động vui nhất trang, nổi hơn nút vàng thường. */}
+                <Button type="submit" variant="candy" className="mt-1 w-full text-[1.05rem]" disabled={busy}>
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   {signingIn ? "Đang đăng nhập..." : pending ? "Đang tạo tài khoản..." : "Đăng ký"}
                 </Button>
@@ -144,10 +159,10 @@ export default function RegisterPage() {
             )}
 
             {CREDENTIALS_LOGIN_ENABLED && GOOGLE_LOGIN_ENABLED && (
-              <div className="my-4 flex items-center gap-3">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-xs text-muted-foreground">hoặc</span>
-                <span className="h-px flex-1 bg-border" />
+              <div className="my-5 flex items-center gap-3">
+                <span className="h-0.5 flex-1 rounded-full bg-border" />
+                <span className="eyebrow text-muted-foreground">hoặc</span>
+                <span className="h-0.5 flex-1 rounded-full bg-border" />
               </div>
             )}
 
@@ -155,11 +170,11 @@ export default function RegisterPage() {
               <Button
                 type="button"
                 variant={CREDENTIALS_LOGIN_ENABLED ? "outline" : "default"}
-                className="h-12 w-full text-[15px]"
+                className="w-full text-[1.02rem]"
                 disabled={loading}
                 onClick={handleGoogle}
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <svg className="mr-1 h-5 w-5" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -170,9 +185,9 @@ export default function RegisterPage() {
             )}
 
             {CREDENTIALS_LOGIN_ENABLED && (
-              <p className="mt-4 text-center text-sm text-muted-foreground">
+              <p className="mt-5 text-center text-sm text-muted-foreground">
                 Đã có tài khoản?{" "}
-                <Link href="/login" className="font-semibold text-primary hover:underline">
+                <Link href="/login" className="font-display font-extrabold text-brand-gold hover:underline">
                   Đăng nhập
                 </Link>
               </p>
@@ -193,7 +208,10 @@ export default function RegisterPage() {
         </Card>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/" className="transition-colors hover:text-foreground">
+          <Link
+            href="/"
+            className="inline-flex items-center rounded-full bg-card/70 px-4 py-2 font-display font-extrabold transition-colors hover:bg-card hover:text-foreground"
+          >
             ← Về trang chủ
           </Link>
         </p>

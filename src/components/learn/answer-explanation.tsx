@@ -22,7 +22,7 @@ export function AnswerExplanation({ explanation, className, defaultOpen = true }
   return (
     <div
       className={cn(
-        "rounded-2xl border-2 border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-100",
+        "rounded-2xl border-2 border-brand-yellow/40 bg-band-sun text-brand-gold",
         className,
       )}
     >

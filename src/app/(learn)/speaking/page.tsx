@@ -75,7 +75,7 @@ export default async function SpeakingPage() {
           <section className="space-y-3">
             <div>
               <h2 className="font-display flex items-center gap-2 text-lg font-bold">
-                <MessagesSquare className="h-5 w-5 text-indigo-600" /> Nói theo chủ đề
+                <MessagesSquare className="h-5 w-5 text-brand-grape" /> Nói theo chủ đề
               </h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 Máy hỏi một câu, bé trả lời thành một đoạn dài — rồi được khen và gợi ý cách nói hay hơn.
@@ -103,7 +103,7 @@ export default async function SpeakingPage() {
         <section className="space-y-3">
           {topics.length > 0 && (
             <h2 className="font-display flex items-center gap-2 text-lg font-bold">
-              <Mic className="h-5 w-5 text-indigo-600" /> Bộ luyện 3 phần
+              <Mic className="h-5 w-5 text-brand-grape" /> Bộ luyện 3 phần
             </h2>
           )}
           {sets.length === 0 && topics.length === 0 ? (

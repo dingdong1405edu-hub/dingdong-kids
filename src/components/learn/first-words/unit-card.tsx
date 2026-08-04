@@ -46,7 +46,7 @@ export function FirstWordsUnitCard({ unit, stars, index }: Props) {
               {unit.emoji}
             </span>
             {done && (
-              <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">
+              <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-card shadow">
                 <Star className="h-5 w-5 fill-sunny text-sunny" strokeWidth={2.5} />
               </span>
             )}

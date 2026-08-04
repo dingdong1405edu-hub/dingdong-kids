@@ -10,9 +10,9 @@ import type { FeedbackCategory, FeedbackStatus } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<FeedbackStatus, { label: string; cls: string }> = {
-  NEW: { label: "Mới", cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" },
-  IN_REVIEW: { label: "Đang xử lý", cls: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300" },
-  RESOLVED: { label: "Đã xử lý", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" },
+  NEW: { label: "Mới", cls: "bg-band-sun text-brand-gold" },
+  IN_REVIEW: { label: "Đang xử lý", cls: "bg-band-sky text-brand-sky" },
+  RESOLVED: { label: "Đã xử lý", cls: "bg-band-mint text-brand-teal" },
 };
 
 const CATEGORY_LABEL: Record<FeedbackCategory, string> = {
@@ -124,7 +124,7 @@ function FeedbackCard({ item: f }: { item: FeedbackWithUser }) {
                 await updateFeedbackStatusAction({ id: f.id, status: "RESOLVED" });
               }}
             >
-              <Button size="sm" type="submit" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700">
+              <Button size="sm" type="submit" className="gap-1.5 bg-brand-teal hover:bg-brand-teal">
                 <Check className="h-4 w-4" /> Đánh dấu đã xử lý
               </Button>
             </form>

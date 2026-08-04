@@ -48,8 +48,8 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
         )}
       </div>
 
-      {/* Drop zone */}
-      <div className="min-h-16 border-2 border-dashed rounded-xl p-4 flex flex-wrap gap-2 items-center">
+      {/* Khay ghép câu — viền đứt nét, bo lớn, trông như một "ô trống" cần điền */}
+      <div className="flex min-h-20 flex-wrap items-center gap-2 rounded-2xl border-4 border-dashed border-border bg-muted/40 p-4">
         {chosen.length === 0 ? (
           <span className="text-muted-foreground text-sm">Chọn từ bên dưới...</span>
         ) : (
@@ -58,7 +58,9 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
               key={`${w}-${i}`}
               layout
               onClick={() => removeWord(w, i)}
-              className="px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 font-primer font-semibold hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-500/15 dark:hover:border-red-500/40"
+              /* Thẻ từ ĐÃ ghép: nền vàng nắng có gờ cam — nhìn là biết "đang ở
+                 trong câu". Rê chuột chuyển sang san hô để báo bấm là gỡ ra. */
+              className="btn-chunky [--edge:hsl(var(--c-sun))] bg-sunny px-4 py-2 font-primer text-lg font-bold text-sunny-foreground hover:bg-brand-coral hover:text-white"
             >
               {w}
             </motion.button>
@@ -66,14 +68,14 @@ export function SentenceOrderExerciseUI({ exercise, onAnswer, disabled }: Props)
         )}
       </div>
 
-      {/* Word bank */}
-      <div className="flex flex-wrap gap-2 justify-center">
+      {/* Kho từ — thẻ trắng có gờ, nhô lên khi rê chuột */}
+      <div className="flex flex-wrap justify-center gap-2.5">
         {bank.map((w, i) => (
           <motion.button
             key={`bank-${w}-${i}`}
             layout
             onClick={() => pickWord(w, i)}
-            className="px-3 py-2 rounded-lg border-2 font-primer font-semibold hover:border-primary/50 hover:bg-primary/5"
+            className="btn-chunky [--edge:hsl(var(--border))] bg-card px-4 py-2 font-primer text-lg font-bold"
           >
             {w}
           </motion.button>

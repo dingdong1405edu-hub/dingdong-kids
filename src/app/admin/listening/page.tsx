@@ -52,7 +52,7 @@ export default async function AdminListeningPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Headphones className="h-6 w-6 text-teal-600" />
+          <Headphones className="h-6 w-6 text-brand-teal" />
           <h1 className="text-2xl font-bold">Bài nghe hiểu</h1>
         </div>
         <BulkItemImport
@@ -149,7 +149,7 @@ export default async function AdminListeningPage() {
                           <span
                             className={
                               "inline-flex items-center gap-1 text-xs " +
-                              (test.audioUrl ? "text-teal-600" : "text-amber-600")
+                              (test.audioUrl ? "text-brand-teal" : "text-brand-gold")
                             }
                           >
                             <Volume2 className="h-3.5 w-3.5" />

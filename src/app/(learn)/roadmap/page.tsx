@@ -57,10 +57,12 @@ export default async function RoadmapPage() {
       <div className="hero-brand relative overflow-hidden rounded-3xl p-6 text-white shadow-soft-lg sm:p-8">
         <Ambient variant="calm" className="opacity-40" />
         <div className="relative z-10 max-w-2xl">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur">
+          {/* Nhãn nhỏ in hoa (không dùng class .eyebrow vì nó ép display:inline-block,
+              sẽ phá bố cục flex của cụm icon + chữ). */}
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-card/20 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] backdrop-blur">
             <Route className="h-3.5 w-3.5" /> Học theo lộ trình
           </div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">Bé chọn thế giới nào?</h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Bé chọn thế giới nào?</h1>
           <p className="mt-1.5 text-[15px] text-white/90">
             Bé chưa biết chữ thì bắt đầu ở <b>Bé Tập Nói</b> — chỉ nhìn hình và nói theo. Sau đó là 6 thế giới
             từ Pre-Starters tới Preliminary, mỗi thế giới một bản đồ gồm từ vựng, ghép vần, ngữ pháp, nghe,

@@ -282,7 +282,7 @@ export function WordLookup({
                   levelLabel() rơi về "Pre-Starters" cho mọi chuỗi lạ, nên nếu
                   không kiểm tra thì một từ khó có thể bị dán nhãn cấp dễ nhất. */}
               {isLevel(info.level) && (
-                <span className="rounded-full bg-sunny/25 px-2.5 py-0.5 text-xs font-bold text-amber-700 dark:text-amber-300">
+                <span className="rounded-full bg-sunny/25 px-2.5 py-0.5 text-xs font-bold text-brand-gold">
                   {levelLabel(info.level)}
                 </span>
               )}
@@ -310,7 +310,7 @@ export function WordLookup({
               className={cn(
                 "btn-chunky mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-2xl py-2.5 text-sm font-bold transition-colors",
                 saveState === "saved"
-                  ? "bg-emerald-500 text-white"
+                  ? "bg-brand-teal text-white"
                   : "bg-primary text-primary-foreground hover:brightness-105",
               )}
             >

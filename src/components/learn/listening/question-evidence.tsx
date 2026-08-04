@@ -34,7 +34,7 @@ export function QuestionEvidence({
           onClick={onToggleSave}
           className={cn(
             "inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-colors",
-            saved ? "bg-sunny/25 text-amber-700 dark:text-amber-300" : "text-muted-foreground hover:bg-muted",
+            saved ? "bg-sunny/25 text-brand-gold" : "text-muted-foreground hover:bg-muted",
           )}
         >
           {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}

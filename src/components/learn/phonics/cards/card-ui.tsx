@@ -82,8 +82,8 @@ export function ChoiceButton({
         "flex min-h-[96px] flex-col items-center justify-center gap-1 rounded-3xl border-4 px-4 py-4 text-center transition-all duration-150",
         state === "idle" &&
           "border-border bg-card hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-soft active:translate-y-[2px]",
-        state === "right" && "animate-pop-in border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15",
-        state === "wrong" && "animate-wrong border-rose-400",
+        state === "right" && "animate-pop-in border-brand-teal bg-band-mint",
+        state === "wrong" && "animate-wrong border-brand-coral",
         state === "dim" && "border-border/60 bg-card opacity-45",
       )}
     >
@@ -134,8 +134,8 @@ export function AnswerFeedback({
       className={cn(
         "animate-pop-in space-y-3 rounded-3xl border-4 p-4",
         ok
-          ? "border-emerald-300 bg-emerald-50 dark:bg-emerald-500/10"
-          : "border-amber-300 bg-amber-50 dark:bg-amber-500/10",
+          ? "border-brand-teal bg-band-mint"
+          : "border-brand-yellow bg-band-sun",
       )}
     >
       <div className="flex items-center gap-2 font-display text-lg font-extrabold sm:text-xl">
@@ -162,7 +162,7 @@ export function AnswerFeedback({
       {!ok && <p className="text-[15px] font-semibold text-muted-foreground">{line}</p>}
 
       {reveal && (
-        <div className="flex items-center gap-3 rounded-2xl bg-white/70 p-3 dark:bg-black/20">
+        <div className="flex items-center gap-3 rounded-2xl bg-card/70 p-3">
           <span className="text-5xl" aria-hidden>
             {reveal.emoji}
           </span>

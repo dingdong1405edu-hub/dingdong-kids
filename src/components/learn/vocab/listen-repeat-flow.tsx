@@ -139,7 +139,7 @@ export function ListenRepeatFlow({
     const maxStars = games.length * 3;
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Card className="w-full max-w-md rounded-3xl text-center">
+        <Card className="w-full max-w-md rounded-3xl text-center shadow-soft-lg">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
             <DingBuddy size={104} pose="cheer" message="Bé chơi giỏi lắm!" className="mx-auto" />
             <h2 className="font-display text-2xl font-extrabold">Xong rồi! 🎉</h2>
@@ -149,7 +149,7 @@ export function ListenRepeatFlow({
 
             {maxStars > 0 && (
               <div className="flex flex-col items-center gap-1">
-                <div className="text-4xl font-extrabold text-sunny-foreground">
+                <div className="text-4xl font-extrabold">
                   {"⭐".repeat(Math.max(1, stars))}
                 </div>
                 <p className="text-sm font-semibold text-muted-foreground">
@@ -158,28 +158,27 @@ export function ListenRepeatFlow({
               </div>
             )}
 
+            {/* Số sao thưởng dùng mật ong đậm: `sunny-foreground` là màu chữ TRÊN
+                nền vàng nên ở chế độ tối nó gần như biến mất trên nền thẻ. */}
             {xpEarned !== null && xpEarned > 0 && (
-              <div className="font-display font-extrabold text-sunny-foreground">
-                <span className="text-sunny">★</span> +{xpEarned} XP
+              <div className="font-display text-lg font-extrabold text-brand-gold">
+                <span>★</span> +{xpEarned} XP
               </div>
             )}
 
             <div className="grid gap-2 pt-2">
               {onNextLevel && (
-                <Button
-                  className="btn-chunky w-full rounded-2xl py-3 font-display font-extrabold"
-                  onClick={onNextLevel}
-                >
+                <Button size="lg" className="w-full" onClick={onNextLevel}>
                   <Sparkles className="mr-1.5 h-5 w-5" /> Thử mức tiếp theo
                 </Button>
               )}
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 rounded-2xl" onClick={restart}>
-                  <RotateCcw className="mr-1.5 h-4 w-4" /> Chơi lại
+                <Button variant="outline" className="flex-1" onClick={restart}>
+                  <RotateCcw className="mr-1.5 h-5 w-5" /> Chơi lại
                 </Button>
                 <Button
                   variant={onNextLevel ? "outline" : "default"}
-                  className="flex-1 rounded-2xl"
+                  className="flex-1"
                   onClick={onExit}
                 >
                   Hoàn tất
@@ -201,16 +200,16 @@ export function ListenRepeatFlow({
           <button
             type="button"
             onClick={onExit}
-            className="text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-brand-coral"
             aria-label="Thoát"
           >
             <X className="h-6 w-6" />
           </button>
           <div className="flex-1">
-            <div className="font-display text-base font-extrabold leading-tight">
+            <div className="font-display text-lg font-extrabold leading-tight">
               {emoji} {gameTitle}
             </div>
-            <p className="text-xs text-muted-foreground">{hint}</p>
+            <p className="text-sm text-muted-foreground">{hint}</p>
           </div>
         </div>
         <div className="flex-1 py-2">
@@ -267,18 +266,18 @@ function MeetWords({
         <button
           type="button"
           onClick={onExit}
-          className="text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground transition-colors hover:text-brand-coral"
           aria-label="Thoát"
         >
           <X className="h-6 w-6" />
         </button>
         <Progress value={progress} className="h-3 flex-1" />
-        <span className="text-sm font-bold text-muted-foreground">
+        <span className="font-display text-sm font-extrabold text-muted-foreground">
           {index + 1}/{words.length}
         </span>
       </div>
 
-      <p className="pb-1 text-center font-display text-lg font-extrabold">
+      <p className="pb-1 text-center font-display text-xl font-extrabold">
         Làm quen với từ mới 👋
       </p>
 
@@ -292,46 +291,50 @@ function MeetWords({
             transition={{ duration: 0.25 }}
             className="flex w-full flex-col items-center gap-4"
           >
-            <div className="sticker flex aspect-square w-52 items-center justify-center overflow-hidden bg-card sm:w-60">
-              <WordVisual word={word} emojiClass="text-[7rem]" />
+            {/* Hình/emoji cỡ đại nhún nhẹ trong khung gradient ấm — kênh truyền
+                đạt chính cho bé chưa đọc được chữ. */}
+            <div className="sticker flex aspect-square w-52 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-b from-band-sun to-card sm:w-60">
+              <WordVisual word={word} emojiClass="animate-bob text-[7rem]" />
             </div>
             <p className="font-primer text-6xl font-bold leading-none tracking-wide sm:text-7xl">
               {word.word}
             </p>
-            <p className="text-lg font-semibold text-muted-foreground">{word.meaning}</p>
+            <p className="font-display text-xl font-extrabold text-foreground">{word.meaning}</p>
           </motion.div>
         </AnimatePresence>
 
+        {/* Nút loa khổng lồ: với bé chưa đọc chữ đây là nút quan trọng nhất màn
+            hình, nên nó phải to hơn mọi thứ khác và luôn nằm cùng một chỗ. */}
         <button
           type="button"
           onClick={() => playWord({ word: word.word, audioUrl: word.audioUrl })}
           aria-label={`Nghe lại từ ${word.word}`}
           className={cn(
-            "btn-chunky flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground",
-            "transition-transform hover:scale-105 active:scale-95",
+            "btn-chunky [--edge:hsl(30_80%_38%)] flex h-28 w-28 items-center justify-center rounded-full bg-primary text-primary-foreground",
           )}
         >
-          <Volume2 className="h-11 w-11" />
+          <Volume2 className="h-12 w-12" />
         </button>
 
         <RepeatRecorder word={word.word} />
 
         {heard && (
-          <p className="animate-fade-in text-sm font-semibold text-muted-foreground">{praise}</p>
+          <p className="animate-pop-in font-display text-base font-extrabold text-brand-teal">
+            {praise}
+          </p>
         )}
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t py-4">
+      <div className="flex items-center justify-between gap-2 border-t-2 border-border py-4">
         <Button
           variant="ghost"
-          className="rounded-2xl"
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
           disabled={index === 0}
         >
-          <ArrowLeft className="mr-1.5 h-4 w-4" /> Trước
+          <ArrowLeft className="mr-1.5 h-5 w-5" /> Trước
         </Button>
         <Button
-          className="btn-chunky rounded-2xl px-6 py-3 font-display text-base font-extrabold"
+          size="lg"
           onClick={() => (index < words.length - 1 ? setIndex((i) => i + 1) : onDone())}
         >
           <Check className="mr-1.5 h-5 w-5" />
@@ -366,8 +369,8 @@ function RepeatRecorder({ word }: { word: string }) {
 
   if (rec.state === "insecure") {
     return (
-      <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-amber-50 px-4 py-3 text-center dark:bg-amber-500/10">
-        <p className="text-sm font-bold text-amber-700 dark:text-amber-300">
+      <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-band-yel px-4 py-3 text-center">
+        <p className="text-sm font-extrabold text-brand-gold">
           Trang này chưa chạy HTTPS nên trình duyệt khoá micro
         </p>
         <p className="text-xs text-muted-foreground">
@@ -398,7 +401,7 @@ function RepeatRecorder({ word }: { word: string }) {
         <button
           type="button"
           onClick={() => void rec.start()}
-          className="mt-1 text-sm font-bold text-primary hover:underline"
+          className="mt-1 text-sm font-extrabold text-brand-gold hover:underline"
         >
           Thử lại
         </button>
@@ -410,37 +413,39 @@ function RepeatRecorder({ word }: { word: string }) {
   if (rec.state === "ready" && rec.audioUrl) {
     return (
       <div className="flex w-full max-w-xs flex-col items-center gap-2">
-        <p className="font-display text-sm font-extrabold text-primary">
+        <p className="font-display text-base font-extrabold text-brand-gold">
           Nghe lại xem giống chưa nhé! 👂
         </p>
+        {/* Hai giọng đặt cạnh nhau, phân biệt bằng MÀU khối chứ không bằng chữ —
+            bé chưa đọc được nhãn "Ding nói" / "Con nói". */}
         <div className="grid w-full grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => playWord({ word })}
-            className="btn-chunky flex min-h-[56px] flex-col items-center justify-center rounded-2xl border-4 border-primary/25 bg-card px-2 py-2"
+            className="btn-chunky [--edge:hsl(var(--c-blue))] flex min-h-[64px] flex-col items-center justify-center rounded-2xl bg-band-sky px-2 py-2"
           >
-            <span className="text-xs font-bold text-muted-foreground">Ding nói</span>
-            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-primary">
-              <Volume2 className="h-4 w-4" /> Nghe
+            <span className="text-xs font-extrabold text-muted-foreground">Ding nói</span>
+            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-brand-blue">
+              <Volume2 className="h-5 w-5" /> Nghe
             </span>
           </button>
           <button
             type="button"
             onClick={() => void new Audio(rec.audioUrl!).play().catch(() => {})}
-            className="btn-chunky flex min-h-[56px] flex-col items-center justify-center rounded-2xl border-4 border-sunny/40 bg-sunny/10 px-2 py-2"
+            className="btn-chunky [--edge:hsl(var(--c-sun))] flex min-h-[64px] flex-col items-center justify-center rounded-2xl bg-band-yel px-2 py-2"
           >
-            <span className="text-xs font-bold text-muted-foreground">Con nói</span>
-            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-sunny-foreground">
-              <Play className="h-4 w-4" /> Nghe
+            <span className="text-xs font-extrabold text-muted-foreground">Con nói</span>
+            <span className="flex items-center gap-1 font-display text-sm font-extrabold text-brand-gold">
+              <Play className="h-5 w-5" /> Nghe
             </span>
           </button>
         </div>
         <button
           type="button"
           onClick={() => void rec.start()}
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-muted-foreground hover:text-foreground"
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-extrabold text-muted-foreground transition-colors hover:text-brand-gold"
         >
-          <Mic className="h-4 w-4" /> Nói lại lần nữa
+          <Mic className="h-5 w-5" /> Nói lại lần nữa
         </button>
       </div>
     );
@@ -454,26 +459,28 @@ function RepeatRecorder({ word }: { word: string }) {
         onClick={() => (recording ? rec.stop() : void rec.start())}
         aria-label={recording ? "Dừng ghi âm" : `Ghi âm bé nói từ ${word}`}
         className={cn(
-          "btn-chunky relative flex h-20 w-20 items-center justify-center rounded-full transition-transform active:scale-95",
+          "btn-chunky relative flex h-24 w-24 items-center justify-center rounded-full",
           recording
-            ? "bg-rose-500 text-white"
-            : "bg-sunny text-sunny-foreground hover:scale-105",
+            ? "[--edge:hsl(6_72%_50%)] bg-destructive text-destructive-foreground"
+            : "[--edge:hsl(var(--c-sun))] bg-sunny text-sunny-foreground",
         )}
       >
         {recording && (
           <motion.span
-            className="absolute inset-0 rounded-full bg-rose-500/40"
+            className="absolute inset-0 rounded-full bg-destructive/40"
             animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
             transition={{ duration: 1.2, repeat: Infinity }}
           />
         )}
-        {recording ? <Square className="h-8 w-8 fill-current" /> : <Mic className="h-9 w-9" />}
+        {recording ? <Square className="h-9 w-9 fill-current" /> : <Mic className="h-10 w-10" />}
       </button>
-      <span className="font-display text-base font-extrabold text-sunny-foreground">
+      {/* Dòng nhắc dùng chữ chính, KHÔNG dùng `sunny-foreground` — đó là màu chữ
+          trên nền vàng, đặt lên nền trang thì chế độ tối coi như mất chữ. */}
+      <span className="font-display text-base font-extrabold text-foreground">
         {recording ? "Đang nghe bé nói… bấm để dừng" : "Bấm mic rồi nói theo nhé!"}
       </span>
       {!recording && (
-        <span className="font-primer text-lg font-bold">{word}</span>
+        <span className="font-primer text-xl font-bold text-brand-gold">{word}</span>
       )}
     </div>
   );

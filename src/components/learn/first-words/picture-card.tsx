@@ -33,39 +33,48 @@ export function PictureCard({ word, cover, showText, speaking, onPlay }: Props) 
         animate={speaking ? { scale: [1, 1.06, 1] } : { scale: 1 }}
         transition={speaking ? { duration: 0.7, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
         className={cn(
-          "relative flex h-56 w-56 items-center justify-center rounded-[2.5rem] bg-gradient-to-br shadow-soft-lg sm:h-64 sm:w-64",
-          "ring-8 ring-white/60 dark:ring-white/10",
+          // Viền dày màu mặt thẻ (`ring-card`) → khung trắng ở chế độ sáng, khung
+          // nâu ở chế độ tối; không cần cặp `dark:` viết tay nữa.
+          "relative flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-to-br shadow-soft-xl sm:h-72 sm:w-72",
+          "ring-8 ring-card",
           cover,
         )}
       >
-        {/* Bong bóng trang trí cho tấm hình bớt phẳng */}
-        <span className="pointer-events-none absolute left-5 top-5 h-10 w-10 rounded-full bg-white/30 blur-[2px]" aria-hidden />
-        <span className="pointer-events-none absolute bottom-7 right-6 h-6 w-6 rounded-full bg-white/25 blur-[1px]" aria-hidden />
+        {/* Bong bóng trang trí cho tấm hình bớt phẳng. Vệt sáng để trắng cố định
+            vì nền gradient của chủ đề LUÔN tươi ở cả hai chế độ màu. */}
+        <span className="pointer-events-none absolute left-6 top-6 h-12 w-12 rounded-full bg-[hsl(0_0%_100%/0.32)] blur-[2px]" aria-hidden />
+        <span className="pointer-events-none absolute bottom-8 right-7 h-7 w-7 rounded-full bg-[hsl(0_0%_100%/0.26)] blur-[1px]" aria-hidden />
 
-        <span className="select-none text-[110px] leading-none drop-shadow-lg sm:text-[126px]" aria-hidden>
+        <span
+          className="select-none text-[128px] leading-none drop-shadow-[0_8px_14px_hsl(var(--shadow-hue)/0.35)] sm:text-[150px]"
+          aria-hidden
+        >
           {word.emoji}
         </span>
 
         {/* Huy hiệu loa — nhắc bé rằng bấm vào là có tiếng */}
         <span
           className={cn(
-            "absolute -bottom-3 -right-2 flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-soft-lg dark:bg-card",
+            "absolute -bottom-3 -right-2 flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full bg-card text-primary shadow-soft-lg",
             speaking ? "animate-wiggle" : "animate-bounce-soft",
           )}
           aria-hidden
         >
-          <Volume2 className="h-8 w-8" strokeWidth={2.5} />
+          <Volume2 className="h-9 w-9" strokeWidth={2.5} />
         </span>
       </motion.button>
 
       {showText ? (
         <div className="text-center">
-          <div className="font-primer text-4xl font-bold lowercase tracking-wide">{word.word}</div>
-          <div className="text-sm font-semibold text-muted-foreground">{word.vi}</div>
+          {/* Từ đang học ≥ 40px và dùng phông dạy đọc Andika (chữ a/g một tầng). */}
+          <div className="font-primer text-5xl font-bold lowercase tracking-wide text-foreground">
+            {word.word}
+          </div>
+          <div className="mt-0.5 text-base font-bold text-muted-foreground">{word.vi}</div>
         </div>
       ) : (
         // Giữ chỗ để tấm hình không nhảy lên xuống khi bố mẹ bật/tắt công tắc chữ.
-        <div className="h-[62px]" aria-hidden />
+        <div className="h-[84px]" aria-hidden />
       )}
     </div>
   );

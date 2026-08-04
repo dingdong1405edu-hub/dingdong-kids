@@ -139,7 +139,7 @@ export function RoadmapMap({
           </Link>
           <div className="mt-3 flex items-end justify-between gap-4">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-extrabold backdrop-blur">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-card/20 px-2.5 py-0.5 text-xs font-extrabold backdrop-blur">
                 <span aria-hidden>{theme.emoji}</span> {theme.label} · {theme.age}
               </div>
               <h1 className="mt-1.5 font-display text-2xl font-extrabold leading-tight sm:text-3xl">
@@ -155,7 +155,7 @@ export function RoadmapMap({
             </div>
           </div>
           <div className="mt-3 h-3 overflow-hidden rounded-full bg-black/15">
-            <div className="h-full rounded-full bg-white/90 transition-all" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-card/90 transition-all" style={{ width: `${pct}%` }} />
           </div>
         </div>
         <span
@@ -166,9 +166,11 @@ export function RoadmapMap({
         </span>
       </div>
 
-      {/* Banner xem trước / nâng cấp (ẩn khi đã mở khoá đầy đủ) */}
+      {/* Banner xem trước / nâng cấp (ẩn khi đã mở khoá đầy đủ).
+          Nền và viền lấy thẳng từ theme (nhóm band-/brand-) nên đã tự dịu ở chế độ
+          tối — không viết cặp dark: thủ công vì chúng đè mất màu thế giới của cấp. */}
       {!hasFullAccess && (
-        <div className={cn("flex flex-col gap-3 rounded-3xl border-2 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-foreground/15 dark:bg-foreground/[0.04]", theme.accentBorder, theme.accentSoft)}>
+        <div className={cn("flex flex-col gap-3 rounded-3xl border-2 p-4 sm:flex-row sm:items-center sm:justify-between", theme.accentBorder, theme.accentSoft)}>
           <div className="flex items-start gap-3">
             <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-white", theme.accentBg)}>
               <Sparkles className="h-5 w-5" />
@@ -183,7 +185,8 @@ export function RoadmapMap({
           <Link
             href={upgradeHref}
             className={cn(
-              "btn-chunky inline-flex shrink-0 items-center justify-center gap-1.5 px-5 py-2.5 text-sm font-extrabold text-white transition-transform",
+              // Gờ 3D trung tính (cacao mờ) vì mặt nút mang màu riêng của từng cấp.
+              "btn-chunky inline-flex shrink-0 items-center justify-center gap-1.5 px-5 py-2.5 font-display text-sm font-extrabold text-white transition-transform [--edge:hsl(var(--shadow-hue)/0.45)]",
               theme.accentBg
             )}
           >
@@ -192,14 +195,16 @@ export function RoadmapMap({
         </div>
       )}
 
-      {/* Ôn tập tổng hợp: gom mọi từ vựng lộ trình đến hạn ôn (SRS) */}
+      {/* Ôn tập tổng hợp: gom mọi từ vựng lộ trình đến hạn ôn (SRS).
+          Dải nắng band-sun + viền mật ong — nhóm token này tự đổi theo chế độ tối
+          nên không cần (và không được) viết cặp dark: thủ công. */}
       {reviewDueCount > 0 && (
         <Link
           href={`/roadmap/review?level=${slug}`}
-          className="flex items-center justify-between gap-3 rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 transition-colors hover:border-amber-300 dark:border-amber-400/25 dark:from-amber-500/10 dark:to-transparent dark:hover:border-amber-400/40"
+          className="flex items-center justify-between gap-3 rounded-3xl border-2 border-brand-honey/45 bg-band-sun p-4 shadow-soft transition-colors hover:border-brand-gold"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl dark:bg-amber-500/15">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-card text-2xl shadow-soft">
               <span aria-hidden>🔁</span>
             </div>
             <div>
@@ -209,7 +214,7 @@ export function RoadmapMap({
               </p>
             </div>
           </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
+          <ArrowRight className="h-5 w-5 shrink-0 text-brand-gold" />
         </Link>
       )}
 

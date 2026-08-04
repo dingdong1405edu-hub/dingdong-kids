@@ -51,7 +51,7 @@ export function VocabWordEditor({ lessonId, unitId, words }: Props) {
   return (
     <div className="space-y-3">
       {noImage > 0 && (
-        <p className="flex items-start gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+        <p className="flex items-start gap-1.5 rounded-md border border-brand-yellow bg-band-sun px-2.5 py-2 text-xs text-brand-gold">
           <ImageOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             {noImage} từ chưa có ảnh minh hoạ. Hãy thêm ảnh trước khi xuất bản bài — nhiều bé chưa
@@ -82,7 +82,7 @@ export function VocabWordEditor({ lessonId, unitId, words }: Props) {
                 ) : (
                   <span
                     title="Chưa có ảnh minh hoạ"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-amber-400 text-amber-600"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-dashed border-brand-yellow text-brand-gold"
                   >
                     <ImageOff className="h-4 w-4" />
                   </span>
@@ -90,7 +90,7 @@ export function VocabWordEditor({ lessonId, unitId, words }: Props) {
                 <span className="font-primer text-lg">{w.word}</span>
                 <span className="text-sm text-muted-foreground">{w.ipa}</span>
                 <span className="truncate text-sm">— {w.meaning}</span>
-                {w.audioUrl && <Volume2 className="h-3.5 w-3.5 shrink-0 text-sky-600" />}
+                {w.audioUrl && <Volume2 className="h-3.5 w-3.5 shrink-0 text-brand-sky" />}
                 <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                   {w.examples.length} ví dụ
                 </span>

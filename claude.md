@@ -69,6 +69,7 @@ dingdong-kids/
 │       ├── extra/<cấp>.ts      # bài lộ trình BỔ SUNG, nối sau bài gốc
 │       ├── vocab/              # kho từ vựng độc lập — index.ts + 1 file/cấp
 │       ├── exams/              # đề thi thử — index.ts + 1 file/cấp
+│       │                       # (Trải nghiệm: nội dung ở src/lib, xem §6.2)
 │       └── grammar/            # ngữ pháp — index.ts (kho độc lập)
 │           │                   #   + roadmap.ts (ngữ pháp gắn vào bài lộ trình)
 │           ├── <cấp>.ts        #   kho độc lập theo cấp
@@ -83,6 +84,8 @@ dingdong-kids/
 │   │   │   ├── dashboard/
 │   │   │   ├── roadmap/[level]/[lessonId]/[skill]/
 │   │   │   ├── roadmap/tap-noi/[unitId]/     # "Bé Tập Nói" — trước Pre-Starters (§6.1)
+│   │   │   ├── games/          # Trải nghiệm — Sân chơi (§6.2)
+│   │   │   ├── hoat-hinh/[cartoonId]/        # Trải nghiệm — Xem hoạt hình (§6.2)
 │   │   │   ├── vocab/          ├── phonics/      ├── grammar/
 │   │   │   ├── reading/        ├── listening/
 │   │   │   ├── writing/        ├── speaking/
@@ -91,7 +94,8 @@ dingdong-kids/
 │   │   ├── admin/              # dashboard quản trị (role: ADMIN)
 │   │   ├── api/
 │   │   │   ├── auth/[...nextauth]/ · chat/ · health/
-│   │   │   ├── grade/writing/ · grade/speaking/ · grade/first-words/ · transcribe/
+│   │   │   ├── grade/writing/ · grade/speaking/ · grade/first-words/ · grade/shadow/
+│   │   │   ├── transcribe/
 │   │   │   ├── speak/          # TTS theo yêu cầu cho "Bé Tập Nói" (danh sách trắng)
 │   │   │   ├── admin/upload/ · admin/audio/ · admin/tts/
 │   │   │   ├── files/[id]/ · payos/webhook/ · pdf/**
@@ -99,7 +103,8 @@ dingdong-kids/
 │   ├── components/
 │   │   ├── ui/                 # shadcn primitives
 │   │   ├── learn/              # vocab, phonics, reading, listening, grammar,
-│   │   │                       # roadmap, exercises, community, pdf
+│   │   │                       # roadmap, exercises, community, pdf,
+│   │   │                       # games (arcade) · cartoon (nói theo phim)
 │   │   ├── admin/
 │   │   ├── marketing/          # linh vật "Ding"
 │   │   └── shared/ · chat/ · theme/ · motion/
@@ -143,7 +148,7 @@ enum Role { LEARNER ADMIN }
 · `Attempt` · `Payment` / `Subscription` · `SavedWord` · `WordReport` · `Feedback`
 · `Upload` · `AuditLog`
 · Tiến độ: `VocabProgress` · `GrammarProgress` · `PhonicsProgress` · `FirstWordsProgress`
-· `RoadmapProgress`
+· `CartoonProgress` · `RoadmapProgress`
 · Ôn tập ngắt quãng: `VocabReview` · `RoadmapWordReview`
 
 **Quy ước quan trọng:**
@@ -170,6 +175,7 @@ enum Role { LEARNER ADMIN }
 | `phonics-data.ts` / `phonics-lessons.ts` | Dữ liệu + bài học Phonics (**tĩnh trong code**, chỉ tiến độ lưu DB) |
 | `first-words.ts` | Cấp **Bé Tập Nói** — chặng chính `CORE_UNITS` (**tĩnh trong code**), `FIRST_WORDS_LEVEL`, `isFirstWord()` (danh sách trắng cho `/api/speak`) |
 | `first-words-data/` | Kiểu dữ liệu + các **gói chủ đề "Khám phá thêm"** (`pack-*.ts`), tự gắn `bonus: true` |
+| `cartoons.ts` / `cartoon-data/` | Khu **Xem hoạt hình** (§6.2) — phim + mốc thời gian **tĩnh trong code**, `starsForShadow()` |
 | `payment-plans.ts` | Giá & gói — **sửa giá chỉ ở đây** |
 | `entitlements.ts` | Suy ra quyền lợi từ vai trò + subscription |
 | `hearts.ts` | Hệ thống tim |
@@ -250,6 +256,72 @@ giải lao, phần audio trả map rỗng để Web Speech đọc tiếp.
 
 ---
 
+## 6.2. Khu "Trải nghiệm" — Sân chơi & Xem hoạt hình
+
+Nhóm điều hướng riêng trong sidebar (`NAV_GROUPS`, [src/components/shared/sidebar.tsx](src/components/shared/sidebar.tsx)),
+gồm hai khu **chơi**, không phải khu học: không bài tập, không trừ tim, không khoá theo gói.
+
+| Khu | Route | Trạng thái |
+|---|---|---|
+| **Sân chơi** | `/games` | Đã có sẵn — 8 game, thêm game mới chỉ cần thêm một mục vào [registry.ts](src/components/learn/vocab/games/registry.ts) |
+| **Xem hoạt hình** | `/hoat-hinh` · `/hoat-hinh/[cartoonId]` | Máy chạy xong, **kho phim rỗng** — xem "Thêm phim" bên dưới |
+
+### Xem hoạt hình (nói theo phim — shadowing)
+
+Phim YouTube chạy **đúng một câu rồi tự dừng** → bé nhắc lại vào micro → máy chấm sao → câu tiếp.
+
+| Thành phần | Nơi ở |
+|---|---|
+| Nội dung (phim + mốc thời gian) | [src/lib/cartoon-data/](src/lib/cartoon-data/) `pack-*.ts` — **tĩnh trong code** |
+| Kiểu dữ liệu + hằng số | [src/lib/cartoons.ts](src/lib/cartoons.ts) |
+| Điều khiển YouTube | [use-youtube-player.ts](src/components/learn/cartoon/use-youtube-player.ts) — `playRange(start, end, onEnd)` |
+| Luồng học | [shadow-flow.tsx](src/components/learn/cartoon/shadow-flow.tsx) |
+| Chấm | `POST /api/grade/shadow` |
+| Lưu tiến độ | `completeCartoonAction` → `CartoonProgress.lineStars` |
+| **Studio bắt mốc thời gian** | `/admin/hoat-hinh` |
+
+**Chấm điểm KHÔNG giống các phần khác**: câu đích đã biết trước, nên sao được tính bằng
+`wordCoverage()` ([english.ts](src/lib/english.ts)) — so khớp từng từ, **tức thì và miễn phí**.
+Groq chỉ được gọi khi bé chưa nói trọn câu, và **chỉ để viết lời khen**; nó không bao giờ được
+hạ sao xuống dưới mức máy đã đo (`floorStars` trong `gradeKidSentence`). Sàn luôn là 1 sao.
+Hạn mức: `/api/grade/shadow` 80 lượt/15 phút — chạm trần thì rủ bé nghỉ, không báo lỗi.
+
+**Thêm phim** — mốc thời gian là thứ duy nhất quyết định bài chạy đúng hay hỏng, mà **không có
+nguồn tự động hợp lệ** (`captions.download` của YouTube đòi quyền sửa video; `timedtext` là API
+không chính thức, vi phạm ToS). Vì vậy phải bắt bằng tay:
+
+1. `/admin/hoat-hinh` → dán link → studio tự kiểm phim có cho nhúng không.
+2. Bấm "Đặt ĐẦU" / "Đặt CUỐI" cho từng câu, gõ câu + nghĩa.
+3. "Chép mã" → dán vào `pack-01.ts` → `npm run content:check cartoons` → xem thử ở
+   `/hoat-hinh/<id>` → mới đặt `published: true`.
+
+Phim mới luôn ra đời `published: false`; bé chỉ thấy phim đã bật.
+
+**Ràng buộc BẮT BUỘC của điều khoản nhúng YouTube** (vi phạm là bị chặn API, không phải góp ý):
+
+- **KHÔNG được đặt khu này sau tường phí.** Developer Policies cấm *"charge people a fee for
+  services that are offered free of charge on YouTube"* và *"restricting access to a video by
+  requiring a user to subscribe"*. Đây là lý do khu Trải nghiệm miễn phí — **không phải** lựa
+  chọn về marketing, và đừng gắn `getEntitlements()` vào đây.
+- **KHÔNG được che trình chơi.** Mọi thứ của mình (nút micro, sao, câu, Ding) phải nằm **BÊN
+  DƯỚI** khung video, không đè lên. `shadow-flow.tsx` đang tuân thủ — giữ nguyên khi sửa layout.
+- **Không chặn được quảng cáo** và cũng không được phép chặn. Quảng cáo sẽ chạy trong bài học
+  của bé — xem cảnh báo ở §11.
+
+**Ba chỗ dễ vỡ đã xử lý sẵn** (đừng gỡ):
+
+- `PAUSE_LEAD_SEC` — `getCurrentTime()` là số nội suy qua postMessage (~4 lần/giây), dừng đúng
+  mốc thì luôn lố vài trăm ms và bé nghe lẹm sang câu sau. Phải dừng sớm một nhịp.
+- `needsTap` — iOS chặn `playVideo()` do script gọi, hay gặp ngay sau khi micro vừa tắt. Không
+  bắt trạng thái này thì bé ngồi nhìn khung hình đứng im.
+- Rời tab → dừng phim. `requestAnimationFrame` treo khi tab ẩn còn video vẫn chạy → quay lại là
+  phim đã trôi mấy câu.
+
+**Không có ngõ cụt**: kênh tắt nhúng (lỗi 101/150), mạng hỏng, micro bị chặn — bé vẫn đi hết bài.
+Phim hỏng thì câu được đọc bằng Web Speech; micro hỏng thì vẫn có sao và lời khen.
+
+---
+
 ## 7. AI — chấm bài & sinh nội dung
 
 Prompt trong [src/lib/groq.ts](src/lib/groq.ts). Nguyên tắc chung:
@@ -282,19 +354,43 @@ Chấm nói trả 3 trục: `pronunciation` · **`intonation`** (trọng âm & n
 
 ## 8. UI/UX — thiết kế cho trẻ em
 
-Chi tiết trong [CONVERSION-CONTRACT.md §5](CONVERSION-CONTRACT.md).
+> ⭐ **Hợp đồng giao diện đầy đủ: [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).**
+> Đọc file đó TRƯỚC khi sửa bất kỳ thứ gì thuộc về hình thức. Phần dưới chỉ là bản tóm tắt.
+> (CONVERSION-CONTRACT.md §5 mô tả bảng màu XANH BIỂN cũ — đã thay, đừng theo nữa.)
 
-- **Màu**: `--primary` xanh biển tươi `hsl(202 90% 48%)`, `--sunny` vàng nắng (sao/streak/thưởng),
-  nền kem ấm. Mỗi cấp độ có một "thế giới màu" riêng trong `COURSE_THEME`.
-- **Font**: `font-display` = **Baloo 2** (tròn mập) · `font-sans` = **Nunito** ·
-  `font-primer` = **Andika** (chữ `a`/`g` **một tầng** như chữ trẻ tập viết — dùng cho
-  từ mẫu Phonics và thẻ từ vựng).
-- **Bo góc lớn**: `--radius: 1.25rem`.
+Hệ thiết kế: **"Sân chơi kem & mật ong"** — nền kem ấm như giấy vẽ, chữ nâu cacao
+(không bao giờ đen/xám), khối màu pastel xen kẽ ngăn nhau bằng dải sóng, nút 3D có gờ.
+
+- **Ba nhóm màu, dùng đúng nhóm** (chi tiết + bảng quy đổi ở DESIGN-SYSTEM.md §2, §7):
+  1. Nền/chữ/thẻ/viền → token ngữ nghĩa (`bg-background`, `text-foreground`, `bg-card`,
+     `text-muted-foreground`, `border-border`, `bg-sunny`…). **Chỉ nhóm này tự đổi
+     theo chế độ sáng/tối.**
+  2. Màu nhấn → `brand-*` (yellow · sun · gold · honey · coral · pink · lime · teal ·
+     sky · blue · grape · cocoa · mocha).
+  3. Nền `<section>` → `band-*` (cream · sun · coral · lav · yel · mint · sky).
+- ⛔ **KHÔNG dùng bảng màu mặc định Tailwind** (`bg-sky-500`, `text-rose-600`, `bg-white`…)
+  — chúng không biết tới chế độ tối và lệch tông thương hiệu.
+- **Font**: `font-display` = **Baloo 2** (tròn mập, mọi tiêu đề + chữ trên nút) ·
+  `font-sans` = **Nunito** (thân chữ, nét 600) · `font-primer` = **Andika**
+  (chữ `a`/`g` **một tầng** như chữ trẻ tập viết — dùng cho từ mẫu Phonics và thẻ từ vựng).
+- **Bo góc lớn**: `--radius: 1.25rem`; `rounded-xl` = 26px (thẻ), `rounded-2xl` = 34px
+  (khung lớn), `rounded-full` cho nút & huy hiệu.
+- **Bóng ám nâu**: `shadow-soft` / `shadow-soft-lg` / `shadow-soft-xl`. Bóng xám mặc
+  định của Tailwind trông bẩn trên nền kem — đừng dùng.
 - **Vùng chạm ≥ 48px** — ép trong `globals.css`, đừng ghi đè nhỏ hơn. Ngón tay trẻ kém chính xác.
 - **Cỡ chữ nền 17px**; từ đang học hiển thị ≥ 40px.
-- Class riêng: `.btn-chunky` (nút 3D có gờ, nhấn lún) · `.sticker` (thẻ viền dày, bóng lệch)
-  · `.writing-lines` (nền kẻ 4 ly) · `.text-gradient-brand` · `.hero-brand`.
-- Animation: `animate-pop-in`, `animate-star-pop`, `animate-wiggle`, `animate-bounce-soft`.
+- Class riêng: `.btn-chunky` (nút 3D có gờ, màu gờ đặt qua `[--edge:…]`) · `.answer-tile`
+  (ô đáp án dùng chung cho MỌI dạng bài) · `.card-toy` · `.sticker` · `.tick` · `.eyebrow`
+  · `.hl` (bút highlight) · `.deco` (chữ cái bay trang trí) · `.marquee-track`
+  · `.text-rainbow` (mỗi trang tối đa MỘT cụm từ) · `.writing-lines` · `.text-gradient-brand`.
+- Component dựng sẵn: `<WaveDivider top="sun" bottom="coral">` (dải sóng ngăn section)
+  · `<Logo>` + `<Wordmark>` (đầu gấu Ding + chữ ba màu) · `<Button variant="candy">`.
+- Animation: `animate-pop-in` · `animate-star-pop` · `animate-wiggle` · `animate-bounce-soft`
+  · `animate-bob` · `animate-tilt` · `animate-drift` · `animate-float-blob` · `animate-marquee`
+  · `animate-wave-slide` · `animate-dot-pulse`. Tất cả tự tắt ở `prefers-reduced-motion`.
+- **Chế độ tối = "đêm cacao"** (nâu ấm, không phải xanh đêm). Vẫn là tính năng, đừng bỏ.
+  Vì `--c-cocoa` ĐẢO NGHĨA ở chế độ tối, chỗ nào cần nền nâu đậm cố định ở CẢ hai chế độ
+  (chân trang, băng chữ marquee) thì dùng `bg-foreground` + `text-background`.
 - **Ít chữ – nhiều hình.** Mọi lựa chọn nên có ảnh/emoji. Mọi câu tiếng Anh nên có nút loa.
 
 **Văn phong**: câu ngắn, từ đơn giản, khen trước khi sửa.
@@ -364,8 +460,13 @@ typecheck không thấy:
   lại KHÔNG ra đúng từ, thẻ `discriminate` so sánh hai âm giống hệt nhau, bài không có thẻ
   nào tính điểm (bé chỉ ngồi xem, không ghi được tiến độ).
 
+- Xem hoạt hình: mốc thời gian ngược (`end` ≤ `start`), hai câu chồng lên nhau, câu dài quá
+  12 giây (bé không nhớ nổi để nhắc lại), trùng `id` hoặc trùng `youtubeId`, `cover` không phải
+  class Tailwind literal.
+
 Kiểm riêng một phần cho nhanh: `npm run content:check <cấp>` (pre-starters…pet) hoặc
-`npm run content:check <kho>` (`grammar` · `vocab` · `first-words` · `phonics` · `exams`).
+`npm run content:check <kho>` (`grammar` · `vocab` · `first-words` · `phonics` · `cartoons`
+· `exams`).
 
 ## 7.1. Thi thử — giới hạn cần biết
 
@@ -396,7 +497,17 @@ Admin gắn MP3 sau mà không phải sửa file nội dung.
 4. **Chi phí TTS** — cần đo giá Aura thực tế trước khi sinh audio hàng loạt cho toàn kho từ vựng.
 5. **Ảnh minh hoạ** — `VocabWord.imageUrl` là kênh truyền đạt chính cho trẻ chưa đọc thạo
    nhưng hiện chưa có kho ảnh. Cần nguồn ảnh (mua bộ, tự vẽ, hoặc sinh bằng AI).
-6. **Diễn đàn cộng đồng** — đã chuyển thành diễn đàn PHỤ HUYNH. Nội dung trẻ em cần kiểm duyệt
+6b. **Quảng cáo YouTube trong khu Xem hoạt hình** — quyết định chưa chốt, cần chốt TRƯỚC khi
+   mở phim đầu tiên cho bé. Video nhúng vẫn chạy quảng cáo của YouTube (pre-roll mỗi lần tải,
+   có thể cả mid-roll giữa câu), và điều khoản **cấm chặn** chúng. Nghĩa là một quảng cáo bên
+   thứ ba chưa qua kiểm duyệt sẽ hiện ra trước mặt trẻ 4 tuổi, trong một sản phẩm bán bằng lời
+   hứa "khu vườn an toàn". Ba đường: (a) chấp nhận và nói rõ với phụ huynh, (b) chỉ chọn phim
+   của kênh ít quảng cáo — không kiểm soát được, (c) **tự quay/dựng phim rồi tải lên kênh riêng**
+   — hết quảng cáo, hết rủi ro phim bị gỡ, và mở luôn cửa dùng `captions.download` hợp lệ để
+   bắt mốc thời gian tự động. (c) là đường bền nhất nhưng tốn công sản xuất.
+6c. **Kho phim đang rỗng** — toàn bộ máy móc đã chạy nhưng `src/lib/cartoon-data/pack-01.ts`
+   chưa có phim nào. Cố ý: mốc thời gian đoán bừa còn tệ hơn không có phim. Xem §6.2.
+7. **Diễn đàn cộng đồng** — đã chuyển thành diễn đàn PHỤ HUYNH. Nội dung trẻ em cần kiểm duyệt
    chặt; `WordReport` đã có cơ chế duyệt trước khi hiển thị công khai.
 
 ---

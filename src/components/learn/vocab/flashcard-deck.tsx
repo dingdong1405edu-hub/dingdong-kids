@@ -34,18 +34,19 @@ export function FlashcardDeck({ words, onDone }: Props) {
 
   const wordFace = (
     <div className="flex flex-col items-center gap-2">
-      <div className="font-primer text-6xl font-bold">{word.word}</div>
-      {word.ipa && <div className="text-lg text-muted-foreground">{word.ipa}</div>}
+      {/* Từ đang học ≥40px và dùng phông tập đọc — mặt chữ a/g một tầng. */}
+      <div className="font-primer text-6xl font-bold leading-none tracking-wide">{word.word}</div>
+      {word.ipa && <div className="text-lg font-semibold text-muted-foreground">{word.ipa}</div>}
     </div>
   );
   const meaningFace = (
     <div className="flex flex-col items-center gap-1.5 px-4 text-center">
-      <div className="text-xl font-medium">{word.meaning}</div>
+      <div className="font-display text-2xl font-extrabold">{word.meaning}</div>
       {example && (
-        <div className="mt-1 w-full border-t pt-2 text-sm">
+        <div className="mt-1 w-full border-t-2 border-border pt-2 text-sm">
           <div className="font-primer text-base">
             {markWord(example.sentence, word.word).map((seg, i) => (
-              <span key={i} className={seg.match ? "font-bold text-primary" : "text-foreground"}>
+              <span key={i} className={seg.match ? "font-bold text-brand-gold" : "text-foreground"}>
                 {seg.text}
               </span>
             ))}
@@ -63,7 +64,7 @@ export function FlashcardDeck({ words, onDone }: Props) {
       {/* Thanh tiến trình ôn flashcard — cho học viên thấy đang ôn tới đâu */}
       <div className="w-full max-w-sm space-y-1.5">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span className="font-medium">
+          <span className="font-display font-extrabold">
             Thẻ {index + 1}/{words.length}
           </span>
           <button
@@ -72,7 +73,7 @@ export function FlashcardDeck({ words, onDone }: Props) {
               setWordFront((v) => !v);
               setFlipped(false);
             }}
-            className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs transition-colors hover:bg-muted"
+            className="inline-flex items-center gap-1 rounded-full border-2 border-border bg-card px-3 py-0.5 text-xs font-extrabold transition-colors hover:bg-band-sun"
           >
             <RefreshCw className="h-3 w-3" />
             {wordFront ? "Từ → Nghĩa" : "Nghĩa → Từ"}
@@ -92,14 +93,15 @@ export function FlashcardDeck({ words, onDone }: Props) {
           animate={{ rotateY: flipped ? 180 : 0 }}
           transition={{ duration: 0.4 }}
         >
+          {/* Hai mặt thẻ: nền gradient nắng ấm, bo cực lớn, bóng ám nâu. */}
           <div
-            className="absolute inset-0 flex items-center justify-center rounded-2xl border bg-card shadow-soft"
+            className="absolute inset-0 flex items-center justify-center rounded-3xl bg-gradient-to-b from-band-sun to-card shadow-soft-lg"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
           >
             {front}
           </div>
           <div
-            className="absolute inset-0 flex items-center justify-center rounded-2xl border bg-card shadow-soft"
+            className="absolute inset-0 flex items-center justify-center rounded-3xl bg-gradient-to-b from-band-mint to-card shadow-soft-lg"
             style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
             {back}
@@ -109,26 +111,29 @@ export function FlashcardDeck({ words, onDone }: Props) {
 
       <div className="flex items-center gap-3">
         <Button variant="outline" size="icon" onClick={() => go(-1)} disabled={index === 0}>
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-5 w-5" />
         </Button>
+        {/* Nút loa to hơn hai nút mũi tên — đây là hành động chính của thẻ từ. */}
         <Button
-          variant="outline"
+          size="lg"
           onClick={(e) => {
             e.stopPropagation();
             playWord({ word: word.word, audioUrl: word.audioUrl });
           }}
         >
-          <Volume2 className="mr-1.5 h-4 w-4" /> Nghe
+          <Volume2 className="mr-1.5 h-5 w-5" /> Nghe
         </Button>
         {isLast ? (
-          <Button onClick={onDone}>Hoàn thành</Button>
+          <Button variant="candy" onClick={onDone}>
+            Hoàn thành
+          </Button>
         ) : (
           <Button variant="outline" size="icon" onClick={() => go(1)}>
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           </Button>
         )}
       </div>
-      <p className="text-xs text-muted-foreground">Chạm vào thẻ để lật</p>
+      <p className="text-sm font-semibold text-muted-foreground">Chạm vào thẻ để lật</p>
     </div>
   );
 }

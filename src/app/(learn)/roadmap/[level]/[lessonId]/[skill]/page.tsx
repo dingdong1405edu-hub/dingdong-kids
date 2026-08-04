@@ -94,16 +94,17 @@ export default async function RoadmapSectionPlayPage({ params }: Props) {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" /> Quay lại bài học
           </Link>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm font-semibold text-muted-foreground">
             · {meta.label} · {lesson.topic}
           </span>
+          {/* Nút PDF viền dày, bo tròn — khớp nút PDF trong hộp thoại bài học */}
           <Link
             href={`/roadmap-pdf/${lessonId}/${skillKey.toLowerCase()}`}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-xl border-2 border-border px-2.5 py-1.5 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <FileDown className="h-4 w-4" /> Tải PDF
           </Link>

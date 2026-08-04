@@ -67,8 +67,8 @@ export function PublishToggle({
       title={published ? "Đang hiển thị cho học viên — bấm để ẩn" : "Đang ẩn — bấm để xuất bản"}
       className={cn(
         published
-          ? "border-green-300 text-green-700 hover:text-green-800 dark:text-green-400"
-          : "border-amber-300 text-amber-700 hover:text-amber-800 dark:text-amber-400",
+          ? "border-brand-lime text-brand-teal hover:text-brand-teal"
+          : "border-brand-yellow text-brand-gold hover:text-brand-gold",
         className
       )}
     >

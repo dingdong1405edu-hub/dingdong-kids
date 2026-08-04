@@ -53,7 +53,7 @@ export default async function GoalsPage() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 dark:from-sky-500/10 dark:to-transparent sm:p-6">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-band-sky to-white p-5 dark:to-transparent sm:p-6">
         <div className="relative z-10 flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-chunky-sm">
             <Target className="h-7 w-7" />
@@ -87,7 +87,7 @@ export default async function GoalsPage() {
         <Card className="sticker">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Flame className="h-4 w-4 text-orange-500" /> Chuỗi ngày học
+              <Flame className="h-4 w-4 text-brand-sun" /> Chuỗi ngày học
             </div>
             <div className="font-display mt-1 text-2xl font-bold">{user.streakDays} ngày</div>
             <p className="mt-3 text-xs text-muted-foreground">

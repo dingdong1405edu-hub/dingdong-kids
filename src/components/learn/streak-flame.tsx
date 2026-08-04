@@ -30,16 +30,19 @@ export function StreakFlame({ streak }: StreakFlameProps) {
     <div className="flex items-center gap-2">
       <Flame
         className={cn(
-          "h-8 w-8",
+          "h-9 w-9",
           alive
-            ? "text-orange-500 fill-sunny drop-shadow-sm"
-            : "text-muted-foreground/50 fill-muted-foreground/20",
+            // Ruột vàng nắng, viền cam nắng — cùng cặp màu với gờ nút chính.
+            ? "fill-sunny text-brand-sun drop-shadow-[0_2px_0_hsl(var(--shadow-hue)/0.20)]"
+            : "fill-muted-foreground/20 text-muted-foreground/50",
           gained && "animate-star-pop",
         )}
       />
       <div>
-        <div className="font-display text-xl font-extrabold leading-none">{streak}</div>
-        <div className="text-xs font-semibold text-muted-foreground">ngày liên tiếp</div>
+        <div className={cn("font-display text-2xl font-extrabold leading-none", alive ? "text-brand-gold" : "text-muted-foreground")}>
+          {streak}
+        </div>
+        <div className="text-xs font-bold text-muted-foreground">ngày liên tiếp</div>
       </div>
     </div>
   );

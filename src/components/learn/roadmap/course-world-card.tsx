@@ -54,20 +54,20 @@ export function CourseWorldCard({
               {t.emoji}
             </span>
             <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white/25 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur">
+              <span className="rounded-full bg-card/25 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur">
                 {t.label}
               </span>
-              <span className="rounded-full bg-white/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+              <span className="rounded-full bg-card/25 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
                 {t.age}
               </span>
               {recommended && (
-                <span className={cn("rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide shadow", t.accentText)}>
+                <span className={cn("rounded-full bg-card px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide shadow-soft", t.accentText)}>
                   Đề xuất
                 </span>
               )}
             </div>
             {complete && (
-              <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">
+              <span className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-card shadow-soft">
                 <Check className={cn("h-5 w-5", t.accentText)} strokeWidth={3} />
               </span>
             )}

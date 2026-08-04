@@ -117,19 +117,19 @@ export function LessonEngine({
             exit={{ y: 100, opacity: 0 }}
             className={`fixed bottom-0 left-0 right-0 z-40 p-6 border-t ${
               feedback === "correct"
-                ? "bg-green-50 dark:bg-green-500/15 border-green-200 dark:border-green-500/25"
-                : "bg-red-50 dark:bg-red-500/15 border-red-200 dark:border-red-500/25"
+                ? "bg-band-mint border-brand-lime/40"
+                : "bg-band-coral border-brand-coral/40"
             }`}
           >
             <div className="max-w-2xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {feedback === "correct" ? (
-                  <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-300" />
+                  <CheckCircle2 className="h-6 w-6 text-brand-teal" />
                 ) : (
-                  <XCircle className="h-6 w-6 text-red-500 dark:text-red-300" />
+                  <XCircle className="h-6 w-6 text-brand-coral" />
                 )}
                 <div>
-                  <div className={`font-bold ${feedback === "correct" ? "text-green-700 dark:text-green-300" : "text-red-600 dark:text-red-300"}`}>
+                  <div className={`font-bold ${feedback === "correct" ? "text-brand-teal" : "text-brand-coral"}`}>
                     {feedback === "correct" ? "Chính xác!" : "Sai rồi!"}
                   </div>
                   {correctAnswer && (
@@ -139,7 +139,7 @@ export function LessonEngine({
                   )}
                 </div>
               </div>
-              <Button onClick={advance} className={feedback === "correct" ? "bg-green-600 hover:bg-green-700" : ""}>
+              <Button onClick={advance} className={feedback === "correct" ? "bg-brand-lime hover:bg-brand-lime" : ""}>
                 Tiếp tục
               </Button>
             </div>

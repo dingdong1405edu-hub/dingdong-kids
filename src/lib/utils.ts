@@ -77,30 +77,36 @@ export function xpToLevel(xp: number): { level: number; progress: number; next: 
   return { level, progress, next };
 }
 
-/** Class badge đặc màu theo cấp độ (chip cấp trên các thẻ). */
+/**
+ * Class badge đặc màu theo cấp độ (chip cấp trên các thẻ). Màu khớp với
+ * `accentBg` của cùng cấp trong COURSE_THEME để chip và bản đồ lộ trình nói
+ * cùng một "thế giới màu". Dùng `brand-*` (bọc biến CSS) nên tự dịu ở chế độ tối.
+ */
 export function levelBadgeClass(level: string): string {
   const map: Record<string, string> = {
-    PRE_STARTERS: "bg-amber-500 text-white",
-    STARTERS: "bg-emerald-500 text-white",
-    MOVERS: "bg-sky-500 text-white",
-    FLYERS: "bg-violet-500 text-white",
-    KET: "bg-orange-500 text-white",
-    PET: "bg-rose-600 text-white",
+    PRE_STARTERS: "bg-brand-gold text-white",
+    STARTERS: "bg-brand-teal text-white",
+    MOVERS: "bg-brand-sky text-white",
+    FLYERS: "bg-brand-pink text-white",
+    KET: "bg-brand-grape text-white",
+    PET: "bg-brand-blue text-white",
   };
-  return map[level] ?? "bg-zinc-500 text-white";
+  // Cấp không hợp lệ → chip trung tính, đảo màu theo chế độ sáng/tối.
+  return map[level] ?? "bg-foreground text-background";
 }
 
 // Ảnh bìa trang trí cho thẻ khi chưa có ảnh tải lên: một dải gradient mềm cộng
 // một emoji lớn mờ, chọn tất định theo seed để không nhảy khi tải lại trang.
+// Toàn `brand-*` để bìa cũng thuộc bảng màu thương hiệu và dịu lại ở chế độ tối.
 const COVER_GRADIENTS = [
-  "from-rose-400 to-orange-300",
-  "from-emerald-400 to-teal-300",
-  "from-sky-400 to-indigo-300",
-  "from-violet-400 to-fuchsia-300",
-  "from-amber-400 to-rose-300",
-  "from-teal-400 to-cyan-300",
-  "from-indigo-400 to-purple-300",
-  "from-red-400 to-amber-300",
+  "from-brand-coral to-brand-sun",
+  "from-brand-lime to-brand-teal",
+  "from-brand-sky to-brand-blue",
+  "from-brand-grape to-brand-pink",
+  "from-brand-honey to-brand-coral",
+  "from-brand-teal to-brand-sky",
+  "from-brand-blue to-brand-grape",
+  "from-brand-pink to-brand-yellow",
 ];
 /** Emoji bìa — thay cho chữ Hán trang trí ở bản cũ. Chọn theo chủ đề trẻ em. */
 const COVER_EMOJI = [

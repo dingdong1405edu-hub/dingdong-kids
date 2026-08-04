@@ -54,11 +54,12 @@ export function LessonNode({
     >
       {/* Bong bóng "BẮT ĐẦU" cho bài hiện tại */}
       {current && !isTrophy && (
-        <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 animate-bounce-soft whitespace-nowrap rounded-2xl bg-white px-3.5 py-1.5 shadow-soft-lg dark:bg-zinc-100">
+        <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 animate-bounce-soft whitespace-nowrap rounded-2xl bg-card px-3.5 py-1.5 shadow-soft-lg">
           <span className={cn("font-display text-xs font-extrabold uppercase tracking-wide", theme.accentText)}>
             Bắt đầu
           </span>
-          <span className="absolute -bottom-1 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[2px] bg-white dark:bg-zinc-100" />
+          {/* Mũi nhọn của bong bóng — cùng màu mặt thẻ để nối liền, không viền */}
+          <span className="absolute -bottom-1 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 rounded-[2px] bg-card" />
         </div>
       )}
 
@@ -90,11 +91,12 @@ export function LessonNode({
           current && "animate-bounce-soft",
         )}
       >
-        {/* Gờ 3D phía dưới */}
+        {/* Gờ 3D phía dưới — node khoá dùng sắc chìm để trông "tắt", hộp quà dùng
+            cam nắng cho khớp mặt nút vàng */}
         <span
           className={cn(
             "absolute inset-x-0 bottom-0 rounded-full",
-            locked ? "bg-zinc-300 dark:bg-zinc-900" : isTrophy ? "bg-amber-600" : theme.nodeBase,
+            locked ? "bg-muted-foreground/35" : isTrophy ? "bg-brand-sun" : theme.nodeBase,
           )}
           style={{ top: LEDGE }}
         />
@@ -103,11 +105,11 @@ export function LessonNode({
           className={cn(
             "absolute inset-x-0 top-0 flex items-center justify-center rounded-full text-4xl leading-none transition-transform duration-100 group-active:translate-y-[4px]",
             locked
-              ? "bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+              ? "bg-muted text-muted-foreground/70"
               : isTrophy
-                ? "bg-gradient-to-b from-amber-300 to-amber-500 text-white"
+                ? "bg-gradient-to-b from-brand-yellow to-brand-sun text-sunny-foreground"
                 : cn(theme.nodeFace, "text-white"),
-            !locked && "shadow-lg",
+            !locked && "shadow-soft-lg",
             !locked && theme.glow,
           )}
           style={{ bottom: LEDGE }}
@@ -116,15 +118,15 @@ export function LessonNode({
           {!locked && (
             <span
               aria-hidden
-              className="pointer-events-none absolute inset-x-[14%] top-[8%] h-[34%] rounded-[999px] bg-white/35 blur-[1px]"
+              className="pointer-events-none absolute inset-x-[14%] top-[8%] h-[34%] rounded-[999px] bg-card/35 blur-[1px]"
             />
           )}
           {isTrophy ? (
-            <Gift className={cn("h-8 w-8", locked ? "" : "drop-shadow-sm")} strokeWidth={2.2} />
+            <Gift className={cn("h-8 w-8", locked ? "" : "drop-shadow-soft")} strokeWidth={2.2} />
           ) : locked ? (
             <Lock className="h-7 w-7" />
           ) : icon ? (
-            <span className="relative drop-shadow-sm">{icon}</span>
+            <span className="relative drop-shadow-soft">{icon}</span>
           ) : (
             <span className="relative font-display text-2xl font-extrabold">{order}</span>
           )}
@@ -132,7 +134,7 @@ export function LessonNode({
 
         {/* Ngôi sao "đã xong" — bật ra như dán sticker */}
         {done && (
-          <span className="absolute -right-1 -top-1 z-10 flex h-8 w-8 animate-star-pop items-center justify-center rounded-full bg-white shadow-soft dark:bg-zinc-100">
+          <span className="absolute -right-1 -top-1 z-10 flex h-8 w-8 animate-star-pop items-center justify-center rounded-full bg-card shadow-soft">
             <Star className="h-5 w-5 fill-sunny text-sunny" strokeWidth={2} />
           </span>
         )}

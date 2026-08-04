@@ -10,8 +10,8 @@ import type { WordReportStatus } from "@prisma/client";
 export const dynamic = "force-dynamic";
 
 const STATUS_META: Record<WordReportStatus, { label: string; cls: string }> = {
-  PENDING: { label: "Chờ duyệt", cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300" },
-  APPROVED: { label: "Đã duyệt", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" },
+  PENDING: { label: "Chờ duyệt", cls: "bg-band-sun text-brand-gold" },
+  APPROVED: { label: "Đã duyệt", cls: "bg-band-mint text-brand-teal" },
   REJECTED: { label: "Đã từ chối", cls: "bg-muted text-muted-foreground" },
 };
 
@@ -104,7 +104,7 @@ function ReportCard({ report: r }: { report: ReportWithRel }) {
                 await moderateWordReportAction({ id: r.id, status: "APPROVED" });
               }}
             >
-              <Button size="sm" type="submit" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700">
+              <Button size="sm" type="submit" className="gap-1.5 bg-brand-teal hover:bg-brand-teal">
                 <Check className="h-4 w-4" /> Duyệt (hiện công khai)
               </Button>
             </form>

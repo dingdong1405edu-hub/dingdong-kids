@@ -36,11 +36,12 @@ export default async function SoTuPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <BookMarked className="h-6 w-6" />
+        {/* Biểu tượng sổ đặt trong khối nắng, nhún nhẹ — đầu trang phải vui mắt. */}
+        <div className="flex h-16 w-16 shrink-0 animate-bob items-center justify-center rounded-3xl bg-band-sun text-brand-gold">
+          <BookMarked className="h-8 w-8" />
         </div>
         <div>
-          <h1 className="font-display text-2xl font-bold">Sổ từ của bé 📒</h1>
+          <h1 className="font-display text-3xl font-extrabold">Sổ từ của bé 📒</h1>
           <p className="text-[15px] text-muted-foreground">
             Những từ bé đã cất vào sổ. Tất cả {words.length} từ.
           </p>
@@ -48,9 +49,9 @@ export default async function SoTuPage() {
       </div>
 
       {words.length === 0 ? (
-        <div className="sticker rounded-3xl border-dashed py-16 text-center">
+        <div className="sticker rounded-3xl border-dashed bg-band-cream py-16 text-center">
           <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
-          <p className="text-[15px] text-muted-foreground">
+          <p className="text-[15px] font-semibold text-muted-foreground">
             Sổ còn trống. Khi đọc truyện, bé bấm vào một từ rồi chọn “Lưu vào sổ từ” nhé 🌟
           </p>
         </div>

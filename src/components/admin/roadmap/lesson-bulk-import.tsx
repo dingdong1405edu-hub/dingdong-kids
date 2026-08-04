@@ -279,11 +279,11 @@ export function RoadmapLessonBulkImport({ courseId }: { courseId: string }) {
         {preview && (
           <div className="text-sm">
             {"error" in preview ? (
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <span className="flex items-center gap-1.5 text-brand-gold">
                 <AlertTriangle className="h-4 w-4" /> {preview.error}
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+              <span className="flex items-center gap-1.5 text-brand-teal">
                 <CheckCircle2 className="h-4 w-4" />
                 {preview.lessons} bài · {preview.sections} phần kỹ năng
               </span>

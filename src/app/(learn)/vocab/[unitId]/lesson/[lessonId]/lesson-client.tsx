@@ -58,7 +58,7 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
     const passed = pct >= 60;
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Card className="sticker max-w-md w-full text-center">
+        <Card className="sticker max-w-md w-full rounded-3xl text-center">
           <CardContent className="pt-8 pb-6 space-y-4">
             <DingBuddy
               size={104}
@@ -66,13 +66,16 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
               message={passed ? "Giỏi quá!" : "Cố lên nhé!"}
               className="mx-auto"
             />
-            <h2 className="font-display text-2xl font-bold">{passed ? "Bé giỏi lắm! 🌟" : "Gần đúng rồi!"}</h2>
-            <div className="font-display text-5xl font-bold text-primary">{pct}%</div>
-            <div className="text-muted-foreground text-sm">
+            <h2 className="font-display text-2xl font-extrabold">{passed ? "Bé giỏi lắm! 🌟" : "Gần đúng rồi!"}</h2>
+            <div className="font-display text-6xl font-extrabold text-gradient-sunny">{pct}%</div>
+            <div className="text-muted-foreground text-[15px]">
               Bé làm đúng {result.correct}/{result.total} câu
             </div>
+            {/* Sao thưởng: vàng nắng quá nhạt để làm CHỮ trên nền kem → mật ong đậm. */}
             {result.xpEarned !== undefined && result.xpEarned > 0 && (
-              <div className="font-bold text-sunny">+{result.xpEarned} sao ⭐</div>
+              <div className="font-display text-lg font-extrabold text-brand-gold">
+                +{result.xpEarned} sao ⭐
+              </div>
             )}
             <div className="flex gap-2 pt-2">
               <Button
@@ -82,10 +85,7 @@ export function LessonClient({ lesson, unitId, hearts, skill }: Props) {
               >
                 Chơi lại
               </Button>
-              <Button
-                className="btn-chunky flex-1"
-                onClick={() => router.push(`/${skill}/${unitId}`)}
-              >
+              <Button className="flex-1" onClick={() => router.push(`/${skill}/${unitId}`)}>
                 Tiếp tục
               </Button>
             </div>

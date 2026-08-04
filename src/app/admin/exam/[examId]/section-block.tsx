@@ -20,10 +20,10 @@ export interface ExamSectionData {
 }
 
 function SkillIcon({ skill }: { skill: Skill }) {
-  if (skill === "LISTENING") return <Headphones className="h-4 w-4 text-teal-600" />;
-  if (skill === "READING") return <BookText className="h-4 w-4 text-emerald-600" />;
-  if (skill === "SPEAKING") return <Mic className="h-4 w-4 text-rose-600" />;
-  return <PenLine className="h-4 w-4 text-violet-600" />;
+  if (skill === "LISTENING") return <Headphones className="h-4 w-4 text-brand-teal" />;
+  if (skill === "READING") return <BookText className="h-4 w-4 text-brand-teal" />;
+  if (skill === "SPEAKING") return <Mic className="h-4 w-4 text-brand-coral" />;
+  return <PenLine className="h-4 w-4 text-brand-grape" />;
 }
 
 export function SectionBlock({ section, examId }: { section: ExamSectionData; examId: string }) {

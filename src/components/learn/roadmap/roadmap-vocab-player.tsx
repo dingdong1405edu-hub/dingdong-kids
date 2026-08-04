@@ -189,7 +189,8 @@ export function RoadmapVocabPlayer({
                 <div>
                   <div className="font-display text-lg font-extrabold">
                     Nghe rồi nói theo
-                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 align-middle text-[11px] font-extrabold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    {/* Huy hiệu độ khó: dải bạc hà + chữ xanh ngọc, tự đổi theo chế độ tối */}
+                    <span className="ml-2 rounded-full bg-band-mint px-2 py-0.5 align-middle text-[11px] font-extrabold text-brand-teal">
                       Dễ nhất
                     </span>
                   </div>
@@ -207,7 +208,8 @@ export function RoadmapVocabPlayer({
                 </p>
               ) : (
                 <Button
-                  className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                  size="lg"
+                  className="w-full"
                   onClick={() => { primeSpeech(); setView("listen"); }}
                 >
                   <Play className="mr-1.5 h-5 w-5" /> Bắt đầu nghe
@@ -228,7 +230,8 @@ export function RoadmapVocabPlayer({
                 <div>
                   <div className="font-display text-lg font-extrabold">
                     Học {words.length} từ mới
-                    <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 align-middle text-[11px] font-extrabold text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                    {/* Huy hiệu độ khó mức giữa — dải trời xanh cho khác hẳn mức "Dễ nhất" */}
+                    <span className="ml-2 rounded-full bg-band-sky px-2 py-0.5 align-middle text-[11px] font-extrabold text-brand-sky">
                       Vừa
                     </span>
                   </div>
@@ -245,7 +248,8 @@ export function RoadmapVocabPlayer({
                 </p>
               ) : (
                 <Button
-                  className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                  size="lg"
+                  className="w-full"
                   onClick={() => { primeSpeech(); setView("learn"); }}
                 >
                   <Play className="mr-1.5 h-5 w-5" /> {completed ? "Học lại" : "Bắt đầu học"}
@@ -260,7 +264,7 @@ export function RoadmapVocabPlayer({
           <Card className="rounded-3xl">
             <CardContent className="space-y-4 p-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl dark:bg-amber-500/15">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-band-sun text-2xl">
                   <span aria-hidden>🔁</span>
                 </div>
                 <div>
@@ -279,7 +283,7 @@ export function RoadmapVocabPlayer({
                 <>
                   <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                     {dueCount > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 font-extrabold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                      <span className="inline-flex items-center rounded-full bg-band-sun px-3 py-1 font-extrabold text-brand-gold">
                         {dueCount} từ đang chờ bé ôn
                       </span>
                     ) : (
@@ -290,7 +294,8 @@ export function RoadmapVocabPlayer({
                     <span className="text-muted-foreground">/ {words.length} từ</span>
                   </div>
                   <Button
-                    className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                    size="lg"
+                    className="w-full"
                     onClick={() => { primeSpeech(); setView("review"); }}
                   >
                     <Sparkles className="mr-1.5 h-5 w-5" />

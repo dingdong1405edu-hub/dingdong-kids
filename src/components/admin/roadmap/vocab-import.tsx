@@ -245,14 +245,14 @@ export function RoadmapVocabImport({ onImport }: { onImport: (words: Word[]) => 
         {preview.length > 0 && (
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="font-medium text-green-600">{validCount} hợp lệ</span>
+              <span className="font-medium text-brand-teal">{validCount} hợp lệ</span>
               {skipCount > 0 && (
-                <span className="flex items-center gap-1 text-amber-600">
+                <span className="flex items-center gap-1 text-brand-gold">
                   <AlertTriangle className="h-3.5 w-3.5" /> {skipCount} bị bỏ qua
                 </span>
               )}
               {noImageCount > 0 && (
-                <span className="flex items-center gap-1 text-amber-600">
+                <span className="flex items-center gap-1 text-brand-gold">
                   <ImageOff className="h-3.5 w-3.5" /> {noImageCount} từ chưa có ảnh
                 </span>
               )}

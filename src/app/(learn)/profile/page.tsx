@@ -63,9 +63,9 @@ export default async function ProfilePage() {
 
   const stats = [
     { icon: Star, cls: "text-sunny", label: "Sao thưởng", value: `${user.xp} XP` },
-    { icon: Trophy, cls: "text-violet-500", label: "Cấp độ", value: `Cấp ${level}` },
-    { icon: Flame, cls: "text-orange-500", label: "Chuỗi ngày", value: `${user.streakDays}` },
-    { icon: Heart, cls: "text-rose-500", label: "Tim", value: `${user.hearts}/5` },
+    { icon: Trophy, cls: "text-brand-grape", label: "Cấp độ", value: `Cấp ${level}` },
+    { icon: Flame, cls: "text-brand-sun", label: "Chuỗi ngày", value: `${user.streakDays}` },
+    { icon: Heart, cls: "text-brand-coral", label: "Tim", value: `${user.hearts}/5` },
   ];
 
   return (
@@ -73,17 +73,17 @@ export default async function ProfilePage() {
       {/* Header */}
       <div className="hero-brand relative overflow-hidden rounded-3xl p-6 text-white shadow-soft-lg">
         <div className="relative z-10 flex items-center gap-4">
-          <div className="font-display flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold backdrop-blur">
+          <div className="font-display flex h-16 w-16 items-center justify-center rounded-2xl bg-card/20 text-2xl font-bold backdrop-blur">
             {display.charAt(0).toUpperCase()}
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold">{display}</h1>
             <p className="text-sm text-white/85">{user.email}</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <Badge className="border-white/20 bg-white/20 text-white hover:bg-white/25">
+              <Badge className="border-white/20 bg-card/20 text-white hover:bg-card/25">
                 {user.role === "ADMIN" ? "Quản trị viên" : "Học viên nhí"}
               </Badge>
-              <Badge className="border-white/20 bg-white/20 text-white hover:bg-white/25">
+              <Badge className="border-white/20 bg-card/20 text-white hover:bg-card/25">
                 Mục tiêu: {levelLabelWithAge(user.level)}
               </Badge>
             </div>
@@ -129,7 +129,7 @@ export default async function ProfilePage() {
                   id="level"
                   name="level"
                   defaultValue={user.level}
-                  className="flex h-12 w-full rounded-2xl border-2 border-input bg-transparent px-3 py-1 text-[15px] font-semibold shadow-sm"
+                  className="flex h-12 w-full rounded-2xl border-2 border-input bg-transparent px-3 py-1 text-[15px] font-semibold shadow-soft"
                 >
                   {LEVELS.map((l) => (
                     <option key={l} value={l}>

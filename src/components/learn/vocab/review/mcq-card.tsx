@@ -57,25 +57,24 @@ export function McqCard({
   // Từ tiếng Anh dùng phông tập đọc (Andika, chữ a/g một tầng) cho bé dễ nhận mặt chữ.
   const optionClass =
     optionKind === "word"
-      ? "font-primer text-2xl font-semibold"
+      ? "font-primer text-2xl font-bold"
       : optionKind === "ipa"
-        ? "text-lg tracking-wide"
-        : "text-base";
+        ? "text-lg font-semibold tracking-wide"
+        : "text-base font-bold";
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
-        <p className="text-sm font-medium text-muted-foreground">{question}</p>
+        <p className="font-display text-lg font-extrabold text-muted-foreground">{question}</p>
         <div className="flex flex-col items-center gap-3">
           {promptNode}
+          {/* Nút nghe lại to — nhiều câu chỉ giải được nếu bé nghe lại được. */}
           {audioWord && (
             <Button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={() => playWord({ word: audioWord.word, audioUrl: audioWord.audioUrl })}
             >
-              <Volume2 className="mr-1.5 h-4 w-4" /> Nghe lại
+              <Volume2 className="mr-1.5 h-5 w-5" /> Nghe lại
             </Button>
           )}
         </div>
@@ -91,13 +90,14 @@ export function McqCard({
                 disabled={answered}
                 onClick={() => !answered && setPicked(i)}
                 className={cn(
-                  "flex min-h-[3.25rem] items-center justify-center rounded-xl border-2 px-4 py-3 text-center transition-colors",
+                  // Đúng = bạc hà, chưa đúng = san hô. Dùng band-*/brand-* nên
+                  // chế độ tối tự lo, không cần cặp dark: viết tay.
+                  "flex min-h-[3.25rem] items-center justify-center rounded-xl border-[3px] px-4 py-3 text-center transition-all duration-200 ease-toy",
                   optionClass,
-                  state === "idle" && "border-border hover:border-primary/60 hover:bg-muted/40",
-                  state === "correct" &&
-                    "border-green-500 bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300",
-                  state === "wrong" &&
-                    "border-red-500 bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300",
+                  state === "idle" &&
+                    "border-border bg-card hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-soft",
+                  state === "correct" && "border-brand-lime bg-band-mint text-brand-teal",
+                  state === "wrong" && "border-brand-coral bg-band-coral text-foreground",
                   answered && state === "idle" && "opacity-50",
                 )}
               >
@@ -108,11 +108,11 @@ export function McqCard({
         </div>
       </div>
 
+      {/* Dải phản hồi dưới chân màn: xanh bạc hà khi đúng, san hô khi chưa đúng. */}
       <div
         className={cn(
-          "border-t py-4 transition-colors",
-          answered &&
-            (correct ? "bg-green-50 dark:bg-green-500/15" : "bg-red-50 dark:bg-red-500/15"),
+          "rounded-t-3xl border-t-2 border-border px-4 py-4 transition-colors",
+          answered && (correct ? "bg-band-mint" : "bg-band-coral"),
         )}
       >
         {answered ? (
@@ -120,21 +120,21 @@ export function McqCard({
             <div className="flex items-center justify-between gap-3">
               <div
                 className={cn(
-                  "flex items-center gap-2 font-semibold",
-                  correct ? "text-green-700 dark:text-green-300" : "text-red-700 dark:text-red-300",
+                  "flex items-center gap-2 font-display text-base font-extrabold",
+                  correct ? "text-brand-teal" : "text-foreground",
                 )}
               >
-                {correct ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                {correct ? <Check className="h-6 w-6" /> : <X className="h-6 w-6" />}
                 {correct ? "Giỏi quá! 🎉" : "Chưa đúng rồi — cùng xem đáp án nhé 🌟"}
               </div>
-              <Button onClick={() => onAnswered(correct)}>
-                Tiếp tục <ArrowRight className="ml-1.5 h-4 w-4" />
+              <Button size="lg" onClick={() => onAnswered(correct)}>
+                Tiếp tục <ArrowRight className="ml-1.5 h-5 w-5" />
               </Button>
             </div>
             <AnswerExplanation explanation={explanation} />
           </div>
         ) : (
-          <p className="text-center text-xs text-muted-foreground">Chọn một đáp án</p>
+          <p className="text-center text-sm font-semibold text-muted-foreground">Chọn một đáp án</p>
         )}
       </div>
     </div>

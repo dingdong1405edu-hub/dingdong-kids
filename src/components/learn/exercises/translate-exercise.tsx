@@ -42,11 +42,11 @@ export function TranslateExerciseUI({ exercise, onAnswer, disabled }: Props) {
             onClick={() => handleSelect(opt)}
             disabled={disabled}
             className={cn(
-              "w-full p-3 rounded-xl border-2 text-left font-primer transition-all",
-              selected === null && "hover:border-primary/50 hover:bg-primary/5",
-              selected === opt && opt === exercise.answer && "border-green-500 bg-green-50 dark:bg-green-500/15",
-              selected === opt && opt !== exercise.answer && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15",
-              selected && selected !== opt && opt === exercise.answer && "border-green-300 dark:border-green-500/40 bg-green-50/50 dark:bg-green-500/10"
+              "answer-tile flex w-full items-center px-4 py-3 text-left font-primer text-lg font-semibold",
+              selected === null && "border-primary/20 hover:border-primary/50 hover:bg-primary/5",
+              selected === opt && opt === exercise.answer && "border-brand-lime bg-band-mint",
+              selected === opt && opt !== exercise.answer && "border-brand-coral bg-band-coral",
+              selected && selected !== opt && opt === exercise.answer && "border-brand-lime bg-band-mint/50"
             )}
           >
             {opt}

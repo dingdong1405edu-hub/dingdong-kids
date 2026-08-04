@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description: "Bảng xếp hạng và góc hỏi đáp của các bạn nhỏ đang học tiếng Anh cùng DingDong Kids.",
 };
 
-const MEDAL = ["bg-amber-400 text-amber-950", "bg-zinc-300 text-zinc-800 dark:bg-zinc-400/30 dark:text-zinc-100", "bg-orange-300 text-orange-900"];
+const MEDAL = ["bg-brand-yellow text-brand-gold", "bg-muted text-foreground", "bg-brand-sun text-brand-sun"];
 
 export default async function CommunityPage() {
   const session = await auth();
@@ -39,7 +39,7 @@ export default async function CommunityPage() {
   return (
     <div className="space-y-6">
       {/* Banner */}
-      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-50 to-white p-5 dark:from-sky-500/10 dark:to-transparent sm:p-6">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-band-sky to-white p-5 dark:to-transparent sm:p-6">
         <div className="relative z-10 flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-chunky-sm">
             <Users2 className="h-7 w-7" />
@@ -97,7 +97,7 @@ export default async function CommunityPage() {
                           {levelLabel(u.level)} · 🔥 {u.streakDays} ngày
                         </div>
                       </div>
-                      <div className="shrink-0 text-sm font-bold text-amber-600">{u.xp} XP</div>
+                      <div className="shrink-0 text-sm font-bold text-brand-gold">{u.xp} XP</div>
                     </div>
                   );
                 })}

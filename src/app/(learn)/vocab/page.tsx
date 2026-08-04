@@ -60,22 +60,24 @@ export default async function VocabPage() {
       gridSubtitle="Bấm vào một chủ đề để bắt đầu."
     >
       {dueCount > 0 && (
+        // Dải nhắc ôn tập: khối band-* nên tự dịu ở chế độ tối (bản cũ dùng
+        // gradient amber → white kèm cặp dark: viết tay, vỡ nền vào ban đêm).
         <Link
           href="/vocab/review"
-          className="sticker mb-4 flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-br from-amber-50 to-white p-4 transition-transform hover:-translate-y-0.5 dark:from-amber-500/10 dark:to-transparent"
+          className="sticker mb-4 flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-br from-band-sun to-card p-5 transition-transform duration-200 ease-toy hover:-translate-y-1"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-              <Sparkles className="h-6 w-6" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-band-lav text-brand-grape">
+              <Sparkles className="h-7 w-7" />
             </div>
             <div>
-              <div className="font-display font-bold">Ôn lại từ cũ</div>
+              <div className="font-display text-lg font-extrabold">Ôn lại từ cũ</div>
               <p className="text-sm text-muted-foreground">
                 {dueCount} từ đến lúc ôn — ôn đúng lúc để nhớ thật lâu nhé!
               </p>
             </div>
           </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300" />
+          <ArrowRight className="h-6 w-6 shrink-0 text-brand-gold" />
         </Link>
       )}
       {withStats.length === 0 ? (
@@ -103,9 +105,9 @@ export default async function VocabPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-3xl border-2 border-dashed py-16 text-center text-muted-foreground">
+    <div className="rounded-3xl border-2 border-dashed border-border bg-band-cream py-16 text-center text-muted-foreground">
       <DingBuddy size={72} pose="idle" className="mx-auto mb-3" />
-      <p>Chưa có chủ đề từ vựng nào. Bé quay lại sau nhé! 🌟</p>
+      <p className="text-[15px] font-semibold">Chưa có chủ đề từ vựng nào. Bé quay lại sau nhé! 🌟</p>
     </div>
   );
 }

@@ -97,18 +97,25 @@ export function MatchGame({ words, onDone }: Props) {
     const isMatched = matched.has(tile.wordId);
     const isSelected = selected?.id === tile.id;
     const isWrong = wrongId === tile.id;
+    // Trạng thái ô nối phân biệt bằng khối màu band-* (tự dịu ở chế độ tối) —
+    // trước đây dùng bảng màu mặc định Tailwind kèm cặp dark: viết tay.
     return cn(
-      "flex min-h-[3.25rem] items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 text-center transition-all",
-      isMatched && "border-green-400 dark:border-green-500/40 bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-300 opacity-60",
-      !isMatched && isSelected && "border-primary bg-primary/10 ring-2 ring-primary/30",
-      !isMatched && isWrong && "border-red-500 bg-red-50 dark:bg-red-500/15",
-      !isMatched && !isSelected && !isWrong && "border-border hover:border-primary/50 hover:bg-muted/40",
+      "flex min-h-[3.25rem] items-center justify-center gap-2 rounded-xl border-[3px] px-3 py-3 text-center transition-all duration-200 ease-toy",
+      isMatched && "border-brand-lime bg-band-mint text-brand-teal opacity-60",
+      !isMatched && isSelected && "-translate-y-0.5 border-brand-gold bg-band-sun shadow-soft",
+      !isMatched && isWrong && "animate-wrong-shake border-brand-coral bg-band-coral",
+      !isMatched &&
+        !isSelected &&
+        !isWrong &&
+        "border-border bg-card hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-soft",
     );
   }
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 py-4">
-      <p className="text-sm font-medium text-muted-foreground">Nối từ tiếng Anh với nghĩa</p>
+      <p className="font-display text-lg font-extrabold text-muted-foreground">
+        Nối từ tiếng Anh với nghĩa
+      </p>
       <div className="grid w-full max-w-md grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           {left.map((t) => (
@@ -119,7 +126,7 @@ export function MatchGame({ words, onDone }: Props) {
               onClick={() => tap(t)}
               className={tileClass(t)}
             >
-              <span className="font-primer text-2xl font-semibold">{t.text}</span>
+              <span className="font-primer text-2xl font-bold">{t.text}</span>
             </button>
           ))}
         </div>
@@ -134,9 +141,9 @@ export function MatchGame({ words, onDone }: Props) {
             >
               {t.imageUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={t.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+                <img src={t.imageUrl} alt="" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
               )}
-              <span className="text-sm">{t.text}</span>
+              <span className="text-[15px] font-bold">{t.text}</span>
             </button>
           ))}
         </div>

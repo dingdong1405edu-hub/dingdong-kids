@@ -71,7 +71,7 @@ export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center">
           <DingBuddy size={92} pose="wave" className="shrink-0 animate-bounce-soft" />
           <div className="min-w-0 flex-1">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/25 px-3 py-1 text-xs font-bold backdrop-blur">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-card/25 px-3 py-1 text-xs font-bold backdrop-blur">
               <Mic className="h-3.5 w-3.5" /> {FIRST_WORDS_LEVEL.age} · {FIRST_WORDS_LEVEL.sub}
             </div>
             <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
@@ -83,7 +83,7 @@ export function FirstWordsMap({ units, progress, childName, upgradeHref }: Props
           </div>
 
           {/* Tổng sao — phần thưởng lớn nhất, để chỗ bé nhìn thấy đầu tiên */}
-          <div className="flex shrink-0 items-center gap-2 rounded-3xl bg-white/20 px-5 py-3 backdrop-blur">
+          <div className="flex shrink-0 items-center gap-2 rounded-3xl bg-card/20 px-5 py-3 backdrop-blur">
             <Star className="h-9 w-9 fill-white text-white drop-shadow" strokeWidth={2.5} />
             <div className="leading-tight">
               <div className="font-display text-3xl font-extrabold tabular-nums">{totalStars}</div>

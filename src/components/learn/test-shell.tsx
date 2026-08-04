@@ -138,9 +138,9 @@ export function QuestionNavBar({
               className={cn(
                 "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 text-sm font-extrabold transition-colors",
                 c === true
-                  ? "border-emerald-500 bg-emerald-500 text-white"
+                  ? "border-brand-teal bg-brand-teal text-white"
                   : c === false
-                    ? "border-rose-500 bg-rose-500 text-white"
+                    ? "border-brand-coral bg-brand-coral text-white"
                     : i === current
                       ? "border-primary bg-primary text-primary-foreground"
                       : answered[i]

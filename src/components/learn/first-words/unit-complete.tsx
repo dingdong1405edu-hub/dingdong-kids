@@ -60,7 +60,7 @@ export function UnitComplete({
         <motion.span
           key={i}
           aria-hidden
-          className="pointer-events-none absolute select-none text-3xl"
+          className="pointer-events-none absolute select-none text-4xl"
           style={{ left: `${8 + i * 11}%` }}
           initial={{ top: "-10%", opacity: 0, rotate: 0 }}
           animate={{ top: "105%", opacity: [0, 1, 1, 0], rotate: 360 }}
@@ -74,19 +74,24 @@ export function UnitComplete({
         <CardContent className="space-y-4 px-6 pb-6 pt-8">
           <DingBuddy size={96} pose="cheer" className="mx-auto animate-bounce-soft" />
 
-          <div className="animate-star-pop text-6xl" aria-hidden>
+          <div className="animate-star-pop text-7xl" aria-hidden>
             {p.emoji}
           </div>
-          <h2 className="font-display text-2xl font-extrabold">{p.title}</h2>
-          <p className="text-[15px] text-muted-foreground">{p.line}</p>
+          <h2 className="font-display text-3xl font-extrabold text-foreground">{p.title}</h2>
+          <p className="text-[15px] font-semibold text-muted-foreground">{p.line}</p>
 
-          {/* Tổng sao — con số duy nhất bé cần "đọc" được, và nó là hình ngôi sao */}
-          <div className="flex items-center justify-center gap-2">
-            <Star className="h-12 w-12 fill-sunny text-sunny drop-shadow" strokeWidth={2.5} aria-hidden />
-            <span className="text-gradient-sunny font-display text-5xl font-extrabold tabular-nums">
+          {/* Tổng sao — con số duy nhất bé cần "đọc" được, và nó là hình ngôi sao.
+              Đặt trên nền vàng nắng nhạt để cả khối trông như một tấm huy hiệu. */}
+          <div className="flex items-center justify-center gap-2 rounded-2xl bg-band-sun py-3">
+            <Star
+              className="h-14 w-14 fill-sunny text-sunny drop-shadow-[0_3px_8px_hsl(var(--sunny)/0.55)]"
+              strokeWidth={2.5}
+              aria-hidden
+            />
+            <span className="text-gradient-sunny font-display text-6xl font-extrabold tabular-nums">
               {stars}
             </span>
-            <span className="font-display text-2xl font-extrabold text-muted-foreground">/{maxStars}</span>
+            <span className="font-display text-2xl font-extrabold text-foreground/60">/{maxStars}</span>
           </div>
 
           <p className="text-sm font-semibold text-muted-foreground">
@@ -94,42 +99,39 @@ export function UnitComplete({
             {newBest && " · Kỷ lục mới! 🎉"}
           </p>
           {xpEarned > 0 && (
-            <p className="font-display text-base font-extrabold text-primary">+{xpEarned} sao kinh nghiệm</p>
+            <p className="font-display text-lg font-extrabold text-brand-gold">+{xpEarned} sao kinh nghiệm</p>
           )}
-          {saving && <p className="text-sm text-muted-foreground">Đang lưu kết quả…</p>}
+          {saving && <p className="text-sm font-semibold text-muted-foreground">Đang lưu kết quả…</p>}
 
-          <div className="flex flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-3 pt-2">
             {next ? (
               <Link href={`${FIRST_WORDS_LEVEL.href}/${next.id}`}>
-                <Button className="btn-chunky w-full rounded-2xl py-7 font-display text-lg font-extrabold">
-                  <span className="mr-2 text-2xl" aria-hidden>
+                <Button className="btn-chunky h-auto w-full py-6 text-xl">
+                  <span className="mr-2 text-3xl" aria-hidden>
                     {next.emoji}
                   </span>
-                  {next.title} <ArrowRight className="ml-1.5 h-5 w-5" />
+                  {next.title} <ArrowRight className="ml-1.5 h-6 w-6" />
                 </Button>
               </Link>
             ) : (
               <Link href={FIRST_WORDS_LEVEL.href}>
-                <Button className="btn-chunky w-full rounded-2xl py-7 font-display text-lg font-extrabold">
-                  <Home className="mr-2 h-5 w-5" /> Về bản đồ của bé
+                <Button className="btn-chunky h-auto w-full py-6 text-xl">
+                  <Home className="mr-2 h-6 w-6" /> Về bản đồ của bé
                 </Button>
               </Link>
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 variant="outline"
                 onClick={onRestart}
-                className="btn-chunky flex-1 rounded-2xl border-4 py-6 font-display font-extrabold"
+                className="btn-chunky h-auto flex-1 border-4 py-5 text-base"
               >
-                <RotateCcw className="mr-1.5 h-5 w-5" /> Chơi lại
+                <RotateCcw className="mr-1.5 h-6 w-6" /> Chơi lại
               </Button>
               {next && (
                 <Link href={FIRST_WORDS_LEVEL.href} className="flex-1">
-                  <Button
-                    variant="outline"
-                    className="btn-chunky w-full rounded-2xl border-4 py-6 font-display font-extrabold"
-                  >
-                    <Home className="mr-1.5 h-5 w-5" /> Bản đồ
+                  <Button variant="outline" className="btn-chunky h-auto w-full border-4 py-5 text-base">
+                    <Home className="mr-1.5 h-6 w-6" /> Bản đồ
                   </Button>
                 </Link>
               )}

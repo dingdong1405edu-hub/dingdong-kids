@@ -22,12 +22,18 @@ export function GameShell({ prompt, round, totalRounds, children }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <Progress value={pct} className="h-3 flex-1" />
-        <span className="text-sm font-bold text-muted-foreground">
+        <Progress value={pct} className="h-4 flex-1" />
+        {/* Số lượt nằm trong huy hiệu tròn: bé nhìn ra ngay "đang ở đâu" mà
+            không phải đọc chữ nhỏ cạnh thanh tiến độ. */}
+        <span className="rounded-full bg-band-sun px-3 py-1 font-display text-sm font-extrabold text-foreground">
           {Math.min(round, totalRounds)}/{totalRounds}
         </span>
       </div>
-      <p className="text-center font-display text-lg font-extrabold">{prompt}</p>
+      {/* Câu nhắc là một tấm biển màu nắng, không phải dòng chữ trơn — trẻ nhìn
+          khối màu trước khi nhìn chữ. */}
+      <p className="rounded-2xl bg-band-yel px-4 py-2 text-center font-display text-lg font-extrabold text-foreground shadow-soft">
+        {prompt}
+      </p>
       {children}
     </div>
   );
@@ -99,10 +105,11 @@ export function GameDone({
           </motion.span>
         ))}
       </div>
+      {/* Nút hành động chính = vàng nắng + gờ cam (quy ước hệ thiết kế §2.1). */}
       <button
         type="button"
         onClick={onNext}
-        className="btn-chunky rounded-2xl bg-primary px-8 py-3 font-display text-lg font-extrabold text-primary-foreground"
+        className="btn-chunky rounded-full bg-sunny px-8 py-3 font-display text-lg font-extrabold text-sunny-foreground"
       >
         {nextLabel}
       </button>

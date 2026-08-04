@@ -185,17 +185,17 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
         onSubmit={() => setReviewOpen(true)}
         center={
           submitted ? (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2.5 py-1.5 text-sm font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-band-mint px-2.5 py-1.5 text-sm font-bold text-brand-teal">
               {result?.overall ?? 0}/100
             </span>
           ) : (
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold tabular-nums",
-                timerCritical ? "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300" : "bg-muted",
+                timerCritical ? "bg-band-coral text-brand-coral" : "bg-muted",
               )}
             >
-              <Clock className={cn("h-4 w-4", timerCritical ? "text-rose-600 dark:text-rose-300" : "text-muted-foreground")} />
+              <Clock className={cn("h-4 w-4", timerCritical ? "text-brand-coral" : "text-muted-foreground")} />
               {hasLimit ? formatDuration(remaining as number) : formatDuration(elapsed)}
               <span className="hidden text-xs font-normal text-muted-foreground sm:inline">
                 {hasLimit ? "còn lại" : "đã làm"}
@@ -231,14 +231,14 @@ export function MockExamClient({ exam }: { exam: ExamData }) {
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
                   activeSection === i
-                    ? "bg-primary text-primary-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground shadow-soft"
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >
                 <SectionIcon skill={s.skill} className="h-4 w-4" />
                 {sectionLabel(s.skill, s.title)}
                 {submitted && result?.sections[i]?.score !== null && (
-                  <span className="rounded-full bg-black/10 px-1.5 text-xs dark:bg-white/15">
+                  <span className="rounded-full bg-black/10 px-1.5 text-xs">
                     {result?.sections[i]?.score}
                   </span>
                 )}

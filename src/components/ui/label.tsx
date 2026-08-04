@@ -4,8 +4,12 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Nhãn ô nhập: Baloo đậm, cỡ hơi lớn hơn mặc định. Người đọc nhãn ở đây thường
+ * là phụ huynh đang điền hộ bé trên điện thoại — chữ mảnh trên nền kem rất khó đọc.
+ */
 const labelVariants = cva(
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  "inline-block font-display text-[0.95rem] font-extrabold leading-snug text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 );
 
 const Label = React.forwardRef<

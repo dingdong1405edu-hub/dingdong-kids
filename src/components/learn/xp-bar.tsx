@@ -32,12 +32,16 @@ export function XPBar({ xp }: XPBarProps) {
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="flex items-center gap-1.5 font-display font-extrabold">
+          {/* Viền cacao mỏng dưới sao: vàng nắng trên nền kem dễ "chìm" nếu để trơn. */}
           <Star
-            className={cn("h-5 w-5 text-sunny fill-sunny drop-shadow-sm", gained && "animate-star-pop")}
+            className={cn(
+              "h-6 w-6 fill-sunny text-sunny drop-shadow-[0_2px_0_hsl(var(--shadow-hue)/0.20)]",
+              gained && "animate-star-pop",
+            )}
           />
           Bậc {level}
         </span>
-        <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+        <span className="font-display text-xs font-extrabold tabular-nums text-brand-gold">
           {xp} / {next} ⭐
         </span>
       </div>

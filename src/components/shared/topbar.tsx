@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { Logo } from "@/components/shared/logo";
+import { Logo, Wordmark } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface TopbarUser {
@@ -26,10 +26,23 @@ interface TopbarUser {
   role: string;
 }
 
+/**
+ * Huy hiệu chỉ số (streak / tim / XP). Đây là chỗ trẻ nhìn vào để biết mình
+ * được thưởng gì, nên phải TO và có màu riêng — không phải một con số xám nhỏ.
+ *
+ * `className` áp lên KHUNG chứ không lên icon: icon lấy màu qua kế thừa
+ * (`fill-current` + stroke currentColor), nhờ vậy mỗi huy hiệu chỉ cần một cặp
+ * "nền pastel + màu chữ" là cả khối đồng bộ.
+ */
 function Stat({ icon: Icon, value, className }: { icon: LucideIcon; value: number; className: string }) {
   return (
-    <div className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-sm font-semibold">
-      <Icon className={cn("h-4 w-4", className)} />
+    <div
+      className={cn(
+        "flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1 font-display text-[1rem] font-extrabold shadow-soft",
+        className
+      )}
+    >
+      <Icon className="h-[19px] w-[19px] fill-current" />
       <span className="tabular-nums">{value}</span>
     </div>
   );
@@ -37,14 +50,16 @@ function Stat({ icon: Icon, value, className }: { icon: LucideIcon; value: numbe
 
 export function Topbar({ user, onMenu }: { user: TopbarUser; onMenu: () => void }) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur sm:gap-3 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-[72px] items-center gap-2 border-b-2 border-border bg-background/85 px-3 backdrop-blur sm:gap-3 sm:px-6">
       <Button variant="ghost" size="icon" className="-ml-1 shrink-0 lg:hidden" onClick={onMenu} aria-label="Mở menu">
-        <Menu className="h-5 w-5" />
+        <Menu className="h-6 w-6" />
       </Button>
       <Link href="/" className="flex shrink-0 items-center gap-2 lg:hidden" aria-label="DingDong Kids — về trang chủ">
-        <Logo className="h-8 w-8" />
+        <Logo className="h-9 w-9" />
         {/* Ẩn chữ trên điện thoại rất nhỏ để chừa chỗ cho dải chỉ số (streak/tim/XP) */}
-        <span className="hidden font-extrabold tracking-tight min-[380px]:inline">DingDong</span>
+        <span className="hidden min-[380px]:inline">
+          <Wordmark className="text-[1.05rem]" />
+        </span>
       </Link>
 
       <div className="flex-1" />
@@ -57,20 +72,21 @@ export function Topbar({ user, onMenu }: { user: TopbarUser; onMenu: () => void 
         </Button>
       )}
 
+      {/* Ba huy hiệu tròn: cam (streak) · san hô (tim) · vàng (XP) */}
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-        <Stat icon={Flame} value={user.streakDays} className="text-orange-500 fill-orange-400" />
+        <Stat icon={Flame} value={user.streakDays} className="bg-band-sun text-brand-sun" />
         {user.unlimitedHearts ? (
           <div
-            className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-sm font-semibold"
+            className="flex min-h-11 items-center gap-1.5 rounded-full bg-band-coral px-3 py-1 font-display text-[1rem] font-extrabold text-brand-coral shadow-soft"
             title="Tim không giới hạn"
           >
-            <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+            <Heart className="h-[19px] w-[19px] fill-current" />
             <span className="leading-none">∞</span>
           </div>
         ) : (
-          <Stat icon={Heart} value={user.hearts} className="text-rose-500 fill-rose-500" />
+          <Stat icon={Heart} value={user.hearts} className="bg-band-coral text-brand-coral" />
         )}
-        <Stat icon={Star} value={user.xp} className="text-amber-500 fill-amber-400" />
+        <Stat icon={Star} value={user.xp} className="bg-band-yel text-brand-gold" />
       </div>
 
       <ThemeToggle className="hidden sm:inline-flex" />
@@ -78,18 +94,19 @@ export function Topbar({ user, onMenu }: { user: TopbarUser; onMenu: () => void 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="shrink-0 rounded-full">
-            <Avatar className="h-9 w-9 border">
+            <Avatar className="h-11 w-11">
               <AvatarImage src={user.image ?? undefined} />
-              <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
+              {/* sunny + sunny-foreground: cặp này giữ đủ tương phản ở CẢ hai chế độ */}
+              <AvatarFallback className="bg-sunny text-[1.05rem] text-sunny-foreground">
                 {(user.name?.charAt(0) ?? user.email.charAt(0)).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <div className="px-2 py-1.5">
-            <p className="truncate text-sm font-semibold">{user.name ?? "Học viên"}</p>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+        <DropdownMenuContent align="end" className="w-60">
+          <div className="px-3 py-2">
+            <p className="truncate font-display text-[0.98rem] font-extrabold">{user.name ?? "Học viên"}</p>
+            <p className="truncate text-xs font-semibold text-muted-foreground">{user.email}</p>
           </div>
           <DropdownMenuSeparator />
           {!user.unlimitedHearts && (

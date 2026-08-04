@@ -177,14 +177,14 @@ export function WritingClient({
           <Card className="sticker">
             <CardHeader>
               <CardTitle className="font-display text-base flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" /> Bé làm tốt chỗ này
+                <CheckCircle2 className="h-4 w-4 text-brand-teal" /> Bé làm tốt chỗ này
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1.5 text-sm">
                 {result.strengths.map((s, i) => (
                   <li key={i} className="flex gap-2">
-                    <span className="text-green-600 dark:text-green-400">✓</span>
+                    <span className="text-brand-teal">✓</span>
                     <span>{s}</span>
                   </li>
                 ))}
@@ -204,9 +204,9 @@ export function WritingClient({
                     {ann.type && (
                       <Badge variant="secondary" className="text-[10px]">{ann.type}</Badge>
                     )}
-                    <span className="font-primer text-red-600 dark:text-red-400 line-through">{ann.original}</span>
+                    <span className="font-primer text-brand-coral line-through">{ann.original}</span>
                     <span>→</span>
-                    <span className="font-primer font-semibold text-green-700 dark:text-green-300">{ann.correction}</span>
+                    <span className="font-primer font-semibold text-brand-teal">{ann.correction}</span>
                   </div>
                   {ann.issue && <div className="text-muted-foreground mt-1 font-medium">{ann.issue}</div>}
                   <div className="text-muted-foreground mt-1">{ann.explanation}</div>
@@ -241,7 +241,7 @@ export function WritingClient({
         <Card className="sticker">
           <CardHeader><CardTitle className="font-display text-base">Bài đã sửa lại</CardTitle></CardHeader>
           <CardContent>
-            <div className="font-primer text-[17px] leading-relaxed bg-green-50 dark:bg-green-500/10 rounded-2xl p-3">
+            <div className="font-primer text-[17px] leading-relaxed bg-band-mint rounded-2xl p-3">
               {result.correctedVersion}
             </div>
           </CardContent>
@@ -294,17 +294,17 @@ export function WritingClient({
                 type="button"
                 onClick={() => setShowOutline((v) => !v)}
                 aria-expanded={showOutline}
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-brand-gold hover:text-brand-gold dark:hover:text-brand-gold"
               >
                 <Lightbulb className="h-4 w-4" />
                 {showOutline ? "Ẩn dàn ý gợi ý" : "Gợi ý dàn ý"}
                 <ChevronDown className={`h-4 w-4 transition-transform ${showOutline ? "rotate-180" : ""}`} />
               </button>
               {showOutline && (
-                <ul className="mt-2 space-y-1.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
+                <ul className="mt-2 space-y-1.5 rounded-2xl bg-band-sun p-3 text-sm text-brand-gold">
                   {outlineItems.map((item, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="select-none text-amber-500 dark:text-amber-400">•</span>
+                      <span className="select-none text-brand-gold">•</span>
                       <span className="whitespace-pre-line">{item}</span>
                     </li>
                   ))}

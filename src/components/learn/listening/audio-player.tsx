@@ -116,7 +116,7 @@ export function AudioPlayer({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-300">
+            <div className="flex items-center gap-2 text-sm text-brand-gold">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               <span>Máy này chưa phát được tiếng. Bé đọc lời thoại bên dưới nhé.</span>
             </div>
@@ -150,10 +150,10 @@ export function AudioPlayer({
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold",
               reviewMode
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                ? "bg-band-mint text-brand-teal"
                 : remainingPlays && remainingPlays > 0
                   ? "bg-primary/10 text-primary"
-                  : "bg-sunny/25 text-amber-700 dark:text-amber-300",
+                  : "bg-sunny/25 text-brand-gold",
             )}
           >
             <Volume2 className="h-4 w-4" />

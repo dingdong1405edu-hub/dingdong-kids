@@ -47,29 +47,39 @@ export default async function VocabUnitPage({ params }: Props) {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="font-display text-2xl font-bold">{unit.title}</h1>
-        {unit.theme && <p className="font-primer text-muted-foreground">{unit.theme}</p>}
+        <h1 className="font-display text-3xl font-extrabold">{unit.title}</h1>
+        {unit.theme && (
+          <p className="font-primer text-lg text-muted-foreground">{unit.theme}</p>
+        )}
       </div>
       <div className="space-y-3">
         {unit.lessons.map((lesson, idx) => {
           const done = lesson.progress.length > 0 && lesson.progress[0].completed;
           return (
-            <Card key={lesson.id} className="sticker">
+            <Card key={lesson.id} className="sticker transition-transform duration-200 ease-toy hover:-translate-y-1">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold ${done ? "bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-300" : "bg-primary/10 text-primary"}`}>
-                    {done ? <CheckCircle2 className="h-5 w-5" /> : idx + 1}
+                  {/* Số thứ tự / dấu tích: bài đã xong mang khối bạc hà, bài chưa
+                      học mang khối nắng — bé nhìn màu là biết, không cần đọc. */}
+                  <div
+                    className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center font-display text-xl font-extrabold ${
+                      done ? "bg-band-mint text-brand-teal" : "bg-band-sun text-brand-gold"
+                    }`}
+                  >
+                    {done ? <CheckCircle2 className="h-7 w-7" /> : idx + 1}
                   </div>
                   <div>
-                    <div className="font-display font-bold">{lesson.title || `Bài ${idx + 1}`}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="font-display text-lg font-extrabold">
+                      {lesson.title || `Bài ${idx + 1}`}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
                       {lesson._count.words} từ mới
                     </div>
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <Link href={`/vocab/${unitId}/lesson/${lesson.id}`}>
-                    <Button size="sm" variant={done ? "outline" : "default"} className={done ? "" : "btn-chunky"}>
+                    <Button size="sm" variant={done ? "outline" : "default"}>
                       {done ? "Ôn lại" : "Bắt đầu"}
                     </Button>
                   </Link>

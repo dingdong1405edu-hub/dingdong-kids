@@ -84,15 +84,15 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
     <div className="mx-auto max-w-2xl space-y-5">
       <Link
         href={`/vocab/${unitId}`}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-sm font-extrabold text-muted-foreground transition-colors hover:text-brand-gold"
       >
         <ArrowLeft className="h-4 w-4" /> Quay lại danh sách bài
       </Link>
 
       <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold">{lesson.title || "Từ vựng"}</h1>
+        <h1 className="font-display text-2xl font-extrabold">{lesson.title || "Từ vựng"}</h1>
         {completed && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-500/15 dark:text-green-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-band-mint px-3 py-1 text-xs font-extrabold text-brand-teal">
             <CheckCircle2 className="h-3.5 w-3.5" /> Đã học
           </span>
         )}
@@ -118,13 +118,13 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
           <Card>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sunny/20 text-xl">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-band-sun text-3xl">
                   <span aria-hidden>👂</span>
                 </div>
                 <div>
-                  <div className="font-semibold">
+                  <div className="font-display text-lg font-extrabold">
                     Nghe rồi nói theo
-                    <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 align-middle text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    <span className="ml-2 rounded-full bg-band-mint px-2.5 py-0.5 align-middle text-[11px] font-extrabold text-brand-teal">
                       Dễ nhất
                     </span>
                   </div>
@@ -134,12 +134,12 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
                 </div>
               </div>
               {words.length === 0 ? (
-                <p className="rounded-xl border-2 border-dashed py-6 text-center text-sm text-muted-foreground">
+                <p className="rounded-xl border-2 border-dashed border-border py-6 text-center text-sm font-semibold text-muted-foreground">
                   Bài này chưa có từ vựng.
                 </p>
               ) : (
-                <Button className="btn-chunky w-full" onClick={() => { primeSpeech(); setView("listen"); }}>
-                  <Play className="mr-1.5 h-4 w-4" /> Bắt đầu nghe
+                <Button className="w-full" onClick={() => { primeSpeech(); setView("listen"); }}>
+                  <Play className="mr-1.5 h-5 w-5" /> Bắt đầu nghe
                 </Button>
               )}
             </CardContent>
@@ -151,11 +151,11 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
           <Card>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <BookOpen className="h-5 w-5" />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-band-sky text-brand-blue">
+                  <BookOpen className="h-7 w-7" />
                 </div>
                 <div>
-                  <div className="font-semibold">Học {words.length} từ</div>
+                  <div className="font-display text-lg font-extrabold">Học {words.length} từ</div>
                   <p className="text-sm text-muted-foreground">
                     Xem nghĩa &amp; nghe → tập viết từng nét → ôn nhanh bằng flashcard.
                   </p>
@@ -163,27 +163,27 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
               </div>
 
               {words.length === 0 ? (
-                <p className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
+                <p className="rounded-xl border-2 border-dashed border-border py-6 text-center text-sm font-semibold text-muted-foreground">
                   Bài này chưa có từ vựng.
                 </p>
               ) : resume ? (
                 <div className="space-y-3">
-                  <p className="rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                  <p className="rounded-xl bg-band-sun px-4 py-2.5 text-sm font-semibold text-foreground">
                     Bạn đang học dở ở <b>từ {Math.min(resume.wordIndex + 1, words.length)}</b>.
                   </p>
                   <div className="flex gap-2">
                     <Button className="flex-1" onClick={() => startLearn(resume.wordIndex, resume.step)}>
-                      <Play className="mr-1.5 h-4 w-4" /> Học tiếp
+                      <Play className="mr-1.5 h-5 w-5" /> Học tiếp
                     </Button>
                     <Button variant="outline" className="flex-1" onClick={() => startLearn(0, 0)}>
-                      <RotateCcw className="mr-1.5 h-4 w-4" /> Học lại
+                      <RotateCcw className="mr-1.5 h-5 w-5" /> Học lại
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <Button className="flex-1" onClick={() => startLearn(0, 0)}>
-                    <Play className="mr-1.5 h-4 w-4" /> {completed ? "Học lại" : "Bắt đầu học"}
+                    <Play className="mr-1.5 h-5 w-5" /> {completed ? "Học lại" : "Bắt đầu học"}
                   </Button>
                 </div>
               )}
@@ -196,11 +196,13 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
           <Card>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
-                  <Sparkles className="h-5 w-5" />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-band-lav text-brand-grape">
+                  <Sparkles className="h-7 w-7" />
                 </div>
                 <div>
-                  <div className="font-semibold">Ôn từ bằng flashcard &amp; mini-game</div>
+                  <div className="font-display text-lg font-extrabold">
+                    Ôn từ bằng flashcard &amp; mini-game
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Lặp lại ngắt quãng (SRS): hệ thống tự xếp lịch ôn theo trí nhớ của bạn.
                   </p>
@@ -208,14 +210,14 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
               </div>
 
               {words.length === 0 ? (
-                <p className="rounded-lg border border-dashed py-6 text-center text-sm text-muted-foreground">
+                <p className="rounded-xl border-2 border-dashed border-border py-6 text-center text-sm font-semibold text-muted-foreground">
                   Bài này chưa có từ để ôn.
                 </p>
               ) : (
                 <>
                   <div className="flex items-center gap-2 text-sm">
                     {dueCount > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                      <span className="inline-flex items-center rounded-full bg-band-yel px-3 py-1 font-extrabold text-brand-gold">
                         {dueCount} từ đến hạn ôn
                       </span>
                     ) : (
@@ -226,7 +228,7 @@ export function LessonHub({ lesson, unitId, words, reviews, resume, completed, n
                     <span className="text-muted-foreground">/ {words.length} từ</span>
                   </div>
                   <Button className="w-full" onClick={() => { primeSpeech(); setView("review"); }}>
-                    <Sparkles className="mr-1.5 h-4 w-4" />
+                    <Sparkles className="mr-1.5 h-5 w-5" />
                     {dueCount > 0 ? "Bắt đầu ôn" : "Ôn sớm"}
                   </Button>
                 </>

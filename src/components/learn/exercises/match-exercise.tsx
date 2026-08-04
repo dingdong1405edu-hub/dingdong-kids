@@ -72,10 +72,10 @@ export function MatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
               onClick={() => handleEn(en)}
               disabled={matched.has(en)}
               className={cn(
-                "w-full p-3 rounded-xl border-2 font-primer text-xl font-semibold transition-all",
-                matched.has(en) && "opacity-30 border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/15",
+                "answer-tile w-full border-primary/20 p-3 font-primer text-xl font-bold",
+                matched.has(en) && "opacity-30 border-brand-lime bg-band-mint",
                 selected.en === en && !matched.has(en) && "border-primary bg-primary/10",
-                wrong?.startsWith(en) && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 animate-wrong",
+                wrong?.startsWith(en) && "border-brand-coral bg-band-coral animate-wrong",
                 !selected.en || selected.en === en ? "" : "hover:border-border"
               )}
             >
@@ -91,10 +91,10 @@ export function MatchExerciseUI({ exercise, onAnswer, disabled }: Props) {
               onClick={() => handleVi(vi)}
               disabled={matched.has(vi)}
               className={cn(
-                "flex w-full items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm transition-all",
-                matched.has(vi) && "opacity-30 border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/15",
+                "answer-tile flex w-full items-center justify-center gap-2 border-primary/20 p-3 text-base font-bold",
+                matched.has(vi) && "opacity-30 border-brand-lime bg-band-mint",
                 selected.vi === vi && !matched.has(vi) && "border-primary bg-primary/10",
-                wrong?.endsWith(vi) && "border-red-400 dark:border-red-500/40 bg-red-50 dark:bg-red-500/15 animate-wrong",
+                wrong?.endsWith(vi) && "border-brand-coral bg-band-coral animate-wrong",
               )}
             >
               {/* Ảnh minh hoạ giúp bé chưa đọc thạo vẫn chọn được. */}

@@ -99,7 +99,7 @@ export function GrammarTestRunner({ test, closeHref, onReviewTheory, onDone }: P
           <span
             className={cn(
               "inline-flex items-center gap-1 font-bold tabular-nums",
-              remaining <= 10 && "text-orange-600"
+              remaining <= 10 && "text-brand-sun"
             )}
           >
             <Clock className="h-4 w-4" /> {formatDuration(Math.max(0, remaining))}

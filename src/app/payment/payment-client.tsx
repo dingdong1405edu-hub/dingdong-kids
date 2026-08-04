@@ -71,34 +71,37 @@ export function PaymentClient({
       <div
         key={plan.id}
         className={cn(
-          "relative flex flex-col rounded-2xl border bg-card p-6 shadow-soft transition-transform duration-200 hover:-translate-y-1",
-          highlighted ? "border-primary shadow-soft-primary ring-1 ring-primary/30" : "border-border/70"
+          // Thẻ giá là một khối đồ chơi: bo rất tròn, viền dày, nhô lên khi rê chuột.
+          "relative flex flex-col rounded-2xl border-2 bg-card p-6 shadow-soft transition-transform duration-200 ease-toy hover:-translate-y-1.5",
+          highlighted ? "border-brand-sun shadow-soft-primary" : "border-border"
         )}
       >
         {plan.promoNote ? (
-          <Badge className="absolute -top-3 left-1/2 max-w-[calc(100%-1rem)] -translate-x-1/2 whitespace-nowrap shadow">
+          <Badge className="absolute -top-3 left-1/2 max-w-[calc(100%-1rem)] -translate-x-1/2 whitespace-nowrap shadow-soft">
             {plan.promoNote}
           </Badge>
         ) : (
           highlighted && (
-            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 shadow">Phổ biến nhất</Badge>
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 shadow-soft">Phổ biến nhất</Badge>
           )
         )}
 
-        <h3 className="text-lg font-bold">{plan.name}</h3>
-        <p className="mt-1 min-h-10 text-sm text-muted-foreground">{plan.description}</p>
+        <h3 className="font-display text-xl font-extrabold">{plan.name}</h3>
+        <p className="mt-1 min-h-10 text-sm font-semibold text-muted-foreground">{plan.description}</p>
 
         <div className="mt-4 flex items-end gap-1">
-          <span className="text-3xl font-extrabold tracking-tight">{formatVnd(plan.amount)}</span>
+          <span className="font-display text-4xl font-extrabold tracking-tight text-brand-gold">
+            {formatVnd(plan.amount)}
+          </span>
           {plan.period && (
-            <span className="mb-1 text-sm font-medium text-muted-foreground">{plan.period}</span>
+            <span className="mb-1.5 text-sm font-bold text-muted-foreground">{plan.period}</span>
           )}
         </div>
 
         <ul className="mt-5 flex-1 space-y-2.5">
           {plan.features.map((f) => (
-            <li key={f} className="flex items-start gap-2 text-sm">
-              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <li key={f} className="flex items-start gap-2.5 text-sm font-semibold">
+              <span className="tick mt-1">✓</span>
               <span>{f}</span>
             </li>
           ))}
@@ -150,7 +153,7 @@ export function PaymentClient({
         </div>
 
         {!loggedIn && (
-          <div className="mx-auto mb-8 max-w-xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-200">
+          <div className="mx-auto mb-8 max-w-xl rounded-lg border border-brand-yellow bg-band-sun px-4 py-3 text-center text-sm text-brand-gold">
             Bạn cần{" "}
             <Link href="/login" className="font-semibold underline">
               đăng nhập
@@ -159,7 +162,7 @@ export function PaymentClient({
           </div>
         )}
         {loggedIn && !configured && (
-          <div className="mx-auto mb-8 max-w-xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-200">
+          <div className="mx-auto mb-8 max-w-xl rounded-lg border border-brand-yellow bg-band-sun px-4 py-3 text-center text-sm text-brand-gold">
             Cổng thanh toán đang được hoàn tất cấu hình. Bạn vẫn xem được bảng giá; nút thanh toán sẽ
             hoạt động ngay khi hoàn tất.
           </div>

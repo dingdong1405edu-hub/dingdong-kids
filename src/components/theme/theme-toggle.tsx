@@ -33,23 +33,25 @@ export function ThemeToggle({ className }: { className?: string }) {
           aria-label="Đổi giao diện sáng/tối"
           title="Giao diện sáng/tối"
           className={cn(
-            "inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition-colors hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            // 48px vuông: globals.css ép mọi <button> cao tối thiểu 48px, nên nếu
+            // để bề ngang nhỏ hơn thì nút tròn bị kéo thành hình bầu dục.
+            "inline-flex h-12 w-12 items-center justify-center rounded-full border-2 border-border bg-card/70 text-brand-gold transition-all duration-200 ease-toy hover:-translate-y-0.5 hover:bg-band-sun hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             className,
           )}
         >
-          <TriggerIcon className="h-[18px] w-[18px]" />
+          <TriggerIcon className="h-[20px] w-[20px]" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[160px]">
+      <DropdownMenuContent align="end" className="min-w-[176px]">
         {OPTIONS.map(({ value, label, icon: Icon }) => (
           <DropdownMenuItem
             key={value}
             onClick={() => setTheme(value)}
-            className="gap-2"
+            className="gap-2.5"
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-[18px] w-[18px] text-brand-gold" />
             <span className="flex-1">{label}</span>
-            {theme === value && <Check className="h-4 w-4 text-primary" />}
+            {theme === value && <Check className="h-[18px] w-[18px] text-brand-teal" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

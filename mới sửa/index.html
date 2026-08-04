@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DingDong Kids — Con nói tiếng Anh mỗi ngày, cùng gấu Ding</title>
+<meta name="description" content="Sân chơi tiếng Anh cho bé 4–15 tuổi. Trò chuyện với gấu Ding, chấm phát âm tới từng âm, lộ trình bám chuẩn Cambridge YLE. Học thử miễn phí 7 ngày.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Logo gấu Ding: định nghĩa 1 lần, tái dùng bằng <use href="#bear-logo"> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="bear-logo" viewBox="0 0 100 100">
+<g fill="none" stroke="#3D2410" stroke-width="4.5" stroke-linejoin="round">
+<circle cx="23" cy="28" r="14.5" fill="#F2B93A"/><circle cx="77" cy="28" r="14.5" fill="#F2B93A"/>
+<circle cx="23" cy="28" r="6.5" fill="#F58CA0" stroke="none"/><circle cx="77" cy="28" r="6.5" fill="#F58CA0" stroke="none"/>
+<circle cx="50" cy="57" r="34" fill="#F2B93A"/></g>
+<ellipse cx="21" cy="68" rx="8" ry="5.4" fill="#F58CA0" opacity=".9"/><ellipse cx="79" cy="68" rx="8" ry="5.4" fill="#F58CA0" opacity=".9"/>
+<ellipse cx="50" cy="72" rx="17" ry="12" fill="#FBEBC8"/>
+<circle cx="37" cy="52" r="4.6" fill="#3D2410"/><circle cx="63" cy="52" r="4.6" fill="#3D2410"/>
+<circle cx="38.6" cy="50.4" r="1.7" fill="#fff"/><circle cx="64.6" cy="50.4" r="1.7" fill="#fff"/>
+<ellipse cx="50" cy="66" rx="5.6" ry="4.1" fill="#3D2410"/>
+<path d="M50 70v4M50 74q-4.6 4.4-8 .8M50 74q4.6 4.4 8 .8" stroke="#3D2410" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+</symbol></svg>
+<div class="prog" id="prog" aria-hidden="true"></div>
+
+<!-- ═══ NAV ═══ Dính trên cùng. Đổi menu ở .nav-links. CTA trỏ tới #dang-ky ═══ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a href="#top" class="logo" aria-label="DingDong Kids — về đầu trang">
+      <svg class="bear" aria-hidden="true"><use href="#bear-logo"/></svg><span><span class="d1">Ding</span><span class="d2">Dong</span><span class="d3">Kids</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#cach-hoc">Cách con học</a><a href="#lo-trinh">Lộ trình</a>
+      <a href="#cho-ai">Cho ai</a><a href="#an-toan">An toàn</a><a href="#hoi-dap">Hỏi đáp</a>
+    </nav>
+    <button class="btn btn-y btn-sm" data-go="#dang-ky" style="margin-left:auto">Học thử miễn phí</button>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<!-- ═══ HERO ═══ Chữ nằm TRÊN, video nằm DƯỚI. Tuyệt đối không đặt text đè lên
+     .screen — bố cục cũ vỡ vì lỗi này. Video 16:9, tự phát, tắt tiếng, lặp ═══ -->
+<section class="hero">
+  <div class="deco" aria-hidden="true">
+    <b style="--rot:-14deg;left:4%;top:12%;font-size:clamp(2rem,3.6vw,3.4rem);color:var(--coral);opacity:.5">A</b>
+    <b style="--rot:12deg;left:92%;top:18%;font-size:clamp(2.2rem,4vw,3.6rem);color:var(--blue);opacity:.5;animation-delay:1.2s">B</b>
+    <b style="--rot:-9deg;left:7%;top:74%;font-size:clamp(1.8rem,3.2vw,2.9rem);color:var(--sun);opacity:.5;animation-delay:2.4s">C</b>
+    <b style="--rot:17deg;left:94%;top:78%;font-size:clamp(1.5rem,2.6vw,2.3rem);color:var(--grape);opacity:.5;animation-delay:.7s">✦</b>
+  </div>
+
+  <div class="wrap">
+    <div class="hero-txt">
+      <span class="badge"><span class="dot"></span>Đang mở suất học thử sớm</span>
+      <h1>Con <span class="rainbow">nói</span> tiếng Anh mỗi ngày, cùng một người bạn <span class="hl-p">không bao giờ chê con sai</span>.</h1>
+      <p>Sân chơi tiếng Anh cho bé 4–15 tuổi, có gấu Ding đồng hành từ chữ cái đầu tiên.</p>
+      <div class="hero-cta">
+        <button class="btn btn-y" data-go="#dang-ky">Cho con học thử miễn phí</button>
+        <button class="btn btn-w" data-go="#cach-hoc">Xem con học thế nào</button>
+      </div>
+      <div class="micro">
+        <span><i class="tick">✓</i>Miễn phí 7 ngày</span>
+        <span><i class="tick">✓</i>Không cần thẻ ngân hàng</span>
+        <span><i class="tick">✓</i>Nội dung được kiểm duyệt</span>
+      </div>
+    </div>
+
+    <div class="player rv">
+      <div class="screen">
+        <video id="film" autoplay muted loop playsinline preload="auto" poster="assets/hero-poster.jpg"
+               aria-label="Gấu Ding chào bé và chơi cùng chữ cái tiếng Anh">
+          <source src="assets/hero.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="pbar" aria-hidden="true"><i id="pfill"></i></div>
+      <div class="chapters" id="chapters">
+        <div class="chip chip1 on"><span class="fill"></span><b>Xin chào!</b><span>Gấu Ding xuất hiện</span></div>
+        <div class="chip chip2"><span class="fill"></span><b>Cùng chơi</b><span>Ding vẫy tay mời bé</span></div>
+        <div class="chip chip3"><span class="fill"></span><b>A · B · C</b><span>Chữ cái bay quanh</span></div>
+        <div class="chip chip4"><span class="fill"></span><b>Hẹn gặp lại</b><span>Ding gửi bé nụ hôn</span></div>
+      </div>
+      <div class="pctl">
+        <button class="mini" id="snd">🔇 Bật tiếng</button>
+        <button class="mini" id="pp">⏸ Tạm dừng</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="marq" aria-hidden="true">
+  <div class="marq-track" id="track">
+    <b style="color:var(--yellow)">Nói không sợ sai</b><b style="color:var(--pink)">Chấm phát âm từng âm</b>
+    <b style="color:var(--sky)">Chuẩn Cambridge YLE</b><b style="color:var(--lime)">Học như chơi</b>
+    <b style="color:var(--sun)">Báo cáo gửi ba mẹ</b><b style="color:#C9A7FF">An toàn cho trẻ</b>
+  </div>
+</div>
+
+<!-- ═══ SỐ LIỆU ═══ data-count = số đích, JS đếm lên khi cuộn tới ═══ -->
+<section class="sec bg-sun" style="padding-block:clamp(34px,4vw,56px)">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat rv" data-tilt><b>4–15</b><span>Độ tuổi phù hợp</span></div>
+      <div class="stat rv" data-tilt><b data-count="4">0</b><span>Cấp độ theo CEFR</span></div>
+      <div class="stat rv" data-tilt><b><span data-count="1500">0</span>+</b><span>Từ vựng chuẩn YLE</span></div>
+      <div class="stat rv" data-tilt><b>24/7</b><span>Gấu Ding luôn sẵn sàng</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#FFEFB0" data-wave="#FFD3C9,#FF9C86"></div>
+
+<!-- ═══ VẤN ĐỀ ═══ 3 nỗi đau của phụ huynh. Dẫn vào phần tính năng ═══ -->
+<section class="sec bg-coral">
+  <div class="deco" aria-hidden="true">
+    <b style="--rot:-16deg;left:3%;top:14%;font-size:3.2rem;color:var(--coral);opacity:.4">A</b>
+    <b style="--rot:14deg;left:94%;top:66%;font-size:3.4rem;color:var(--sun);opacity:.4;animation-delay:1.5s">C</b>
+    <s style="left:12%;top:72%;width:44px;height:44px;background:#fff"></s>
+    <s style="left:87%;top:20%;width:28px;height:28px;background:#fff;animation-delay:3s"></s>
+  </div>
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow" style="color:#D2402F">Vấn đề thật</span>
+      <h2 class="rw" style="margin-top:10px">Con học mấy năm rồi. Gặp người nước ngoài vẫn… im.</h2>
+      <p class="rv">Không phải con kém. Là con chưa từng có chỗ nào đủ an toàn để mở miệng.</p>
+    </div>
+    <div class="g3">
+      <div class="card rv" data-tilt><div class="ico i-red">😶</div><h3>Không có ai để nói</h3><p>Lớp bốn mươi bạn, một buổi con nói được đúng ba mươi giây. Về nhà thì nói với ai?</p></div>
+      <div class="card rv" data-tilt><div class="ico i-sky">🙈</div><h3>Sợ sai nên không nói</h3><p>Sai một lần bị cả lớp cười. Từ đó con chọn im cho lành — suốt cả năm học.</p></div>
+      <div class="card rv" data-tilt><div class="ico i-yel">🎧</div><h3>Phát âm sai mà không ai sửa</h3><p>Con đọc "three" thành "tri" ba năm liền, không ai nghe đủ kỹ để chỉ cho con.</p></div>
+    </div>
+    <p class="turn rv">DingDong Kids sinh ra để gỡ đúng ba nút thắt đó. 🐻</p>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#FFD3C9" data-wave="#ffffff,#FFB49E" data-rev></div>
+
+<!-- ═══ TÍNH NĂNG ═══ 3 hàng xen kẽ. .vis chứa mockup giao diện giả lập —
+     KHÔNG phải ảnh chụp. Thay bằng screenshot thật khi có sản phẩm ═══ -->
+<section class="sec bg-white" id="cach-hoc">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow" style="color:var(--pink)">Cách con học</span>
+      <h2 class="rw" style="margin-top:10px">Ba việc con làm mỗi ngày, mỗi việc mười phút.</h2>
+    </div>
+
+    <div class="feat f1 rv">
+      <div>
+        <span class="fnum">1</span>
+        <h3>Nói chuyện với gấu Ding — nói bao nhiêu cũng được</h3>
+        <p>Ding hỏi, con trả lời. Con bí thì Ding gợi ý. Con lạc đề thì Ding kéo về. Từ vựng và ngữ pháp luôn nằm đúng trong cấp độ của con, không bao giờ quá sức.</p>
+        <ul class="ticks">
+          <li><i class="tick">✓</i>Gợi ý câu trả lời ngay khi con ngập ngừng</li>
+          <li><i class="tick">✓</i>Giải thích bằng tiếng Việt khi con thật sự cần</li>
+          <li><i class="tick">✓</i>Không chấm sai, không phán xét — chỉ khích lệ</li>
+        </ul>
+      </div>
+      <div class="vis" data-tilt>
+        <div class="mhead"><img class="avatar" src="assets/bear-wave.png" alt="Gấu Ding"><b>Gấu Ding</b><span class="pill">Cấp độ A1</span></div>
+        <div class="msg ai">Hi Minh! What did you eat this morning?<small>Sáng nay con ăn gì thế?</small></div>
+        <div class="msg me">I eat… bread?</div>
+        <div class="msg ai">So close! Try: <b>I ate bread.</b> 🍞 Was it yummy?<small>Gần đúng rồi! Dùng "ate" nhé.</small></div>
+        <div class="hints"><b>Yes, very yummy!</b><b>It was so-so</b><b>💡 Gợi ý</b></div>
+      </div>
+    </div>
+
+    <div class="feat f2 flip rv">
+      <div>
+        <span class="fnum">2</span>
+        <h3>Chấm phát âm tới từng âm, không chỉ một điểm tổng</h3>
+        <p>Con đọc, AI nghe. Âm nào đúng hiện xanh, âm nào lệch hiện hồng kèm cách sửa. Con nghe lại chính giọng mình rồi đọc lại tới khi đạt ba sao.</p>
+        <ul class="ticks">
+          <li><i class="tick">✓</i>Chỉ rõ âm sai, không nói chung chung "chưa chuẩn"</li>
+          <li><i class="tick">✓</i>Nghe lại giọng con và giọng mẫu cạnh nhau</li>
+          <li><i class="tick">✓</i>Đọc lại thoải mái, không giới hạn số lần</li>
+        </ul>
+      </div>
+      <div class="vis" data-tilt>
+        <div class="word-top"><span class="word">three</span><span class="score" data-count="78">0</span></div>
+        <div class="ipa">/θriː/ · số ba · lần thử 2</div>
+        <div class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="phon"><div class="warn">θ<span>chưa đúng</span></div><div class="ok">r<span>tốt</span></div><div class="ok">iː<span>tốt</span></div></div>
+        <div class="tipbox">👅 Âm <b>/θ/</b>: đặt nhẹ đầu lưỡi giữa hai hàm răng rồi thổi hơi ra — đừng đọc thành "tri" nhé!</div>
+      </div>
+    </div>
+
+    <div class="feat f3 rv">
+      <div>
+        <span class="fnum">3</span>
+        <h3>Thẻ từ vựng và bài học bám chuẩn Cambridge YLE</h3>
+        <p>Mỗi từ đều có hình minh hoạ, phiên âm IPA, nghĩa tiếng Việt và câu ví dụ song ngữ. Con lật thẻ, nghe đọc mẫu, rồi tự đọc lại — ba bước, không rườm rà.</p>
+        <ul class="ticks">
+          <li><i class="tick">✓</i>Từ vựng lấy đúng theo danh sách Starters – Movers – Flyers</li>
+          <li><i class="tick">✓</i>Ôn lại theo lịch, đúng lúc con sắp quên</li>
+          <li><i class="tick">✓</i>Học trên điện thoại, máy tính bảng hay máy tính đều được</li>
+        </ul>
+      </div>
+      <div class="vis" data-tilt>
+        <div class="fc"><span class="emo">🦋</span><div class="w">butterfly</div><div class="p">/ˈbʌtəflaɪ/</div><div class="vi">con bướm</div></div>
+        <div class="fc-ex">The butterfly is on the flower.<i>Con bướm đang đậu trên bông hoa.</i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#ffffff" data-wave="#E3D6FF,#B79BF5"></div>
+
+<!-- ═══ LỘ TRÌNH ═══ 4 cấp Cambridge YLE. Xếp theo TRÌNH ĐỘ, không theo tuổi ═══ -->
+<section class="sec bg-lav" id="lo-trinh">
+  <div class="deco" aria-hidden="true">
+    <b style="--rot:12deg;left:3%;top:82%;font-size:3.2rem;color:var(--grape);opacity:.34">B</b>
+    <s style="left:91%;top:10%;width:48px;height:48px;background:#fff"></s>
+  </div>
+  <div class="wrap">
+    <div class="lv-top">
+      <div class="rv">
+        <span class="eyebrow" style="color:var(--grape)">Lộ trình</span>
+        <h2 class="rw" style="margin:10px 0 14px">Bốn chặng, từ chữ cái đầu tiên tới lúc con tự kể một câu chuyện.</h2>
+        <p style="color:#6B5439">Mỗi chặng có mục tiêu rõ ràng và bài kiểm tra nhỏ ở cuối. Con lên chặng khi thật sự sẵn sàng, không phải khi hết tháng.</p>
+      </div>
+      <div class="lv-pic rv"><img src="assets/bear-joy.png" alt="Gấu Ding dang tay chào đón" loading="lazy"></div>
+    </div>
+    <div class="levels">
+      <div class="lv lv1 rv"><span class="step">CHẶNG 1</span><div class="code">Pre-A1</div><span class="yle">YLE Starters</span><p>Màu sắc, con vật, gia đình, số đếm. Con nghe hiểu câu ngắn và trả lời được một hai từ.</p></div>
+      <div class="lv lv2 rv"><span class="step">CHẶNG 2</span><div class="code">A1</div><span class="yle">YLE Movers</span><p>Hỏi đáp trọn câu, kể lại việc vừa làm, đọc hiểu mẩu chuyện ngắn có tranh.</p></div>
+      <div class="lv lv3 rv"><span class="step">CHẶNG 3</span><div class="code">A2</div><span class="yle">YLE Flyers</span><p>Miêu tả, so sánh, kể lại một ngày của con. Viết được đoạn bốn năm câu mạch lạc.</p></div>
+      <div class="lv lv4 rv"><span class="step">CHẶNG 4</span><div class="code">B1</div><span class="yle">Tiền THCS</span><p>Nêu ý kiến, tranh luận nhẹ nhàng, thuyết trình ngắn trước lớp mà không cầm giấy.</p></div>
+    </div>
+    <div class="note rv">
+      <div class="ico">📏</div>
+      <div><b>Chúng tôi xếp lớp theo trình độ, không theo tuổi.</b>
+      <p>Một bé sáu tuổi đã quen tiếng Anh và một bé mười tuổi mới bắt đầu sẽ học cùng nội dung — chỉ khác cách trình bày: bé nhỏ học qua tranh và trò chơi, bé lớn học qua tình huống hợp lứa tuổi. Không bé nào phải học thứ quá sức, cũng không bé nào phải ngồi nghe lại thứ mình đã biết.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#E3D6FF" data-wave="#FFE896,#FFCF4D" data-rev></div>
+
+<!-- ═══ CHO AI ═══ 3 nhóm người dùng: bé / ba mẹ / thầy cô ═══ -->
+<section class="sec bg-yel" id="cho-ai">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow" style="color:var(--honey-deep)">Cho ai</span>
+      <h2 class="rw" style="margin-top:10px">Một nền tảng, ba người dùng.</h2>
+    </div>
+    <div class="g3">
+      <div class="aud a1 rv" data-tilt><div class="emo">🧒</div><h3>Cho bé</h3>
+        <ul><li>Trò chuyện với gấu Ding mỗi ngày</li><li>Huy hiệu và chuỗi ngày học liên tiếp</li><li>Lật thẻ, nghe, đọc theo, ghi âm</li><li>Sai bao nhiêu lần cũng không sao</li></ul></div>
+      <div class="aud a2 rv" data-tilt><div class="emo">👨‍👩‍👧</div><h3>Cho ba mẹ</h3>
+        <ul><li>Báo cáo tuần: con học gì, tiến bộ ra sao</li><li>Nghe lại bản ghi âm phát âm của con</li><li>Đặt giới hạn thời gian học mỗi ngày</li><li>Không biết tiếng Anh vẫn theo dõi được</li></ul></div>
+      <div class="aud a3 rv" data-tilt><div class="emo">🏫</div><h3>Cho thầy cô &amp; trung tâm</h3>
+        <ul><li>Giao bài về nhà theo lớp</li><li>Xem từng học sinh làm tới đâu</li><li>Xuất báo cáo gửi phụ huynh</li><li>Dùng kèm giáo trình đang dạy</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#FFE896" data-wave="#BFF0D6,#7FDCAA"></div>
+
+<!-- ═══ AN TOÀN ═══ Khối quyết định niềm tin của phụ huynh. Đừng rút gọn ═══ -->
+<section class="sec bg-mint" id="an-toan">
+  <div class="wrap">
+    <div class="safe-wrap rv">
+      <div class="sec-head" style="margin-bottom:26px">
+        <span class="eyebrow" style="color:#12886F">An toàn</span>
+        <h2 class="rw" style="margin-top:10px">An toàn không phải một tính năng. Đó là điều kiện để bắt đầu.</h2>
+        <p>Làm sản phẩm cho trẻ em thì mọi thứ khác chỉ có ý nghĩa khi phần này chắc chắn trước.</p>
+      </div>
+      <div class="safe">
+        <div class="safe-item"><span class="n">1</span><div><b>Nội dung AI đi qua bộ lọc trước khi tới mắt con</b><p>Mọi câu Ding nói ra đều được kiểm tra tự động, chặn lại trước khi hiển thị nếu vượt ngoài phạm vi phù hợp với trẻ.</p></div></div>
+        <div class="safe-item"><span class="n">2</span><div><b>Không quảng cáo, không mua bán trong lúc con học</b><p>Con vào là học. Không banner, không vật phẩm nào bấm vào là mất tiền.</p></div></div>
+        <div class="safe-item"><span class="n">3</span><div><b>Con không chat với người lạ</b><p>Trong ứng dụng chỉ có gấu Ding. Không phòng chat mở, không tin nhắn từ tài khoản khác.</p></div></div>
+        <div class="safe-item"><span class="n">4</span><div><b>Ba mẹ giữ quyền kiểm soát</b><p>Đặt giờ học tối đa mỗi ngày, xem toàn bộ lịch sử trò chuyện, tắt tính năng bất kỳ lúc nào.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#BFF0D6" data-wave="#BFE6FF,#7EC9F5" data-rev></div>
+
+<!-- ĐÁNH GIÁ — NỘI DUNG MẪU, THAY BẰNG LỜI THẬT TRƯỚC KHI CHẠY QUẢNG CÁO -->
+<section class="sec bg-sky">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow" style="color:var(--blue)">Ba mẹ nói gì</span>
+      <h2 class="rw" style="margin-top:10px">Điều thay đổi đầu tiên: con chịu mở miệng.</h2>
+    </div>
+    <div class="g3">
+      <div class="quote rv" data-tilt><div class="stars">★★★★★</div>
+        <p>“Bé nhà mình học trung tâm hai năm mà về nhà không nói câu nào. Dùng cái này ba tuần thì tự nhiên ngồi trong xe hỏi mình <i>‘mẹ ơi con cá tiếng Anh là gì’</i>. Chỉ vậy thôi mà mình mừng.”</p>
+        <footer><span class="ini i-yel">M</span><div>Chị Mai<span>Phụ huynh bé Bo, 7 tuổi</span></div></footer></div>
+      <div class="quote rv" data-tilt><div class="stars">★★★★★</div>
+        <p>“Mình thích nhất phần chấm phát âm. Mình không giỏi tiếng Anh nên trước giờ con đọc sai cũng chịu. Giờ máy chỉ ra chỗ sai, mình ngồi cạnh nghe cùng con được.”</p>
+        <footer><span class="ini i-sky">H</span><div>Anh Hưng<span>Phụ huynh bé Na, 10 tuổi</span></div></footer></div>
+      <div class="quote rv" data-tilt><div class="stars">★★★★★</div>
+        <p>“Mình giao bài về nhà qua đây cho lớp mười hai bạn. Tuần sau vào lớp là biết ngay bạn nào có luyện, bạn nào không. Đỡ mất thời gian dò từng bé.”</p>
+        <footer><span class="ini i-grn">T</span><div>Cô Thu<span>Giáo viên trung tâm Anh ngữ</span></div></footer></div>
+    </div>
+  </div>
+</section>
+
+<!-- dải sóng chuyển màu: nền = màu khối trên, data-wave = "màu khối dưới, màu nét" -->
+<div class="wavy" style="background:#BFE6FF" data-wave="#FFF8E4,#F0C86A"></div>
+
+<!-- ═══ CTA + FORM ═══ ⚠ Form CHƯA gửi đi đâu. Xem mục "Việc cần làm" trong
+     CLAUDE.md để nối endpoint. Hiện chỉ validate rỗng rồi hiện lời cảm ơn ═══ -->
+<section class="sec bg-cream" id="dang-ky">
+  <div class="wrap">
+    <div class="cta-box rv">
+      <div class="cta-l">
+        <img src="assets/bear-kiss.png" alt="Gấu Ding gửi bé một nụ hôn gió" loading="lazy">
+        <span class="eyebrow" style="color:#9A5A18">Dùng thử sớm</span>
+        <h2 style="margin-top:8px">Cho con thử 7 ngày. Miễn phí, không ràng buộc.</h2>
+        <p>Để lại thông tin, đội ngũ DingDong Kids sẽ gửi tài khoản dùng thử và hướng dẫn cho ba mẹ trong vòng 24 giờ.</p>
+        <ul class="cta-list">
+          <li><i class="tick">✓</i>Mở khoá toàn bộ tính năng trong 7 ngày</li>
+          <li><i class="tick">✓</i>Không cần nhập thẻ ngân hàng</li>
+          <li><i class="tick">✓</i>Hết hạn tự dừng, không tự động trừ tiền</li>
+        </ul>
+      </div>
+      <div class="form" id="form">
+        <div class="fbody">
+          <div class="field"><label for="ten">Tên ba mẹ</label><input id="ten" type="text" placeholder="Nguyễn Thu Hà" autocomplete="name"></div>
+          <div class="field"><label for="lienhe">Email hoặc số điện thoại</label><input id="lienhe" type="text" placeholder="ha@email.com hoặc 09xx xxx xxx" autocomplete="email"></div>
+          <div class="field"><label for="tuoi">Tuổi của bé</label>
+            <select id="tuoi"><option value="">Chọn độ tuổi</option><option>4 – 6 tuổi</option><option>7 – 9 tuổi</option><option>10 – 12 tuổi</option><option>13 – 15 tuổi</option><option>Nhà có nhiều bé</option></select></div>
+          <button class="btn btn-p" id="submit">Nhận suất dùng thử 🎉</button>
+          <p class="fnote">Thông tin chỉ dùng để gửi tài khoản dùng thử.</p>
+        </div>
+        <div class="done"><img src="assets/bear-joy.png" alt=""><b>Đã ghi nhận!</b><p>Đội ngũ DingDong Kids sẽ liên hệ trong vòng 24 giờ để gửi tài khoản dùng thử cho bé.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HỎI ĐÁP ═══ <details>/<summary> thuần, không cần JS ═══ -->
+<section class="sec bg-white" id="hoi-dap">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow" style="color:#2FA45B">Hỏi đáp</span>
+      <h2 class="rw" style="margin-top:10px">Ba mẹ hay hỏi gì?</h2>
+    </div>
+    <div class="faq">
+      <details class="q rv"><summary>Con chưa biết gì tiếng Anh thì học được không?</summary><div class="a">Được. Chặng Pre-A1 bắt đầu từ màu sắc, con vật và số đếm, mọi thứ đều có hình và có tiếng Việt đi kèm. Con chưa biết chữ vẫn học được vì bài học chủ yếu là nghe và nói.</div></details>
+      <details class="q rv"><summary>Mỗi ngày con nên học bao lâu?</summary><div class="a">Khoảng 15–20 phút. Đều đặn mỗi ngày hiệu quả hơn nhiều so với ngồi hai tiếng vào cuối tuần. Ba mẹ có thể đặt giới hạn thời gian để con không dùng quá lâu.</div></details>
+      <details class="q rv"><summary>Gấu Ding có nói điều gì không phù hợp với con không?</summary><div class="a">Mọi câu trả lời của Ding đều đi qua một lớp kiểm duyệt tự động trước khi hiển thị, và phạm vi chủ đề được giới hạn quanh nội dung học. Ba mẹ xem lại được toàn bộ lịch sử trò chuyện bất cứ lúc nào.</div></details>
+      <details class="q rv"><summary>Cái này có thay được giáo viên không?</summary><div class="a">Không, và chúng tôi cũng không định thay. Giáo viên làm những việc phần mềm không làm được: hiểu tính cách của bé, tạo động lực, sửa những lỗi tinh tế. DingDong Kids lo phần luyện tập hằng ngày — phần mà một lớp đông không thể dành đủ thời gian cho từng bé.</div></details>
+      <details class="q rv"><summary>Có cần cài ứng dụng không?</summary><div class="a">Không. Con mở trình duyệt trên điện thoại, máy tính bảng hay máy tính là học được. Nhớ cho phép truy cập micro để dùng phần luyện nói.</div></details>
+      <details class="q rv"><summary>Hết 7 ngày dùng thử thì sao?</summary><div class="a">Tài khoản tự chuyển về bản miễn phí, không tự động trừ tiền vì chúng tôi không thu thông tin thẻ. Nếu muốn học tiếp, ba mẹ chủ động chọn gói.</div></details>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="logo"><svg class="bear" aria-hidden="true"><use href="#bear-logo"/></svg><span><span class="d1">Ding</span><span class="d2">Dong</span><span class="d3">Kids</span></span></div>
+        <p>Sân chơi tiếng Anh cho bé 4–15 tuổi, xây quanh một việc duy nhất: giúp con dám nói.</p>
+      </div>
+      <div><h4>Sản phẩm</h4><ul><li><a href="#cach-hoc">Cách con học</a></li><li><a href="#lo-trinh">Lộ trình</a></li><li><a href="#an-toan">An toàn</a></li><li><a href="#dang-ky">Dùng thử</a></li></ul></div>
+      <div><h4>Dành cho</h4><ul><li><a href="#cho-ai">Ba mẹ</a></li><li><a href="#cho-ai">Thầy cô</a></li><li><a href="#cho-ai">Trung tâm</a></li></ul></div>
+      <div><h4>Liên hệ</h4><ul><li><a href="mailto:hello@dingdongkids.vn">hello@dingdongkids.vn</a></li><li><a href="#hoi-dap">Câu hỏi thường gặp</a></li></ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 DingDong Kids · <a href="https://www.dingdongkids.vn">www.DingDongKids.vn</a></span>
+      <span>Chính sách bảo mật · Điều khoản sử dụng</span>
+    </div>
+  </div>
+</footer>
+
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script src="main.js" defer></script>
+</body>
+</html>

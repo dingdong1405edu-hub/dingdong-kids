@@ -28,7 +28,7 @@ export function PhonicsLessonList({ lessons }: { lessons: PhonicsLessonItem[] })
           href={`/phonics/${l.id}`}
           className={cn(
             "sticker group flex flex-col gap-3 rounded-3xl bg-card p-5 transition-transform hover:-translate-y-1",
-            l.completed && "bg-gradient-to-br from-emerald-50 to-card dark:from-emerald-500/10",
+            l.completed && "bg-gradient-to-br from-band-mint to-card",
           )}
         >
           <div className="flex items-start gap-4">
@@ -39,7 +39,7 @@ export function PhonicsLessonList({ lessons }: { lessons: PhonicsLessonItem[] })
               <div className="flex items-center gap-2">
                 <span className="font-display text-xs font-extrabold text-muted-foreground">Bài {i + 1}</span>
                 {l.completed && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-extrabold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-band-mint px-2 py-0.5 text-[11px] font-extrabold text-brand-teal">
                     <CheckCircle2 className="h-3 w-3" /> Đã xong
                   </span>
                 )}

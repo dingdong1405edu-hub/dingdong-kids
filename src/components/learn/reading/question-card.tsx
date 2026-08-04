@@ -69,8 +69,8 @@ export function QuestionCard({
         "relative rounded-3xl border-2 bg-card p-4 pl-5 transition-colors",
         submitted
           ? isCorrect
-            ? "border-emerald-300 dark:border-emerald-500/40"
-            : "border-rose-300 dark:border-rose-500/40"
+            ? "border-brand-teal"
+            : "border-brand-coral"
           : isCurrent
             ? "border-primary/50"
             : "border-border",
@@ -82,8 +82,8 @@ export function QuestionCard({
           "absolute inset-y-4 left-0 w-1.5 rounded-full transition-colors",
           submitted
             ? isCorrect
-              ? "bg-emerald-400"
-              : "bg-rose-400"
+              ? "bg-brand-teal"
+              : "bg-brand-coral"
             : flagged
               ? "bg-sunny"
               : isCurrent
@@ -98,9 +98,9 @@ export function QuestionCard({
         </span>
         {submitted &&
           (isCorrect ? (
-            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-500" />
+            <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-brand-teal" />
           ) : (
-            <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-rose-500" />
+            <XCircle className="mt-0.5 h-6 w-6 shrink-0 text-brand-coral" />
           ))}
         <div className="font-primer min-w-0 flex-1 text-[17px] font-semibold leading-snug">{q.prompt}</div>
         <SpeakButton text={q.prompt} audioUrl={q.audioUrl} label="Nghe đọc câu hỏi" />
@@ -111,7 +111,7 @@ export function QuestionCard({
           className={cn(
             "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 transition-colors",
             flagged
-              ? "border-sunny bg-sunny/20 text-amber-600 dark:text-amber-300"
+              ? "border-sunny bg-sunny/20 text-brand-gold"
               : "border-transparent text-muted-foreground hover:bg-muted",
           )}
         >
@@ -148,11 +148,11 @@ export function QuestionCard({
                 userAnswer === oi
                   ? submitted
                     ? oi === ca.index
-                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15"
-                      : "border-rose-400 bg-rose-50 dark:bg-rose-500/15"
+                      ? "border-brand-teal bg-band-mint"
+                      : "border-brand-coral bg-band-coral"
                     : "border-primary bg-primary/10"
                   : submitted && oi === ca.index
-                    ? "border-emerald-300 bg-emerald-50/50 dark:border-emerald-500/40 dark:bg-emerald-500/10"
+                    ? "border-brand-teal bg-band-mint/50"
                     : "border-input hover:border-primary/50",
               )}
             >
@@ -164,7 +164,7 @@ export function QuestionCard({
                 <span
                   className={cn(
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold",
-                    submitted && oi === ca.index && "border-emerald-500 bg-emerald-500 text-white",
+                    submitted && oi === ca.index && "border-brand-teal bg-brand-teal text-white",
                   )}
                 >
                   {String.fromCharCode(65 + oi)}
@@ -178,7 +178,7 @@ export function QuestionCard({
                   )}
                 </span>
                 {submitted && oi === ca.index && (
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" />
                 )}
               </span>
             </button>
@@ -199,11 +199,11 @@ export function QuestionCard({
                 userAnswer === val
                   ? submitted
                     ? val === ca.value
-                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15"
-                      : "border-rose-400 bg-rose-50 dark:bg-rose-500/15"
+                      ? "border-brand-teal bg-band-mint"
+                      : "border-brand-coral bg-band-coral"
                     : "border-primary bg-primary/10"
                   : submitted && val === ca.value
-                    ? "border-emerald-300 bg-emerald-50/50 dark:border-emerald-500/40 dark:bg-emerald-500/10"
+                    ? "border-brand-teal bg-band-mint/50"
                     : "border-input hover:border-primary/50",
               )}
             >
@@ -228,12 +228,12 @@ export function QuestionCard({
               "font-primer h-12 rounded-2xl text-base",
               submitted &&
                 (isCorrect
-                  ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-500/15"
-                  : "border-rose-300 bg-rose-50 dark:bg-rose-500/15"),
+                  ? "border-brand-teal bg-band-mint"
+                  : "border-brand-coral bg-band-coral"),
             )}
           />
           {submitted && !isCorrect && correctText && (
-            <p className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-300">
+            <p className="flex items-center gap-1.5 text-sm text-brand-teal">
               Đáp án đúng là <span className="font-primer font-bold">{correctText}</span>
               <SpeakButton text={correctText} />
             </p>
@@ -254,25 +254,25 @@ export function QuestionCard({
           <button
             type="button"
             onClick={onShowEvidence}
-            className="mt-3 block w-full rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-3 text-left text-sm text-emerald-800 transition-colors hover:border-emerald-400 hover:bg-emerald-100 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200 dark:hover:bg-emerald-500/25"
+            className="mt-3 block w-full rounded-2xl border-2 border-brand-teal/40 bg-band-mint p-3 text-left text-sm text-brand-teal transition-colors hover:border-brand-teal hover:bg-band-mint dark:hover:bg-brand-teal/25"
           >
             <span className="font-semibold">📍 Câu trả lời nằm ở đây:</span>{" "}
             <span className="font-primer font-semibold">{q.supportingQuote}</span>
             {q.quoteTranslation && (
-              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">
+              <span className="mt-1 block italic text-brand-teal/80">
                 “{q.quoteTranslation}”
               </span>
             )}
-            <span className="mt-1 block text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="mt-1 block text-xs font-bold text-brand-teal">
               Bấm để xem chỗ đó trong bài đọc →
             </span>
           </button>
         ) : (
-          <div className="mt-3 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/15 dark:text-emerald-200">
+          <div className="mt-3 rounded-2xl border-2 border-brand-teal/40 bg-band-mint p-3 text-sm text-brand-teal">
             <span className="font-semibold">📍 Câu trả lời nằm ở đây:</span>{" "}
             <span className="font-primer font-semibold">{q.supportingQuote}</span>
             {q.quoteTranslation && (
-              <span className="mt-1 block italic text-emerald-700/80 dark:text-emerald-300/80">
+              <span className="mt-1 block italic text-brand-teal/80">
                 “{q.quoteTranslation}”
               </span>
             )}

@@ -250,7 +250,7 @@ export function ReviewFlow({
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <DingBuddy size={88} pose="idle" className="mx-auto" />
-        <h2 className="text-xl font-bold">Chưa có từ để ôn</h2>
+        <h2 className="font-display text-xl font-extrabold">Chưa có từ để ôn</h2>
         <Button variant="outline" onClick={onExit}>
           Quay lại
         </Button>
@@ -262,24 +262,27 @@ export function ReviewFlow({
   if (!current) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
+        <Card className="w-full max-w-md rounded-3xl text-center shadow-soft-lg">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
             <DingBuddy size={104} pose="cheer" message="Cố lên nào!" className="mx-auto" />
-            <h2 className="text-2xl font-bold">Hoàn thành phiên ôn!</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-display text-2xl font-extrabold">Hoàn thành phiên ôn!</h2>
+            <p className="text-[15px] text-muted-foreground">
               Đã ôn {total} từ — lịch ôn kế tiếp đã được cập nhật theo trí nhớ của bạn.
             </p>
-            <div className="flex justify-center gap-6 py-1 text-sm">
-              <div>
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{remembered}</div>
-                <div className="text-muted-foreground">Nhớ tốt</div>
+            {/* Hai ô kết quả là khối màu, không phải chữ màu — nhìn ra ngay. */}
+            <div className="flex justify-center gap-3 py-1 text-sm">
+              <div className="min-w-[7rem] rounded-2xl bg-band-mint px-4 py-3">
+                <div className="font-display text-3xl font-extrabold text-brand-teal">
+                  {remembered}
+                </div>
+                <div className="font-semibold text-muted-foreground">Nhớ tốt</div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-orange-500 dark:text-orange-400">{forgot}</div>
-                <div className="text-muted-foreground">Cần ôn lại</div>
+              <div className="min-w-[7rem] rounded-2xl bg-band-coral px-4 py-3">
+                <div className="font-display text-3xl font-extrabold text-foreground">{forgot}</div>
+                <div className="font-semibold text-muted-foreground">Cần ôn lại</div>
               </div>
             </div>
-            <Button className="w-full" onClick={onExit}>
+            <Button size="lg" className="w-full" onClick={onExit}>
               Hoàn tất
             </Button>
           </CardContent>
@@ -294,20 +297,22 @@ export function ReviewFlow({
         <button
           type="button"
           onClick={onExit}
-          className="text-muted-foreground transition-colors hover:text-foreground"
+          className="text-muted-foreground transition-colors hover:text-brand-coral"
           aria-label="Thoát"
         >
-          <X className="h-5 w-5" />
+          <X className="h-6 w-6" />
         </button>
         <Progress value={progress} className="h-3 flex-1" />
-        <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
+        <span className="w-10 shrink-0 text-right font-display text-sm font-extrabold text-muted-foreground">
           {Math.min(done + 1, total)}/{total}
         </span>
       </div>
 
-      <div className="pb-1 text-center text-xs font-medium text-muted-foreground">
-        {title}
-        {session.early && " · ôn sớm"}
+      <div className="pb-1 text-center">
+        <span className="eyebrow text-brand-gold">
+          {title}
+          {session.early && " · ôn sớm"}
+        </span>
       </div>
 
       <AnimatePresence mode="wait">
@@ -352,10 +357,19 @@ export function ReviewFlow({
 /** Vùng đề bài cho MCQ. */
 function PromptNode({ prompt }: { prompt: { type: PromptType; word: VocabWordCard } }) {
   if (prompt.type === "meaning") {
-    return <div className="px-4 text-center text-3xl font-bold">{prompt.word.meaning}</div>;
+    return (
+      <div className="px-4 text-center font-display text-3xl font-extrabold">
+        {prompt.word.meaning}
+      </div>
+    );
   }
   if (prompt.type === "listen") {
-    return <div className="text-6xl">🔊</div>;
+    return <div className="animate-bob text-7xl">🔊</div>;
   }
-  return <div className="font-primer text-6xl font-bold">{prompt.word.word}</div>;
+  // Từ đang hỏi ≥40px, phông tập đọc.
+  return (
+    <div className="font-primer text-6xl font-bold leading-none tracking-wide">
+      {prompt.word.word}
+    </div>
+  );
 }

@@ -26,7 +26,7 @@ export function ResultsSummary({ score, correct, total, level, elapsedLabel, pas
   const r = 26;
   const circumference = 2 * Math.PI * r;
   const dash = (pct / 100) * circumference;
-  const color = pct >= 80 ? "text-emerald-500" : pct >= 50 ? "text-sunny" : "text-primary";
+  const color = pct >= 80 ? "text-brand-teal" : pct >= 50 ? "text-sunny" : "text-primary";
 
   return (
     <div className="flex items-center gap-4 rounded-3xl border-2 bg-gradient-to-br from-primary/5 to-transparent p-4">

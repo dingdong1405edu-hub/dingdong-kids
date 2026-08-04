@@ -103,9 +103,10 @@ export function RoadmapWritingPlayer({ title, sentences, backHref, passThreshold
             )}
 
             <div className="flex gap-2 pt-2">
+              {/* <Button> đã tự lo bo tròn, phông Baloo và gờ 3D — chỉ thêm phần bố cục */}
               <Button
                 variant="outline"
-                className="btn-chunky flex-1 rounded-2xl border-2 font-extrabold"
+                className="flex-1"
                 onClick={() => {
                   savedRef.current = false;
                   setResultPct(null);
@@ -116,7 +117,7 @@ export function RoadmapWritingPlayer({ title, sentences, backHref, passThreshold
                 Chơi lại
               </Button>
               <Button
-                className="btn-chunky flex-1 rounded-2xl font-extrabold"
+                className="flex-1"
                 onClick={() => router.push(backHref)}
               >
                 Quay lại bài học
@@ -163,7 +164,8 @@ export function RoadmapWritingPlayer({ title, sentences, backHref, passThreshold
             </p>
           ) : (
             <Button
-              className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+              size="lg"
+              className="w-full"
               onClick={() => {
                 setStartTime(Date.now());
                 setStage("practice");

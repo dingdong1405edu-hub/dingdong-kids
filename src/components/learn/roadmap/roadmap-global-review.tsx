@@ -84,8 +84,10 @@ export function RoadmapGlobalReview({ words, reviews, backHref }: Props) {
                 )}
               </div>
 
+              {/* <Button> đã có sẵn gờ 3D + bo tròn + phông Baloo — chỉ thêm bố cục */}
               <Button
-                className="btn-chunky w-full rounded-2xl py-3 font-display text-base font-extrabold"
+                size="lg"
+                className="w-full"
                 onClick={() => setStarted(true)}
               >
                 <Sparkles className="mr-1.5 h-5 w-5" /> Ôn {words.length} từ nào!
@@ -98,7 +100,7 @@ export function RoadmapGlobalReview({ words, reviews, backHref }: Props) {
                 bé ôn đúng lúc.
               </p>
               <Link href={backHref}>
-                <Button variant="outline" className="btn-chunky w-full rounded-2xl border-2 font-extrabold">
+                <Button variant="outline" className="w-full">
                   Quay lại lộ trình
                 </Button>
               </Link>

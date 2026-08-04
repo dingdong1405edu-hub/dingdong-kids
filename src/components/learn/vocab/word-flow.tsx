@@ -89,8 +89,8 @@ export function WordFlow({
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <DingBuddy size={96} pose="idle" className="mx-auto" />
-        <h2 className="text-xl font-bold">Bài học chưa có từ vựng</h2>
-        <p className="max-w-sm text-sm text-muted-foreground">
+        <h2 className="font-display text-xl font-extrabold">Bài học chưa có từ vựng</h2>
+        <p className="max-w-sm text-[15px] text-muted-foreground">
           Nội dung bài này đang được biên soạn. Hãy quay lại sau nhé!
         </p>
         {onExit ? (
@@ -176,31 +176,34 @@ export function WordFlow({
   if (phase === "done") {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Card className="w-full max-w-md text-center">
+        <Card className="w-full max-w-md rounded-3xl text-center shadow-soft-lg">
           <CardContent className="space-y-4 px-6 pb-6 pt-8">
             <DingBuddy size={104} pose="cheer" message="Giỏi lắm!" className="mx-auto" />
-            <h2 className="text-2xl font-bold">Hoàn thành bài học!</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-display text-2xl font-extrabold">Hoàn thành bài học!</h2>
+            <p className="text-[15px] text-muted-foreground">
               Bạn đã học {words.length} từ trong bài “{lesson.title || "Từ vựng"}”.
             </p>
             {passThreshold != null && resultPct != null && (
               <div className="flex flex-col items-center gap-1.5">
-                <div className="text-3xl font-extrabold text-primary">Kết quả: {resultPct}%</div>
+                <div className="font-display text-3xl font-extrabold text-brand-gold">
+                  Kết quả: {resultPct}%
+                </div>
                 <PassStatus score={resultPct} threshold={passThreshold} />
               </div>
             )}
+            {/* Phần thưởng dùng mật ong đậm — vàng nắng làm chữ thì nhạt quá. */}
             {xpEarned !== null && xpEarned > 0 && (
-              <div className="font-semibold text-yellow-600 dark:text-yellow-400">+{xpEarned} XP</div>
+              <div className="font-display text-lg font-extrabold text-brand-gold">+{xpEarned} XP</div>
             )}
             <div className="grid gap-2 pt-2">
               {onReviewNow && (
                 <Button className="w-full" onClick={onReviewNow}>
-                  <Sparkles className="mr-1.5 h-4 w-4" /> Ôn từ ngay
+                  <Sparkles className="mr-1.5 h-5 w-5" /> Ôn từ ngay
                 </Button>
               )}
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={restart}>
-                  <RotateCcw className="mr-1.5 h-4 w-4" /> Học lại
+                  <RotateCcw className="mr-1.5 h-5 w-5" /> Học lại
                 </Button>
                 <Button
                   variant={onReviewNow ? "outline" : "default"}
@@ -225,14 +228,17 @@ export function WordFlow({
           <button
             type="button"
             onClick={onExit}
-            className="text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-brand-coral"
             aria-label="Thoát"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </button>
         ) : (
-          <Link href={`/vocab/${unitId}`} className="text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
+          <Link
+            href={`/vocab/${unitId}`}
+            className="text-muted-foreground transition-colors hover:text-brand-coral"
+          >
+            <X className="h-6 w-6" />
           </Link>
         )}
         <Progress value={progress} className="h-3 flex-1" />
@@ -240,12 +246,14 @@ export function WordFlow({
 
       {phase === "flashcards" ? (
         <div className="flex flex-1 flex-col justify-center py-6">
-          <h2 className="mb-6 text-center text-lg font-bold">Ôn tập bằng flashcard</h2>
+          <h2 className="mb-6 text-center font-display text-xl font-extrabold">
+            Ôn tập bằng flashcard
+          </h2>
           <FlashcardDeck words={words} onDone={finishLesson} />
         </div>
       ) : (
         <>
-          <div className="pb-2 text-center text-sm text-muted-foreground">
+          <div className="pb-2 text-center font-display text-sm font-extrabold text-muted-foreground">
             Từ {wordIndex + 1}/{words.length}
           </div>
           <div className="flex flex-1 flex-col justify-center py-4">
@@ -263,17 +271,17 @@ export function WordFlow({
           </div>
 
           {/* Footer controls */}
-          <div className="flex items-center justify-between gap-2 border-t py-4">
+          <div className="flex items-center justify-between gap-2 border-t-2 border-border py-4">
             <Button
               variant="ghost"
               onClick={goPrevStep}
               disabled={wordIndex === 0 && step === 0}
             >
-              <ArrowLeft className="mr-1.5 h-4 w-4" /> Trước
+              <ArrowLeft className="mr-1.5 h-5 w-5" /> Trước
             </Button>
-            <Button onClick={goNextStep}>
+            <Button size="lg" onClick={goNextStep}>
               Tiếp tục
-              <ArrowRight className="ml-1.5 h-4 w-4" />
+              <ArrowRight className="ml-1.5 h-5 w-5" />
             </Button>
           </div>
         </>

@@ -21,9 +21,9 @@ export function SkillTile({ meta, published, done, onClick, pdfHref }: SkillTile
     <div
       className={cn(
         "group flex items-center gap-2 rounded-2xl border-2 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft",
-        done
-          ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-emerald-500/10"
-          : "border-border bg-card hover:border-primary/30",
+        // Kỹ năng đã học xong khoác dải bạc hà để bé nhận ra ngay bằng MÀU,
+        // không phải đọc chữ.
+        done ? "border-brand-lime/50 bg-band-mint" : "border-border bg-card hover:border-primary/40",
       )}
     >
       <button type="button" onClick={onClick} className="flex min-w-0 flex-1 items-center gap-3 text-left">
@@ -39,8 +39,10 @@ export function SkillTile({ meta, published, done, onClick, pdfHref }: SkillTile
             {done ? "Bé đã học xong 🌟" : published ? "Sẵn sàng học" : "Sắp có nội dung"}
           </div>
         </div>
+        {/* Dấu tích dùng brand-teal: đọc rõ trên dải bạc hà ở CẢ hai chế độ sáng/tối
+            nên không cần cặp dark: thủ công. */}
         {done ? (
-          <Check className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-300" strokeWidth={3} />
+          <Check className="h-5 w-5 shrink-0 text-brand-teal" strokeWidth={3} />
         ) : published ? (
           <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         ) : (

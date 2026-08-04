@@ -24,8 +24,8 @@ export function DashboardShell({ user, children }: { user: ShellUser; children: 
 
   return (
     <div className="relative min-h-screen">
-      {/* Peaceful ambient backdrop (fixed, behind all content) */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-muted/20">
+      {/* Nền kem tĩnh phía sau mọi nội dung (cố định, không cuộn theo trang) */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background">
         <div className="peaceful-bg absolute inset-0" />
         <Ambient variant="calm" />
       </div>

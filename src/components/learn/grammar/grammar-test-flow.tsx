@@ -138,14 +138,14 @@ export function GrammarTestFlow({ lesson, content, unitId }: Props) {
           <h2 className="font-display text-2xl font-extrabold">
             {passed ? "Bé làm được rồi! 🎉" : "Sắp được rồi, bé thử lại nhé 🌟"}
           </h2>
-          <div className={cn("font-display text-4xl font-extrabold", passed ? "text-primary" : "text-orange-500")}>
+          <div className={cn("font-display text-4xl font-extrabold", passed ? "text-primary" : "text-brand-sun")}>
             {pct}%
           </div>
           <div className="text-[15px] text-muted-foreground">
             Bé làm đúng {result.correct}/{result.total} câu · cần ≥ {PASS}%
           </div>
           {passed && xpEarned > 0 && (
-            <div className="inline-flex items-center gap-1.5 font-extrabold text-amber-600 dark:text-amber-400">
+            <div className="inline-flex items-center gap-1.5 font-extrabold text-brand-gold">
               <Trophy className="h-5 w-5" /> +{xpEarned} ⭐
             </div>
           )}
@@ -175,15 +175,15 @@ export function GrammarTestFlow({ lesson, content, unitId }: Props) {
               className={cn(
                 "rounded-2xl border-2 p-4",
                 ok
-                  ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-500/30 dark:bg-emerald-500/10"
-                  : "border-orange-300 bg-orange-50/40 dark:border-orange-500/30 dark:bg-orange-500/10",
+                  ? "border-brand-teal bg-band-mint/40"
+                  : "border-brand-sun bg-band-coral/40",
               )}
             >
               <div className="flex items-start gap-2">
                 {ok ? (
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500 dark:text-emerald-400" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-teal" />
                 ) : (
-                  <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-orange-500 dark:text-orange-400" />
+                  <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-sun" />
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">
@@ -191,14 +191,14 @@ export function GrammarTestFlow({ lesson, content, unitId }: Props) {
                   </div>
                   <div className="font-primer text-[15px]">{d.question}</div>
                   <div className="mt-1.5 text-[15px]">
-                    <span className="font-extrabold text-emerald-700 dark:text-emerald-300">Câu đúng: </span>
+                    <span className="font-extrabold text-brand-teal">Câu đúng: </span>
                     <span className="font-primer font-bold">{d.answer}</span>
                   </div>
                   {d.explanation && (
                     <div className="mt-0.5 text-[13px] text-muted-foreground">💡 {d.explanation}</div>
                   )}
                   {!ok && (
-                    <div className="mt-1 text-[13px] font-semibold text-orange-600 dark:text-orange-300">
+                    <div className="mt-1 text-[13px] font-semibold text-brand-sun">
                       {result.results[i] === undefined ? "Bé chưa kịp trả lời câu này." : "Bé xem lại câu này nhé!"}
                     </div>
                   )}

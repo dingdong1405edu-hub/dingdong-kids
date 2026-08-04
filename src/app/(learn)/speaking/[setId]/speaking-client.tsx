@@ -155,7 +155,7 @@ function AudioRecorder({
     <div className="relative inline-flex">
       {recording && (
         <motion.span
-          className="absolute inset-0 rounded-2xl bg-rose-500/30"
+          className="absolute inset-0 rounded-2xl bg-brand-coral/30"
           animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -211,7 +211,7 @@ async function transcribeAndGrade(params: {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "text-green-700 dark:text-green-300" : score >= 60 ? "text-yellow-700 dark:text-yellow-300" : "text-orange-600 dark:text-orange-400";
+  const color = score >= 80 ? "text-brand-teal" : score >= 60 ? "text-brand-gold" : "text-brand-sun";
   return (
     <motion.span
       key={score}
@@ -329,7 +329,7 @@ export function SpeakingClient({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-500/10 dark:to-transparent p-5">
+      <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-band-lav to-white dark:to-transparent p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <DingBuddy size={60} pose={anyHigh ? "cheer" : "idle"} className="shrink-0" />
@@ -376,7 +376,7 @@ export function SpeakingClient({
                   {part1Loading[idx] && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                   {part1Results[idx] && (
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 text-brand-teal" />
                       <ScoreBadge score={part1Results[idx]!.score} />
                     </div>
                   )}
@@ -413,7 +413,7 @@ export function SpeakingClient({
                 {part2Loading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                 {part2Result && (
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <CheckCircle2 className="h-4 w-4 text-brand-teal" />
                     <ScoreBadge score={part2Result.score} />
                   </div>
                 )}
@@ -456,7 +456,7 @@ export function SpeakingClient({
                   {part3Loading[idx] && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                   {part3Results[idx] && (
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <CheckCircle2 className="h-4 w-4 text-brand-teal" />
                       <ScoreBadge score={part3Results[idx]!.score} />
                     </div>
                   )}

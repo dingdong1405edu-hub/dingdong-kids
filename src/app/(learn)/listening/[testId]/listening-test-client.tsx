@@ -309,15 +309,15 @@ export function ListeningTestClient({
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-bold tabular-nums",
-                timerCritical ? "bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300" : "bg-muted",
+                timerCritical ? "bg-band-coral text-brand-coral" : "bg-muted",
               )}
             >
-              <Clock className={cn("h-4 w-4", timerCritical ? "text-rose-600 dark:text-rose-300" : "text-muted-foreground")} />
+              <Clock className={cn("h-4 w-4", timerCritical ? "text-brand-coral" : "text-muted-foreground")} />
               {formatDuration(remaining)}
               <span className="hidden text-xs font-normal text-muted-foreground sm:inline">còn lại</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 px-2.5 py-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-band-mint px-2.5 py-1.5 text-sm font-bold text-brand-teal">
               {Math.round(result?.score ?? 0)}% · {correctCount}/{total}
             </span>
           )
@@ -343,9 +343,9 @@ export function ListeningTestClient({
         <div className="h-full overflow-y-auto">
           <div className="mx-auto max-w-2xl space-y-5 p-4 sm:p-6">
             {/* Title */}
-            <div className="sticker flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-r from-teal-50 to-emerald-50/40 dark:from-teal-500/10 dark:to-emerald-500/5 p-3.5">
+            <div className="sticker flex items-center justify-between gap-3 rounded-3xl bg-gradient-to-r from-band-mint to-band-mint/40 p-3.5">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-100 dark:bg-teal-500/15 text-teal-600 dark:text-teal-300">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-band-mint text-brand-teal">
                   <Headphones className="h-5 w-5" />
                 </span>
                 <h1 className="font-display text-lg font-bold sm:text-xl">{test.title}</h1>
@@ -362,8 +362,8 @@ export function ListeningTestClient({
 
             {/* Honest empty-state: neither audio nor transcript exists */}
             {noContent && (
-              <div className="flex items-start gap-2 rounded-2xl border-2 border-amber-200 dark:border-amber-400/25 bg-amber-50 dark:bg-amber-500/15 p-3 text-sm text-amber-800 dark:text-amber-200">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
+              <div className="flex items-start gap-2 rounded-2xl border-2 border-brand-yellow/40 bg-band-sun p-3 text-sm text-brand-gold">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-brand-gold" />
                 <p>
                   Bài này chưa có tiếng đọc. Bé vẫn trả lời câu hỏi được, và nhớ nhắn thầy cô bổ sung phần nghe nhé.
                 </p>
@@ -372,7 +372,7 @@ export function ListeningTestClient({
 
             {/* Instructions (test mode) — kèm linh vật Ding chào bé */}
             {!submitted && (
-              <div className="flex items-center gap-3 rounded-2xl border-2 border-teal-100 dark:border-teal-400/25 bg-teal-50/50 dark:bg-teal-500/10 p-3 text-sm text-teal-900 dark:text-teal-200">
+              <div className="flex items-center gap-3 rounded-2xl border-2 border-brand-teal/40 bg-band-mint/50 p-3 text-sm text-brand-teal">
                 <DingBuddy size={54} pose="idle" className="shrink-0" aria-label="Ding chào bé" />
                 <p>
                   {audio.available ? (
@@ -407,7 +407,7 @@ export function ListeningTestClient({
                   initial={{ opacity: 0, scale: 0.92, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 220, damping: 18 }}
-                  className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50 via-rose-50 to-teal-50 dark:from-amber-500/10 dark:via-rose-500/10 dark:to-teal-500/10 px-5 py-6 text-center"
+                  className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-br from-band-sun via-band-coral to-band-mint px-5 py-6 text-center"
                 >
                   <DingBuddy
                     size={120}

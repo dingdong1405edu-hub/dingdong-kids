@@ -92,7 +92,7 @@ export default async function DashboardPage() {
           <p className="mt-1.5 text-[15px] text-white/90">
             Hôm nay mình học thêm vài từ tiếng Anh mới nhé!
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-sm font-bold backdrop-blur">
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-card/20 px-3 py-1.5 text-sm font-bold backdrop-blur">
             <GraduationCap className="h-4 w-4" />
             Cấp của bé: {levelLabelWithAge(user.level)}
           </div>
@@ -109,10 +109,10 @@ export default async function DashboardPage() {
 
       {/* Featured: Học theo lộ trình */}
       <Link href="/roadmap" className="group block">
-        <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-r from-sky-50 via-cyan-50 to-emerald-50 p-5 transition-all duration-200 hover:-translate-y-0.5 dark:from-sky-500/10 dark:via-cyan-500/10 dark:to-emerald-500/10 sm:p-6">
+        <div className="sticker relative overflow-hidden rounded-3xl bg-gradient-to-r from-band-sky via-band-mint to-band-mint p-5 transition-all duration-200 hover:-translate-y-0.5 sm:p-6">
           <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white shadow-chunky-sm">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-sky to-brand-teal text-white shadow-chunky-sm">
                 <Route className="h-7 w-7" />
               </div>
               <div>
@@ -139,25 +139,26 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Flame} iconClass="text-orange-500" label="Chuỗi ngày" value={user.streakDays} suffix="ngày" />
-        <StatCard icon={Heart} iconClass="text-rose-500" label="Tim" value={user.hearts} suffix="/ 5" />
+        <StatCard icon={Flame} iconClass="text-brand-sun" label="Chuỗi ngày" value={user.streakDays} suffix="ngày" />
+        <StatCard icon={Heart} iconClass="text-brand-coral" label="Tim" value={user.hearts} suffix="/ 5" />
         <StatCard icon={Star} iconClass="text-sunny" label="Sao thưởng" value={user.xp} suffix="XP" />
-        <StatCard icon={Trophy} iconClass="text-violet-500" label="Cấp độ" value={level} prefix="Cấp" />
+        <StatCard icon={Trophy} iconClass="text-brand-grape" label="Cấp độ" value={level} prefix="Cấp" />
       </div>
 
       {/* Modules */}
       <div>
         <h2 className="font-display mb-3 text-lg font-bold">Bé muốn chơi gì hôm nay?</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <ModuleCard href="/roadmap/tap-noi" icon="🧸" title="Bé tập nói" subtitle="Chưa biết chữ vẫn học — nhìn hình, nói theo" color="bg-pink-100 dark:bg-pink-500/15" />
-          <ModuleCard href="/games" icon="🎮" title="Sân chơi" subtitle="Chơi thoải mái — không chấm điểm" color="bg-fuchsia-100 dark:bg-fuchsia-500/15" />
-          <ModuleCard href="/vocab" icon="📚" title="Từ vựng" subtitle="Học từ mới qua tranh và tiếng" progress={vocabProgress} color="bg-blue-100 dark:bg-blue-500/15" />
-          <ModuleCard href="/phonics" icon="🔤" title="Ghép vần" subtitle="Phonics — nghe âm, ghép chữ thành từ" progress={phonicsProgress} color="bg-amber-100 dark:bg-amber-500/15" />
-          <ModuleCard href="/grammar" icon="📝" title="Ngữ pháp" subtitle="Đặt câu đúng, thật dễ hiểu" progress={grammarProgress} color="bg-green-100 dark:bg-green-500/15" />
-          <ModuleCard href="/reading" icon="📖" title="Đọc hiểu" subtitle="Đọc truyện ngắn rồi trả lời" color="bg-orange-100 dark:bg-orange-500/15" />
-          <ModuleCard href="/listening" icon="🎧" title="Nghe hiểu" subtitle="Nghe rồi chọn tranh đúng" color="bg-teal-100 dark:bg-teal-500/15" />
-          <ModuleCard href="/writing" icon="🖊️" title="Tập viết" subtitle="Viết câu, cô AI giúp bé sửa" color="bg-rose-100 dark:bg-rose-500/15" />
-          <ModuleCard href="/speaking" icon="🎤" title="Luyện nói" subtitle="Nói to lên, máy nghe và khen bé" color="bg-indigo-100 dark:bg-indigo-500/15" />
+          <ModuleCard href="/roadmap/tap-noi" icon="🧸" title="Bé tập nói" subtitle="Chưa biết chữ vẫn học — nhìn hình, nói theo" color="bg-band-lav" />
+          <ModuleCard href="/games" icon="🎮" title="Sân chơi" subtitle="Chơi thoải mái — không chấm điểm" color="bg-band-lav" />
+          <ModuleCard href="/hoat-hinh" icon="🍿" title="Xem hoạt hình" subtitle="Xem phim rồi nói theo nhân vật" color="bg-band-lav" />
+          <ModuleCard href="/vocab" icon="📚" title="Từ vựng" subtitle="Học từ mới qua tranh và tiếng" progress={vocabProgress} color="bg-band-sky" />
+          <ModuleCard href="/phonics" icon="🔤" title="Ghép vần" subtitle="Phonics — nghe âm, ghép chữ thành từ" progress={phonicsProgress} color="bg-band-sun" />
+          <ModuleCard href="/grammar" icon="📝" title="Ngữ pháp" subtitle="Đặt câu đúng, thật dễ hiểu" progress={grammarProgress} color="bg-band-mint" />
+          <ModuleCard href="/reading" icon="📖" title="Đọc hiểu" subtitle="Đọc truyện ngắn rồi trả lời" color="bg-band-coral" />
+          <ModuleCard href="/listening" icon="🎧" title="Nghe hiểu" subtitle="Nghe rồi chọn tranh đúng" color="bg-band-mint" />
+          <ModuleCard href="/writing" icon="🖊️" title="Tập viết" subtitle="Viết câu, cô AI giúp bé sửa" color="bg-band-coral" />
+          <ModuleCard href="/speaking" icon="🎤" title="Luyện nói" subtitle="Nói to lên, máy nghe và khen bé" color="bg-band-lav" />
         </div>
       </div>
 

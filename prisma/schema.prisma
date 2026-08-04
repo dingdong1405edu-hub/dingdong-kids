@@ -97,6 +97,7 @@ model User {
   grammarProgress   GrammarProgress[]
   phonicsProgress   PhonicsProgress[]
   firstWordsProgress FirstWordsProgress[]
+  cartoonProgress   CartoonProgress[]
   roadmapProgress   RoadmapProgress[]
   attempts          Attempt[]
   payments          Payment[]
@@ -383,6 +384,43 @@ model FirstWordsProgress {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, unitId])
+  @@index([userId])
+}
+
+// ===================================================================
+//  TRẢI NGHIỆM — XEM HOẠT HÌNH (nói theo phim / shadowing)
+// ===================================================================
+
+/// Tiến độ khu "Xem hoạt hình": phim chạy đúng MỘT CÂU rồi dừng, bé nhắc lại
+/// câu đó, máy nghe và chấm sao.
+///
+/// `cartoonId` là id TĨNH của phim định nghĩa trong src/lib/cartoon-data —
+/// cùng khuôn với FirstWordsProgress/PhonicsProgress: nội dung (video + mốc
+/// thời gian) cố định trong code, chỉ tiến độ nằm ở DB. Nhờ vậy thêm phim mới
+/// không phải đụng schema hay seed.
+model CartoonProgress {
+  id        String  @id @default(cuid())
+  userId    String
+  cartoonId String // id phim tĩnh (vd "peppa-muddy-puddles")
+  completed Boolean @default(false)
+  /// Sao cao nhất của TỪNG câu, cùng thứ tự với `lines` của phim — vd
+  /// `[3,2,3,1,0]`. NGUỒN SỰ THẬT; `bestStars`/`linesSaid` chỉ là số tổng tính
+  /// sẵn để trang danh sách khỏi cộng lại. Dữ liệu theo từng câu cho phép chỉ
+  /// đúng câu bé còn vướng cho bố mẹ xem.
+  lineStars Json    @default("[]")
+  /// Tổng sao cao nhất từng đạt ở phim (mỗi câu tối đa 3 sao).
+  bestStars Int     @default(0)
+  /// Số câu bé nói được (≥ 2 sao) trong lần tốt nhất — để hiện "8/12 câu".
+  linesSaid Int     @default(0)
+  xpEarned  Int     @default(0)
+  attempts  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cartoonId])
   @@index([userId])
 }
 

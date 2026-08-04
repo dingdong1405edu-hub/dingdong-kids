@@ -52,7 +52,7 @@ export default async function ContactPage() {
               </a>
 
               <div className="flex items-start gap-3 rounded-lg p-2">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-band-sun text-brand-gold">
                   <Clock className="h-4 w-4" />
                 </span>
                 <span>
@@ -62,7 +62,7 @@ export default async function ContactPage() {
               </div>
 
               <div className="flex items-start gap-3 rounded-lg p-2">
-                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-band-mint text-brand-teal">
                   <Info className="h-4 w-4" />
                 </span>
                 <span>
@@ -76,14 +76,14 @@ export default async function ContactPage() {
           </Card>
 
           {/* Gợi ý dùng trợ lý Ding cho câu hỏi học tập tức thời */}
-          <Card className="sticker border-primary/30 bg-gradient-to-br from-primary/5 to-amber-50 dark:to-amber-500/10">
+          <Card className="sticker border-primary/30 bg-gradient-to-br from-primary/5 to-band-sun">
             <CardContent className="flex items-start gap-3 p-4">
               <span className="text-2xl" aria-hidden>
                 🐻
               </span>
               <div className="text-sm">
                 <p className="flex items-center gap-1.5 font-semibold text-foreground">
-                  Cần giải đáp ngay? <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Cần giải đáp ngay? <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
                 </p>
                 <p className="mt-1 text-muted-foreground">
                   Bấm vào bong bóng <span className="font-medium text-primary">chú gấu Ding</span> ở góc

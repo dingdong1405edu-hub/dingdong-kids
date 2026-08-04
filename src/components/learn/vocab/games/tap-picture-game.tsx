@@ -224,7 +224,8 @@ export function TapPictureGame({ words, onDone }: VocabGameProps) {
             aria-label="Nghe lại từ"
             className={cn(
               "btn-chunky flex h-24 w-24 items-center justify-center rounded-full",
-              "bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95",
+              // Vàng nắng = nút hành động chính của cả hệ thiết kế (§2.1).
+              "bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95",
             )}
           >
             <Volume2 className="h-11 w-11" />
@@ -279,7 +280,7 @@ export function TapPictureGame({ words, onDone }: VocabGameProps) {
               không nghe nữa. Chỉ hiện chữ của từ ĐÚNG để bé khỏi lẫn với các
               hình còn lại. */}
           {solved && (
-            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center gap-0.5 rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

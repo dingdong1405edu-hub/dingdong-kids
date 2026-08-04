@@ -38,9 +38,9 @@ export default async function PaymentSuccessPage({
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-primary/5 via-background to-background px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-border/70 bg-card p-8 text-center shadow-soft">
         {paid ? (
-          <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-500" />
+          <CheckCircle2 className="mx-auto h-16 w-16 text-brand-teal" />
         ) : (
-          <Clock className="mx-auto h-16 w-16 text-amber-500" />
+          <Clock className="mx-auto h-16 w-16 text-brand-gold" />
         )}
 
         <h1 className="mt-5 text-2xl font-bold">

@@ -54,8 +54,8 @@ export function ExamPart(props: ExamPartProps) {
         </span>
       </div>
       {part.instructions && (
-        <div className="flex items-start gap-2 rounded-2xl border-2 border-sky-100 bg-sky-50/60 p-3 text-[15px] text-sky-900 dark:border-sky-400/25 dark:bg-sky-500/10 dark:text-sky-200">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-300" />
+        <div className="flex items-start gap-2 rounded-2xl border-2 border-brand-sky/40 bg-band-sky/60 p-3 text-[15px] text-brand-sky">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-sky" />
           <p className="whitespace-pre-line">{part.instructions}</p>
         </div>
       )}
@@ -148,8 +148,8 @@ function EssayBlock({
   const progress = minWords > 0 ? Math.min(100, Math.round((wordCount / minWords) * 100)) : 0;
 
   return (
-    <div className="space-y-3 rounded-2xl border-2 border-violet-100 bg-violet-50/40 p-4 dark:border-violet-400/25 dark:bg-violet-500/10">
-      <div className="font-display flex items-center gap-2 text-sm font-bold text-violet-700 dark:text-violet-300">
+    <div className="space-y-3 rounded-2xl border-2 border-brand-grape/40 bg-band-lav/40 p-4">
+      <div className="font-display flex items-center gap-2 text-sm font-bold text-brand-grape">
         <PenLine className="h-4 w-4" /> Bài viết
       </div>
       <p className="whitespace-pre-line text-[15px]">{part.writingPrompt}</p>
@@ -187,7 +187,7 @@ function EssayFeedback({ value, result }: { value: string; result: EssayResult |
           {value || <span className="text-muted-foreground">(Bé chưa viết phần này)</span>}
         </div>
         {result && "ungraded" in result && (
-          <p className="text-xs text-amber-600 dark:text-amber-300">
+          <p className="text-xs text-brand-gold">
             Bài viết đã lưu nhưng chưa chấm được (thiếu cấu hình chấm điểm).
           </p>
         )}
@@ -198,8 +198,8 @@ function EssayFeedback({ value, result }: { value: string; result: EssayResult |
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-violet-700 dark:text-violet-300">Kết quả phần viết</span>
-        <span className="font-display text-2xl font-bold text-violet-700 dark:text-violet-300">
+        <span className="text-sm font-semibold text-brand-grape">Kết quả phần viết</span>
+        <span className="font-display text-2xl font-bold text-brand-grape">
           {result.score}/100
         </span>
       </div>
@@ -218,9 +218,9 @@ function EssayFeedback({ value, result }: { value: string; result: EssayResult |
         <div className="space-y-2">
           {result.annotations.map((a, i) => (
             <div key={i} className="rounded-2xl border-2 bg-card p-2 text-sm">
-              <span className="font-primer text-rose-600 line-through dark:text-rose-400">{a.original}</span>
+              <span className="font-primer text-brand-coral line-through">{a.original}</span>
               <span className="mx-1">→</span>
-              <span className="font-primer font-semibold text-emerald-700 dark:text-emerald-300">
+              <span className="font-primer font-semibold text-brand-teal">
                 {a.correction}
               </span>
               {a.explanation && <p className="mt-1 text-xs text-muted-foreground">{a.explanation}</p>}
@@ -231,7 +231,7 @@ function EssayFeedback({ value, result }: { value: string; result: EssayResult |
       {result.correctedVersion && (
         <div>
           <div className="mb-1 text-xs font-semibold text-muted-foreground">Bài viết sau khi sửa</div>
-          <div className="font-primer rounded-2xl bg-emerald-50 p-3 text-[15px] leading-relaxed dark:bg-emerald-500/10">
+          <div className="font-primer rounded-2xl bg-band-mint p-3 text-[15px] leading-relaxed">
             {result.correctedVersion}
           </div>
         </div>

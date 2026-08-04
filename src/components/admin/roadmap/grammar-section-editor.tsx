@@ -104,7 +104,7 @@ export function GrammarSectionEditor({
           <AlertCircle className="h-3.5 w-3.5" /> {err}
         </p>
       ) : stat ? (
-        <p className="flex items-center gap-1.5 text-xs text-green-600">
+        <p className="flex items-center gap-1.5 text-xs text-brand-teal">
           <CheckCircle2 className="h-3.5 w-3.5" /> {stat}
         </p>
       ) : null}
@@ -118,7 +118,7 @@ export function GrammarSectionEditor({
             <b>usage</b> (khi nào dùng), <b>mistakes</b> (lỗi thường gặp), <b>examples</b> (tình huống) và{" "}
             <b>exercises</b> (minigame luyện tập). <code>test.questions</code> là bài kiểm tra (để trống nếu không cần).
           </p>
-          <p className="rounded-lg border border-violet-200 bg-violet-50/60 p-2 dark:border-violet-400/25 dark:bg-violet-500/10">
+          <p className="rounded-lg border border-brand-grape/40 bg-band-lav/60 p-2">
             <b>breakdown</b> là mảng theo đúng thứ tự công thức, mỗi phần:{" "}
             <code>{`{ "part": "am", "role": "Động từ to be", "meaning": "Nghĩa là 'thì, là'" }`}</code>.
             Mỗi phần sẽ thành một thẻ màu riêng, khớp màu với ô trong công thức.{" "}
@@ -134,7 +134,7 @@ export function GrammarSectionEditor({
             <li><code>spell_drag</code>: {`{ word: "cat", imageUrl, audioUrl }`} — kéo chữ cái ghép từ</li>
             <li><code>rhyme_match</code>: {`{ pairs: [{ a: "cat", b: "hat" }] }`} — nối từ cùng vần</li>
           </ul>
-          <p className="rounded-lg border border-sky-200 bg-sky-50/60 p-2 dark:border-sky-400/25 dark:bg-sky-500/10">
+          <p className="rounded-lg border border-brand-sky/40 bg-band-sky/60 p-2">
             Với trẻ nhỏ chưa đọc thạo, ưu tiên <code>picture_match</code> và <code>listen_pick</code>.
             Để trống <code>audioUrl</code> rồi bấm &ldquo;Tạo audio&rdquo; — hệ thống tự sinh giọng đọc.
           </p>

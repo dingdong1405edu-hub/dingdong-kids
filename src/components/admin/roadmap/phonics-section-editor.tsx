@@ -70,7 +70,7 @@ export function PhonicsSectionEditor({
       {/* Chọn bài dựng sẵn */}
       <div className="space-y-2">
         <Label className="flex items-center gap-1.5 text-xs font-semibold">
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Chọn bài Ghép vần có sẵn
+          <Sparkles className="h-3.5 w-3.5 text-brand-gold" /> Chọn bài Ghép vần có sẵn
         </Label>
         <p className="text-[11px] text-muted-foreground">
           Bấm một thẻ để nạp sẵn các âm + từ mẫu. Nạp xong vẫn sửa được từng dòng bên dưới.

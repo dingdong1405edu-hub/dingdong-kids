@@ -41,10 +41,11 @@ export function GraduationCard({
 }: Props) {
   // Chưa sẵn sàng: một dòng nhắc nhẹ, không phải quảng cáo. Bé còn đang học dở.
   if (!ready) {
+    // Dải vàng nắng nhạt: một lời nhắc ấm, không phải quảng cáo.
     return (
-      <div className="rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 p-4 text-center dark:from-amber-500/10 dark:to-orange-500/10">
-        <p className="text-[13px] font-semibold text-muted-foreground">
-          Bé nói được thêm <b className="text-foreground">{wordsToGo} từ</b> nữa là nhận được bằng khen
+      <div className="rounded-2xl bg-band-sun p-4 text-center">
+        <p className="text-[13px] font-bold text-foreground/75">
+          Bé nói được thêm <b className="text-brand-gold">{wordsToGo} từ</b> nữa là nhận được bằng khen
           “Bé Tập Nói” và sẵn sàng vào Pre-Starters 🎓
         </p>
       </div>
@@ -56,25 +57,24 @@ export function GraduationCard({
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 p-1 shadow-soft-lg"
+      // Viền gradient mật ong → san hô làm "khung ảnh" cho tấm bằng bên trong.
+      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-sun via-brand-honey to-brand-coral p-1.5 shadow-soft-lg"
     >
-      <div className="rounded-[1.4rem] bg-card p-5 sm:p-6">
+      <div className="rounded-[2rem] bg-card p-5 sm:p-6">
         {/* Tấm bằng khen — thứ phụ huynh chụp màn hình gửi ông bà */}
-        <div className="rounded-2xl border-4 border-dashed border-amber-300 bg-amber-50/60 p-5 text-center dark:border-amber-500/40 dark:bg-amber-500/10">
+        <div className="rounded-2xl border-4 border-dashed border-brand-honey bg-band-yel p-5 text-center">
           <DingBuddy size={72} pose="proud" className="mx-auto" />
-          <p className="mt-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
-            Bằng khen
-          </p>
-          <h3 className="font-display text-2xl font-extrabold">{childName || "Bé"}</h3>
-          <p className="mt-1 text-[13px] font-semibold text-muted-foreground">
+          <p className="eyebrow mt-2 text-brand-gold">Bằng khen</p>
+          <h3 className="font-display text-3xl font-extrabold text-foreground">{childName || "Bé"}</h3>
+          <p className="mt-1 text-[13px] font-bold text-foreground/70">
             đã hoàn thành chặng <b>Bé Tập Nói</b>
           </p>
-          <div className="mt-2 flex items-center justify-center gap-4 text-[13px] font-extrabold">
+          <div className="mt-2 flex items-center justify-center gap-4 text-sm font-extrabold text-foreground">
             <span className="inline-flex items-center gap-1">
-              <Star className="h-4 w-4 fill-sunny text-sunny" />
+              <Star className="h-5 w-5 fill-sunny text-sunny" />
               {totalStars} sao
             </span>
-            <span className="text-muted-foreground">·</span>
+            <span className="text-foreground/50">·</span>
             <span>
               {wordsSaid}/{totalWords} từ đầu tiên
             </span>

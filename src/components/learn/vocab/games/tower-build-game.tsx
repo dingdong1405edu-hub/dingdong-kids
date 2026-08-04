@@ -28,13 +28,14 @@ import { GameShell, StarBurst, GameDone } from "./game-shell";
 const TOTAL_ROUNDS = 5;
 const MIN_WORDS = 3;
 
-/** Màu từng tầng — chuỗi class nguyên vẹn để Tailwind JIT quét được. */
+/** Màu từng tầng — chuỗi class nguyên vẹn để Tailwind JIT quét được. Dùng
+ *  `brand-*` để tháp vẫn tươi mà không chói mắt bé ở chế độ tối. */
 const FLOOR_COLORS = [
-  "bg-rose-400",
-  "bg-amber-400",
-  "bg-emerald-400",
-  "bg-sky-400",
-  "bg-violet-400",
+  "bg-brand-coral",
+  "bg-brand-yellow",
+  "bg-brand-lime",
+  "bg-brand-sky",
+  "bg-brand-grape",
 ];
 
 const PRAISE = [
@@ -210,7 +211,7 @@ export function TowerBuildGame({ words, onDone }: VocabGameProps) {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ type: "spring", stiffness: 240, damping: 18 }}
                       className={cn(
-                        "flex h-10 w-full items-center justify-center rounded-lg border-2 border-black/10",
+                        "flex h-10 w-full items-center justify-center rounded-lg border-2 border-foreground/10",
                         FLOOR_COLORS[i % FLOOR_COLORS.length],
                       )}
                     >
@@ -218,8 +219,8 @@ export function TowerBuildGame({ words, onDone }: VocabGameProps) {
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                {/* Nền móng */}
-                <div className="h-3 w-full rounded-b-lg bg-stone-400" />
+                {/* Nền móng — nâu mocha cho hoà với tông cacao của cả giao diện */}
+                <div className="h-3 w-full rounded-b-lg bg-brand-mocha" />
               </div>
             </div>
 
@@ -230,7 +231,7 @@ export function TowerBuildGame({ words, onDone }: VocabGameProps) {
             />
           </div>
 
-          <p className="text-sm font-semibold text-muted-foreground">
+          <p className="rounded-full bg-band-sun px-4 py-1 font-display text-sm font-extrabold text-brand-gold">
             Tháp cao {floors.length}/{rounds.length} tầng
           </p>
 
@@ -238,7 +239,7 @@ export function TowerBuildGame({ words, onDone }: VocabGameProps) {
             type="button"
             onClick={replay}
             aria-label="Nghe lại từ"
-            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 active:scale-95"
+            className="btn-chunky flex h-20 w-20 items-center justify-center rounded-full bg-sunny text-sunny-foreground transition-transform hover:scale-105 active:scale-95"
           >
             <Volume2 className="h-9 w-9" />
           </button>
@@ -274,7 +275,7 @@ export function TowerBuildGame({ words, onDone }: VocabGameProps) {
           </AnimatePresence>
 
           {solved && (
-            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-sunny/20 px-4 py-2 text-center">
+            <div className="animate-pop-in flex flex-col items-center rounded-2xl bg-band-sun px-5 py-2 text-center shadow-soft">
               <span className="font-primer text-2xl font-bold leading-none">
                 {current.target.word}
               </span>

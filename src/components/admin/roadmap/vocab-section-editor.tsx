@@ -51,7 +51,7 @@ export function VocabSectionEditor({
       </div>
 
       {noImage > 0 && (
-        <p className="flex items-start gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] text-amber-800 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
+        <p className="flex items-start gap-1.5 rounded-lg border border-brand-yellow bg-band-sun px-2.5 py-2 text-[11px] text-brand-gold">
           <ImageOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{noImage} từ chưa có ảnh minh hoạ — hãy bổ sung trước khi xuất bản phần này.</span>
         </p>

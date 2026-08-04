@@ -72,7 +72,7 @@ export default async function AdminSpeakingTopicsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <MessagesSquare className="h-6 w-6 text-indigo-600" /> Nói theo chủ đề
+          <MessagesSquare className="h-6 w-6 text-brand-grape" /> Nói theo chủ đề
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           <BulkItemImport

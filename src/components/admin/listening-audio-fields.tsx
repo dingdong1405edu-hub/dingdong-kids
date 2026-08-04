@@ -193,7 +193,7 @@ export function ListeningAudioFields({
         {audioUrl ? (
           <div className="rounded-xl border bg-muted/30 p-3">
             <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <Music2 className="h-4 w-4 text-teal-600" /> Audio hiện tại
+              <Music2 className="h-4 w-4 text-brand-teal" /> Audio hiện tại
             </div>
             <audio controls src={audioUrl} className="w-full" />
             <div className="mt-2 flex items-center gap-3">
@@ -293,7 +293,7 @@ export function ListeningAudioFields({
             disabled={busy || !listeningId || !transcript.trim()}
             title={!listeningId ? "Lưu bài nghe trước đã" : !transcript.trim() ? "Cần có lời thoại trước" : undefined}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-violet-400/30 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20",
+              "inline-flex items-center gap-1.5 rounded-lg border border-brand-grape bg-band-lav px-3 py-1.5 text-sm font-semibold text-brand-grape transition hover:bg-band-lav disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-brand-grape/20",
             )}
           >
             {explaining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
