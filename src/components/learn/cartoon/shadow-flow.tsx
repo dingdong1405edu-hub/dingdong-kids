@@ -123,12 +123,19 @@ export function ShadowFlow({ cartoon, bestStars, next }: Props) {
   );
 
   // Vào một câu mới → xem cảnh đó ngay, không bắt bé bấm thêm nút nào.
+  //
+  // PHẢI chờ trình chơi dựng xong. Script của YouTube nạp bất đồng bộ, mà lệnh
+  // phát gọi lúc chưa có trình chơi thì `playRange` báo "xong" ngay lập tức —
+  // hậu quả là câu ĐẦU TIÊN bị nhảy thẳng sang bước nói, bé chưa nghe gì đã bị
+  // bắt nhắc lại. Phim hỏng hẳn (`videoDown`) thì không chờ, đọc bằng giọng
+  // trình duyệt luôn.
   useEffect(() => {
     if (stage !== "play" || step !== "watch") return;
+    if (!videoDown && player.status !== "ready") return;
     playLine(index, () => setStep("speak"));
     // `playLine` đổi theo player nên chỉ chạy lại khi thật sự sang câu khác.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, step, index]);
+  }, [stage, step, index, player.status, videoDown]);
 
   // Sang bước nói mà micro đã được cấp quyền từ trước → tự bật thu luôn.
   useEffect(() => {
@@ -386,7 +393,13 @@ export function ShadowFlow({ cartoon, bestStars, next }: Props) {
               />
 
               {step === "watch" ? (
-                // iOS hay chặn lệnh phát do script gọi (nhất là ngay sau khi
+                // Trình chơi chưa dựng xong → nói rõ đang tải. Không có dòng này
+                // thì bé ngồi trước một ô đen mà không biết chuyện gì đang xảy ra.
+                !videoDown && player.status === "loading" ? (
+                  <p className="font-display text-lg font-extrabold text-muted-foreground">
+                    Đang mở phim cho bé… 🎬
+                  </p>
+                ) : // iOS hay chặn lệnh phát do script gọi (nhất là ngay sau khi
                 // micro vừa tắt) → xin bé một cú chạm thật. Nút phải TO và ở
                 // ngay dưới video, KHÔNG được đè lên trình chơi.
                 player.needsTap ? (

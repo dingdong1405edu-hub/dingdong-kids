@@ -32,6 +32,8 @@ interface YTPlayer {
   getCurrentTime(): number;
   getDuration(): number;
   setPlaybackRate(rate: number): void;
+  /** <iframe> thật của trình chơi — cần để ép kích thước, xem `sizeToFill`. */
+  getIframe?(): HTMLIFrameElement;
   destroy(): void;
 }
 
@@ -45,6 +47,8 @@ interface YTNamespace {
     el: HTMLElement | string,
     opts: {
       videoId: string;
+      width?: string | number;
+      height?: string | number;
       playerVars?: Record<string, string | number>;
       events?: {
         onReady?: (e: YTPlayerEvent) => void;
@@ -151,14 +155,21 @@ export function useYouTubePlayer(videoId: string): UseYouTubePlayer {
   const [needsTap, setNeedsTap] = useState(false);
 
   const playerRef = useRef<YTPlayer | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  /**
+   * Khung chứa để STATE chứ không phải ref.
+   *
+   * Đây là chỗ đã làm bé nhìn thấy ô đen: khung video của trang học chỉ xuất
+   * hiện SAU khi bấm "Xem thôi!", nên lúc component vừa gắn thì nó chưa có trên
+   * trang. Cất vào `useRef` thì effect chạy một lần, không thấy khung, bỏ cuộc —
+   * và vì danh sách phụ thuộc không đổi, nó KHÔNG BAO GIỜ chạy lại. Để ở state
+   * thì lúc khung hiện ra là effect tự chạy lại và dựng trình chơi.
+   */
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
   /** Đoạn đang theo dõi: dừng khi `getCurrentTime()` chạm `end`. */
   const rangeRef = useRef<{ end: number; onEnd?: () => void } | null>(null);
   const rafRef = useRef<number | null>(null);
   /** Hẹn giờ kiểm "trình duyệt có thật sự phát không". */
   const autoplayTimerRef = useRef<number | null>(null);
-  /** Chốt để StrictMode (dev) không dựng hai trình chơi. */
-  const bootedRef = useRef(false);
 
   const stopWatching = useCallback(() => {
     if (rafRef.current !== null) {
@@ -206,15 +217,10 @@ export function useYouTubePlayer(videoId: string): UseYouTubePlayer {
     if (rafRef.current === null) rafRef.current = requestAnimationFrame(tick);
   }, []);
 
-  const hostRef = useCallback((el: HTMLDivElement | null) => {
-    containerRef.current = el;
-  }, []);
+  const hostRef = useCallback((el: HTMLDivElement | null) => setHost(el), []);
 
   useEffect(() => {
-    if (bootedRef.current) return;
-    const host = containerRef.current;
     if (!host || !videoId) return;
-    bootedRef.current = true;
 
     let cancelled = false;
     // Node do TA tạo, không phải node của React: YT.Player sẽ thay thế nó bằng
@@ -228,6 +234,12 @@ export function useYouTubePlayer(videoId: string): UseYouTubePlayer {
         if (cancelled) return;
         playerRef.current = new YT.Player(mount, {
           videoId,
+          // YT.Player THAY THẾ `mount` bằng một <iframe> mới và KHÔNG giữ lại
+          // class của node cũ — mặc định nó đặt cứng 640×360. Trên điện thoại
+          // thì khung 640px nằm trong ô rộng 360px, bé chỉ nhìn thấy góc trái
+          // phóng to. Phải nói rõ 100% ngay từ đầu.
+          width: "100%",
+          height: "100%",
           playerVars: {
             // Bé không tự tua — mọi điều khiển đi qua giao diện của mình, vốn
             // có vùng chạm to hơn nhiều so với thanh điều khiển của YouTube.
@@ -243,8 +255,22 @@ export function useYouTubePlayer(videoId: string): UseYouTubePlayer {
             origin: window.location.origin,
           },
           events: {
-            onReady: () => {
-              if (!cancelled) setStatus("ready");
+            onReady: (e) => {
+              if (cancelled) return;
+              // Chốt hạ về kích thước: thuộc tính width/height ở trên có thể bị
+              // trình duyệt hiểu khác nhau, còn style thì luôn thắng.
+              try {
+                const frame = e.target.getIframe?.();
+                if (frame) {
+                  frame.style.width = "100%";
+                  frame.style.height = "100%";
+                  frame.style.display = "block";
+                  frame.style.border = "0";
+                }
+              } catch {
+                /* không lấy được iframe — kích thước theo thuộc tính vẫn ổn */
+              }
+              setStatus("ready");
             },
             onStateChange: (e) => {
               // Hết video mà vẫn đang theo dõi một đoạn (mốc `end` đặt quá dài)
@@ -279,9 +305,9 @@ export function useYouTubePlayer(videoId: string): UseYouTubePlayer {
       }
       playerRef.current = null;
       mount.remove();
-      bootedRef.current = false;
+      setStatus("loading");
     };
-  }, [videoId, stopWatching]);
+  }, [host, videoId, stopWatching]);
 
   const playRange = useCallback(
     (start: number, end: number, onEnd?: () => void) => {
