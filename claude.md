@@ -264,7 +264,7 @@ gồm hai khu **chơi**, không phải khu học: không bài tập, không tr�
 | Khu | Route | Trạng thái |
 |---|---|---|
 | **Sân chơi** | `/games` | Đã có sẵn — 8 game, thêm game mới chỉ cần thêm một mục vào [registry.ts](src/components/learn/vocab/games/registry.ts) |
-| **Xem hoạt hình** | `/hoat-hinh` · `/hoat-hinh/[cartoonId]` | Máy chạy xong, **kho phim rỗng** — xem "Thêm phim" bên dưới |
+| **Xem hoạt hình** | `/hoat-hinh` · `/hoat-hinh/[cartoonId]` | Máy chạy xong, **kho phim rỗng** — gắn phim ở `/admin/hoat-hinh` |
 
 ### Xem hoạt hình (nói theo phim — shadowing)
 
@@ -272,13 +272,20 @@ Phim YouTube chạy **đúng một câu rồi tự dừng** → bé nhắc lại
 
 | Thành phần | Nơi ở |
 |---|---|
-| Nội dung (phim + mốc thời gian) | [src/lib/cartoon-data/](src/lib/cartoon-data/) `pack-*.ts` — **tĩnh trong code** |
-| Kiểu dữ liệu + hằng số | [src/lib/cartoons.ts](src/lib/cartoons.ts) |
+| **Gắn phim** | `/admin/hoat-hinh` → model `Cartoon` trong DB. **Không phải sửa code, không phải deploy lại.** |
+| Kho phim trong code (tuỳ chọn) | [src/lib/cartoon-data/](src/lib/cartoon-data/) `pack-*.ts` — dành cho nội dung "chính chủ" theo dõi bằng git |
+| Gộp hai kho | [src/lib/cartoons-db.ts](src/lib/cartoons-db.ts) `listCartoons()` · `findCartoon()` — **chỉ import từ server** |
+| Kiểu dữ liệu + hằng số | [src/lib/cartoons.ts](src/lib/cartoons.ts) — an toàn cho client |
+| Đọc phụ đề SRT/VTT | [src/lib/subtitle.ts](src/lib/subtitle.ts) `subtitlesToLines()` |
+| Tra tên phim + kiểm nhúng | `GET /api/admin/youtube-info` — oEmbed, **không cần API key** |
 | Điều khiển YouTube | [use-youtube-player.ts](src/components/learn/cartoon/use-youtube-player.ts) — `playRange(start, end, onEnd)` |
 | Luồng học | [shadow-flow.tsx](src/components/learn/cartoon/shadow-flow.tsx) |
 | Chấm | `POST /api/grade/shadow` |
 | Lưu tiến độ | `completeCartoonAction` → `CartoonProgress.lineStars` |
-| **Studio bắt mốc thời gian** | `/admin/hoat-hinh` |
+
+**Hai kho dùng CHUNG một không gian tên**: `Cartoon.slug` (DB) và `Cartoon.id` (code) cùng ghi
+vào `CartoonProgress.cartoonId`. `saveCartoonAction` chặn slug trùng với phim trong code — nếu
+lọt thì hai phim cùng ghi vào một hàng tiến độ và số sao của bé trộn vào nhau.
 
 **Chấm điểm KHÔNG giống các phần khác**: câu đích đã biết trước, nên sao được tính bằng
 `wordCoverage()` ([english.ts](src/lib/english.ts)) — so khớp từng từ, **tức thì và miễn phí**.
@@ -286,16 +293,21 @@ Groq chỉ được gọi khi bé chưa nói trọn câu, và **chỉ để vi�
 hạ sao xuống dưới mức máy đã đo (`floorStars` trong `gradeKidSentence`). Sàn luôn là 1 sao.
 Hạn mức: `/api/grade/shadow` 80 lượt/15 phút — chạm trần thì rủ bé nghỉ, không báo lỗi.
 
-**Thêm phim** — mốc thời gian là thứ duy nhất quyết định bài chạy đúng hay hỏng, mà **không có
-nguồn tự động hợp lệ** (`captions.download` của YouTube đòi quyền sửa video; `timedtext` là API
-không chính thức, vi phạm ToS). Vì vậy phải bắt bằng tay:
+**Thêm phim** — vào `/admin/hoat-hinh`, dán link YouTube. Ba việc xảy ra tự động:
 
-1. `/admin/hoat-hinh` → dán link → studio tự kiểm phim có cho nhúng không.
-2. Bấm "Đặt ĐẦU" / "Đặt CUỐI" cho từng câu, gõ câu + nghĩa.
-3. "Chép mã" → dán vào `pack-01.ts` → `npm run content:check cartoons` → xem thử ở
-   `/hoat-hinh/<id>` → mới đặt `published: true`.
+1. **oEmbed** điền sẵn tên phim + tên kênh, và cho biết ngay phim có **cho nhúng** không
+   (kênh tắt nhúng → bé chỉ thấy ô đen, phải đổi phim). Không tốn API key nào.
+2. **Dán phụ đề `.srt`/`.vtt`** → ra sẵn toàn bộ câu kèm mốc thời gian. Bộ đọc tự gộp các dòng
+   phụ đề bị cắt giữa câu, bỏ dòng nhạc (`♪`) và tiếng động (`[Music]`).
+3. Không có phụ đề thì bắt tay: phím <kbd>Space</kbd> đặt mốc đầu → cuối, <kbd>Enter</kbd> thêm câu.
 
+Rồi nghe thử vài câu (nút ▶ ở mỗi dòng), chỉnh mốc bằng −/+, bấm Lưu.
 Phim mới luôn ra đời `published: false`; bé chỉ thấy phim đã bật.
+
+> **Không có nguồn phụ đề tự động hợp lệ.** `captions.download` của YouTube đòi quyền SỬA video
+> (chỉ chủ kênh có), `timedtext` là endpoint không chính thức và vi phạm ToS §5.B. Phụ đề phải
+> do người vận hành cung cấp — tệp của mình, tải từ YouTube Studio của kênh mình, hoặc chủ kênh
+> gửi. Muốn tự động hoá hoàn toàn thì phải **sở hữu nội dung** (xem §11 mục 6b).
 
 **Ràng buộc BẮT BUỘC của điều khoản nhúng YouTube** (vi phạm là bị chặn API, không phải góp ý):
 
@@ -505,8 +517,8 @@ Admin gắn MP3 sau mà không phải sửa file nội dung.
    của kênh ít quảng cáo — không kiểm soát được, (c) **tự quay/dựng phim rồi tải lên kênh riêng**
    — hết quảng cáo, hết rủi ro phim bị gỡ, và mở luôn cửa dùng `captions.download` hợp lệ để
    bắt mốc thời gian tự động. (c) là đường bền nhất nhưng tốn công sản xuất.
-6c. **Kho phim đang rỗng** — toàn bộ máy móc đã chạy nhưng `src/lib/cartoon-data/pack-01.ts`
-   chưa có phim nào. Cố ý: mốc thời gian đoán bừa còn tệ hơn không có phim. Xem §6.2.
+6c. **Kho phim đang rỗng** — toàn bộ máy móc đã chạy nhưng chưa gắn phim nào. Vào
+   `/admin/hoat-hinh` dán link YouTube là có ngay; không cần đụng code. Xem §6.2.
 7. **Diễn đàn cộng đồng** — đã chuyển thành diễn đàn PHỤ HUYNH. Nội dung trẻ em cần kiểm duyệt
    chặt; `WordReport` đã có cơ chế duyệt trước khi hiển thị công khai.
 

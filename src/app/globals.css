@@ -72,6 +72,12 @@
     --ring: 261 100% 65%;
     /* Bo góc LỚN: giao diện trẻ em không nên có góc nhọn. */
     --radius: 1.25rem;
+
+    /* Chiều cao phần "khung" của ứng dụng: thanh trên cùng 72px + padding dọc
+       của <main> 48px. `.study-frame` trừ đi đúng con số này để khung bài học
+       vừa khít màn hình. Đổi chiều cao topbar hay padding main thì SỬA Ở ĐÂY,
+       đừng rải số 7.5rem khắp nơi. */
+    --app-chrome: 7.5rem;
   }
 
   .dark {
@@ -141,6 +147,12 @@
     /* "Đóng khung": chặn mọi phần tử tràn ngang gây cuộn trái-phải trên mobile.
        `clip` (không phải `hidden`) để KHÔNG phá `position: sticky`. */
     overflow-x: clip;
+    /* Luôn CHỪA SẴN chỗ cho thanh cuộn dọc. Thiếu dòng này, trang ngắn (không có
+       thanh cuộn) rộng hơn trang dài (có thanh cuộn) khoảng 15px, nên mỗi lần
+       chuyển trang hoặc mở/đóng một khối là toàn bộ nội dung NHÍCH NGANG một
+       nhịp. Đó chính là hiện tượng "trang trượt vị trí" — không phải lỗi hoạt
+       hình. */
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground;
@@ -356,8 +368,45 @@
   transition: transform 0.28s ease, box-shadow 0.3s ease;
 }
 .card-toy:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 38px hsl(var(--shadow-hue) / 0.14);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px hsl(var(--shadow-hue) / 0.14);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   KHUNG BÀI HỌC "GHIM CỐ ĐỊNH"
+   ═══════════════════════════════════════════════════════════════════════════
+   Mọi luồng học (từ vựng, ngữ pháp, ghép vần, bài lộ trình…) dùng chung bố cục
+   ba tầng: thanh tiến độ TRÊN · nội dung GIỮA · nút điều hướng DƯỚI.
+
+   Trước đây các luồng này dùng `min-height`, nghĩa là khung được phép DÀI RA
+   theo nội dung. Thẻ từ có ảnh + chữ cỡ đại + phần ví dụ thì tổng chiều cao
+   vượt màn hình, đẩy nút "Tiếp tục" xuống dưới mép — bé phải cuộn mới thấy,
+   và mỗi từ mới lại nhảy về một vị trí khác nhau.
+
+   Ở đây dùng `height` CỐ ĐỊNH: khung luôn đúng bằng màn hình. Thanh tiến độ và
+   nút bấm không bao giờ xê dịch; chỉ phần giữa cuộn, và chỉ khi thật sự cần. */
+.study-frame {
+  display: flex;
+  flex-direction: column;
+  /* dvh chứ KHÔNG phải vh: trên điện thoại, thanh địa chỉ trượt ra/vào làm vh
+     đổi giá trị giữa chừng → khung giật nảy đúng lúc bé đang bấm. */
+  height: calc(100dvh - var(--app-chrome));
+  /* Màn hình quá thấp (cửa sổ chia đôi) thì ép cứng sẽ bóp nát nội dung —
+     cho khung giữ chiều cao tối thiểu rồi để cả trang cuộn như bình thường. */
+  min-height: 26rem;
+}
+
+/* Tầng GIỮA — phần duy nhất được phép cuộn. */
+.study-body {
+  flex: 1 1 auto;
+  /* `min-height: 0` là BẮT BUỘC. Mặc định con flex không co xuống dưới kích
+     thước nội dung của nó (min-height: auto), nên thiếu dòng này khung vẫn
+     phình ra ngoài màn hình dù cha đã đặt height cố định. Đây đúng là nguyên
+     nhân "phải lướt xuống mới xem hết thẻ". */
+  min-height: 0;
+  overflow-y: auto;
+  /* Cuộn hết nội dung bên trong thì DỪNG, không kéo theo cả trang phía sau. */
+  overscroll-behavior: contain;
 }
 
 /* Ô ĐÁP ÁN — dùng chung cho MỌI dạng bài (trắc nghiệm, điền chỗ trống, ghép cặp,
@@ -444,11 +493,11 @@
   0%, 100% { background-position: 0% 50%, 100% 50%, 50% 100%, 0 0; }
   50%      { background-position: 100% 50%, 0% 50%, 50% 0%, 0 0; }
 }
-@keyframes floatY  { 0%, 100% { transform: translateY(0); }  50% { transform: translateY(-18px); } }
-@keyframes floatY2 { 0%, 100% { transform: translateY(0); }  50% { transform: translateY(16px); } }
+@keyframes floatY  { 0%, 100% { transform: translateY(0); }  50% { transform: translateY(-9px); } }
+@keyframes floatY2 { 0%, 100% { transform: translateY(0); }  50% { transform: translateY(8px); } }
 @keyframes drift {
   0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
-  50%      { transform: translateY(-24px) rotate(calc(var(--rot, 0deg) + 10deg)); }
+  50%      { transform: translateY(-14px) rotate(calc(var(--rot, 0deg) + 6deg)); }
 }
 @keyframes floatBlob {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -463,14 +512,14 @@
    TestShell. `none` giữ hiệu ứng trượt vào mà không để lại transform thừa. */
 @keyframes fadeUp  { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-@keyframes emojiDrift { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(8deg); } }
+@keyframes emojiDrift { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(4deg); } }
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 @keyframes sheenSweep { 0% { left: -60%; } 60%, 100% { left: 130%; } }
 @keyframes eqBounce { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
 @keyframes starPop { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 70% { transform: scale(1.25) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes hueShift { to { background-position: 300% 0; } }
 @keyframes marqueeX { to { transform: translateX(-50%); } }
-@keyframes bobUp { 50% { transform: translateY(-11px) rotate(8deg); } }
+@keyframes bobUp { 50% { transform: translateY(-6px) rotate(4deg); } }
 @keyframes tiltHead { 50% { transform: rotate(-8deg) scale(1.06); } }
 
 /* ═══════════════════════════════════════════════════════════════════════════

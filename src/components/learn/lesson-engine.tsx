@@ -75,7 +75,7 @@ export function LessonEngine({
   }
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex flex-col max-w-2xl mx-auto">
+    <div className="study-frame max-w-2xl mx-auto w-full">
       {/* Header */}
       <div className="flex items-center gap-4 py-4">
         <Progress value={progress} className="flex-1 h-3" />
@@ -83,7 +83,7 @@ export function LessonEngine({
       </div>
 
       {/* Exercise area */}
-      <div className="flex-1 flex flex-col justify-center py-8">
+      <div className="study-body flex flex-col justify-center py-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}

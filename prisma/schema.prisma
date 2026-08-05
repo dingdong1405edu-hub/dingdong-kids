@@ -391,6 +391,47 @@ model FirstWordsProgress {
 //  TRẢI NGHIỆM — XEM HOẠT HÌNH (nói theo phim / shadowing)
 // ===================================================================
 
+/// Một bộ phim của khu "Xem hoạt hình", GẮN TỪ TRANG QUẢN TRỊ.
+///
+/// Vì sao có model này trong khi các khu tĩnh khác (Bé Tập Nói, Ghép vần) để
+/// nội dung trong code: gắn phim là việc người VẬN HÀNH làm thường xuyên và
+/// không biết code — bắt họ sửa file rồi deploy lại là khu này sẽ không bao giờ
+/// có phim. Kho tĩnh `src/lib/cartoon-data` vẫn còn và vẫn chạy song song, dành
+/// cho nội dung "chính chủ" muốn theo dõi bằng git.
+///
+/// `slug` là khoá dùng chung một không gian tên với id của phim tĩnh — cả hai
+/// cùng ghi vào `CartoonProgress.cartoonId`. Trùng slug với phim tĩnh bị chặn
+/// ở server action, nếu không tiến độ của hai phim sẽ trộn vào nhau.
+model Cartoon {
+  id        String  @id @default(cuid())
+  /// Định danh trên URL `/hoat-hinh/<slug>` và khoá của CartoonProgress.
+  slug      String  @unique
+  /// Mã video YouTube 11 ký tự. @unique để không gắn nhầm cùng phim hai lần.
+  youtubeId String  @unique
+  title     String
+  titleEn   String
+  emoji     String  @default("🎬")
+  /// Gradient nền thẻ phim — literal Tailwind (vd "from-… via-… to-…").
+  cover     String  @default("from-violet-300 via-fuchsia-400 to-rose-400")
+  /// Nhãn cấp: "tap-noi" | "pre-starters" | "starters" | "movers" | "flyers".
+  /// Cố ý KHÔNG dùng enum EnglishLevel — khu này không bán theo gói và còn nhận
+  /// cả nhãn "tap-noi" vốn đứng ngoài enum đó.
+  level     String  @default("starters")
+  /// Kênh gốc — ghi rõ để tôn trọng bản quyền của người phát hành.
+  channel   String  @default("")
+  published Boolean @default(false)
+  order     Int     @default(0)
+  /// Mảng câu `[{ start, end, text, vi }]` — cùng khuôn với gói tĩnh.
+  /// Để Json thay vì bảng con: câu không bao giờ được truy vấn riêng lẻ, luôn
+  /// đọc/ghi cả phim một lượt, nên một bảng con chỉ tốn thêm join.
+  lines     Json    @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([published, order])
+}
+
 /// Tiến độ khu "Xem hoạt hình": phim chạy đúng MỘT CÂU rồi dừng, bé nhắc lại
 /// câu đó, máy nghe và chấm sao.
 ///

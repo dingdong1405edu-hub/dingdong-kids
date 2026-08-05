@@ -17,7 +17,6 @@ import { FREE_ROADMAP_LESSONS } from "@/lib/entitlements";
 import { HEART_REGEN_MINUTES, MAX_HEARTS } from "@/lib/hearts";
 import { CORE_FIRST_WORDS_COUNT, CORE_FIRST_WORDS_UNITS } from "@/lib/first-words";
 import { SITE_NAME, SITE_URL, SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/site";
-import { DingMascot } from "@/components/marketing/ding-mascot";
 import { DingArt } from "@/components/marketing/ding-art";
 import { Reveal } from "@/components/motion/reveal";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -510,33 +509,27 @@ export default async function LandingPage() {
               </ul>
             </div>
 
-            {/* ▶ CHỖ ĐẶT VIDEO GIỚI THIỆU (16:9)
-                Khi có video thật: đặt file vào thư mục `public/` (vd
-                public/hero.mp4 và public/hero-poster.jpg) rồi THAY nguyên khối
-                <div> "chỗ chờ" bên dưới bằng:
-
-                  <video
-                    className="h-full w-full object-cover"
-                    autoPlay muted loop playsInline preload="auto"
-                    poster="/hero-poster.jpg"
-                    aria-label="Gấu Ding chào bé và chơi cùng chữ cái tiếng Anh"
-                  >
-                    <source src="/hero.mp4" type="video/mp4" />
-                  </video>
-
-                GIỮ NGUYÊN lớp bọc bên ngoài (aspect-video + viền trắng dày + bo
-                góc lớn + bóng đổ) — đó mới là phần tạo ra dáng "màn hình đồ chơi".
-                autoPlay bắt buộc đi kèm muted, nếu không trình duyệt chặn phát. */}
+            {/* ▶ VIDEO GIỚI THIỆU — public/hero.mp4 (1280×720, đúng 16:9)
+                `aspect-video` giữ sẵn đúng chỗ 16:9 TRƯỚC khi video tải xong, nên
+                trang không bị giật nhảy khi video hiện ra.
+                `autoPlay` bắt buộc đi kèm `muted`, nếu không trình duyệt chặn phát.
+                Đổi video khác: thay file public/hero.mp4, giữ nguyên lớp bọc ngoài
+                (viền trắng dày + bo góc lớn + bóng đổ) — đó là phần tạo dáng
+                "màn hình đồ chơi". Video tỉ lệ khác 16:9 thì đổi `aspect-video`
+                cho khớp, đừng để `object-cover` cắt mất đầu nhân vật. */}
             <div className="mx-auto mt-10 w-full max-w-[940px] sm:mt-12">
               <div className="relative aspect-video overflow-hidden rounded-3xl border-[7px] border-card bg-band-cream shadow-soft-xl">
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-4 text-center">
-                  <div className="w-[42%] min-w-[130px] max-w-[250px]">
-                    <DingMascot transparent />
-                  </div>
-                  <p className="font-display text-[0.9rem] text-muted-foreground sm:text-[1rem]">
-                    Chỗ đặt video giới thiệu — Ding đang chuẩn bị quay 🎬
-                  </p>
-                </div>
+                <video
+                  className="h-full w-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  aria-label="Gấu Ding chào bé và chơi cùng chữ cái tiếng Anh"
+                >
+                  <source src="/hero.mp4" type="video/mp4" />
+                </video>
               </div>
 
               {/* Ba con số nhỏ, xếp như dãy chip dưới màn hình. */}

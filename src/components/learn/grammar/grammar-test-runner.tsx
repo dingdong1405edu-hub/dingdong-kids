@@ -88,7 +88,7 @@ export function GrammarTestRunner({ test, closeHref, onReviewTheory, onDone }: P
   const progress = Math.round((index / total) * 100);
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       <FlowHeader progress={progress} closeHref={closeHref} onReviewTheory={onReviewTheory} />
 
       <div className="flex items-center justify-between pb-2 text-sm font-semibold text-muted-foreground">
@@ -107,7 +107,7 @@ export function GrammarTestRunner({ test, closeHref, onReviewTheory, onDone }: P
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-6">
+      <div className="study-body flex flex-col justify-center py-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={index}

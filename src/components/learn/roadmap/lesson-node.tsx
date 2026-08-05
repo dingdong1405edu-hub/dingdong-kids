@@ -54,7 +54,7 @@ export function LessonNode({
     >
       {/* Bong bóng "BẮT ĐẦU" cho bài hiện tại */}
       {current && !isTrophy && (
-        <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 animate-bounce-soft whitespace-nowrap rounded-2xl bg-card px-3.5 py-1.5 shadow-soft-lg">
+        <div className="absolute -top-10 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-2xl bg-card px-3.5 py-1.5 shadow-soft-lg">
           <span className={cn("font-display text-xs font-extrabold uppercase tracking-wide", theme.accentText)}>
             Bắt đầu
           </span>
@@ -87,8 +87,11 @@ export function LessonNode({
         aria-label={`${label ?? (isTrophy ? "Phần thưởng chương" : `Bài ${order}`)}${locked ? " — đang khoá" : ""}`}
         aria-disabled={locked || undefined}
         className={cn(
+          // Node đang học ĐỨNG YÊN. Trước đây nó nhún liên tục (animate-bounce-soft),
+          // nghĩa là đúng cái nút bé cần bấm thì cứ chạy khỏi ngón tay — với tay trẻ
+          // 4–7 tuổi đó là lỗi khả dụng, không phải hiệu ứng vui. Hai vòng nhịp lan
+          // toả phía trên đã đủ chỉ "con đang ở đây" mà không làm xê dịch vùng chạm.
           "group relative block h-full w-full rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-primary/40",
-          current && "animate-bounce-soft",
         )}
       >
         {/* Gờ 3D phía dưới — node khoá dùng sắc chìm để trông "tắt", hộp quà dùng

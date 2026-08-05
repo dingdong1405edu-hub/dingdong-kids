@@ -1,23 +1,21 @@
 // ===========================================================================
 //  GÓI PHIM 01 — "Xem hoạt hình" (nói theo phim)
 //
-//  CỐ Ý ĐỂ TRỐNG. Không có phim mẫu nào ở đây, vì một phim có mốc thời gian
-//  đoán bừa còn tệ hơn là chưa có phim: bé bấm vào, nghe hụt nửa câu, rồi bỏ đi
-//  và không quay lại. Mốc thời gian chỉ đúng khi được bắt trên chính video thật.
+//  ⚠️ ĐÂY KHÔNG PHẢI đường thường dùng để gắn phim.
+//
+//  Cách gắn phim bình thường là vào **/admin/hoat-hinh**: dán link YouTube,
+//  dán phụ đề (hoặc bấm Space bắt mốc), bấm Lưu. Phim vào thẳng DB, hiện ngay,
+//  KHÔNG phải sửa file này và KHÔNG phải deploy lại.
+//
+//  File này dành cho nội dung "chính chủ" muốn theo dõi bằng git và đi qua
+//  `npm run content:check` — ví dụ phim do chính DingDong sản xuất. Nó CỐ Ý để
+//  trống: một phim có mốc thời gian đoán bừa còn tệ hơn là chưa có phim.
 //
 //  ──────────────────────────────────────────────────────────────────────────
-//  THÊM MỘT PHIM — ba bước:
-//
-//  1. Mở `/admin/hoat-hinh`, dán link YouTube. Studio sẽ tự kiểm phim đó có
-//     CHO PHÉP NHÚNG không (kênh tắt nhúng thì bé không xem được, phải bỏ).
-//  2. Bấm ▶ nghe. Đến đầu câu bấm "Đặt ĐẦU", nói xong câu bấm "Đặt CUỐI", gõ
-//     câu tiếng Anh + nghĩa tiếng Việt, bấm "Thêm câu". Lặp cho hết các câu
-//     muốn dạy (10–20 câu là vừa một buổi của bé).
-//  3. Bấm "Chép mã", dán đoạn vừa chép vào mảng `CARTOONS` dưới đây, rồi chạy
-//     `npm run content:check cartoons`.
-//
-//  Phim mới luôn ra đời với `published: false` — bé CHƯA nhìn thấy. Tự xem thử
-//  trọn một lượt ở `/hoat-hinh/<id>` rồi mới đổi thành `true`.
+//  Nếu vẫn muốn thêm phim BẰNG CODE: bắt mốc ở /admin/hoat-hinh cho tiện, rồi
+//  chép thủ công vào mảng dưới đây theo khuôn sau, và chạy
+//  `npm run content:check cartoons`. Phim mới luôn để `published: false` cho
+//  tới khi tự xem thử trọn một lượt ở `/hoat-hinh/<id>`.
 //  ──────────────────────────────────────────────────────────────────────────
 //
 //  Khuôn một phim (studio sinh ra đúng dạng này):

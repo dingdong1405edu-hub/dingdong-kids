@@ -195,7 +195,7 @@ export function ListenRepeatFlow({
   if (stage?.kind === "game") {
     const { Component, title: gameTitle, emoji, hint } = stage.entry;
     return (
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+      <div className="study-frame mx-auto w-full max-w-2xl">
         <div className="flex items-center gap-3 py-4">
           <button
             type="button"
@@ -212,7 +212,7 @@ export function ListenRepeatFlow({
             <p className="text-sm text-muted-foreground">{hint}</p>
           </div>
         </div>
-        <div className="flex-1 py-2">
+        <div className="study-body py-2">
           <Component words={words} onDone={(gained) => nextStage(gained)} />
         </div>
       </div>
@@ -261,7 +261,7 @@ function MeetWords({
   if (!word) return null;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       <div className="flex items-center gap-3 py-4">
         <button
           type="button"
@@ -294,7 +294,7 @@ function MeetWords({
             {/* Hình/emoji cỡ đại nhún nhẹ trong khung gradient ấm — kênh truyền
                 đạt chính cho bé chưa đọc được chữ. */}
             <div className="sticker flex aspect-square w-52 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-b from-band-sun to-card sm:w-60">
-              <WordVisual word={word} emojiClass="animate-bob text-[7rem]" />
+              <WordVisual word={word} emojiClass="text-[7rem]" />
             </div>
             <p className="font-primer text-6xl font-bold leading-none tracking-wide sm:text-7xl">
               {word.word}

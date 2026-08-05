@@ -3,7 +3,8 @@ import { auth } from "@/lib/auth";
 import { transcribeAudio, isTranscriptionConfigured } from "@/lib/stt";
 import { gradeKidSentence, fallbackKidSentence, isGradingConfigured } from "@/lib/groq";
 import { wordCoverage } from "@/lib/english";
-import { getCartoon, starsForShadow } from "@/lib/cartoons";
+import { starsForShadow } from "@/lib/cartoons";
+import { findCartoon } from "@/lib/cartoons-db";
 import { rateLimit } from "@/lib/rate-limit";
 
 /**
@@ -59,9 +60,10 @@ export async function POST(req: NextRequest) {
   const cartoonId = String(form?.get("cartoonId") ?? "").trim();
   const lineIndex = Number(form?.get("lineIndex"));
 
-  // DANH SÁCH TRẮNG: câu đích phải là một câu có thật trong kho phim tĩnh. Chặn
-  // ở đây để không ai biến endpoint thành cổng nhận dạng giọng nói tuỳ ý.
-  const cartoon = getCartoon(cartoonId);
+  // DANH SÁCH TRẮNG: câu đích phải là một câu CÓ THẬT trong kho phim (cả phim
+  // gắn từ trang quản trị lẫn phim trong code). Chặn ở đây để không ai biến
+  // endpoint thành cổng nhận dạng giọng nói tuỳ ý.
+  const cartoon = await findCartoon(cartoonId);
   const line =
     cartoon && Number.isInteger(lineIndex) ? cartoon.lines[lineIndex] : undefined;
   if (!line) {

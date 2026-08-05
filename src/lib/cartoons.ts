@@ -88,6 +88,30 @@ export const CARTOON_LEVEL_LABEL: Record<CartoonLevel, string> = {
   flyers: "Flyers",
 };
 
+/**
+ * Nền thẻ phim để chọn sẵn ở trang quản trị.
+ *
+ * PHẢI là chuỗi literal viết thẳng ở đây: Tailwind quét mã nguồn để sinh CSS,
+ * gradient ghép chuỗi lúc chạy sẽ không có class nào và thẻ phim hiện ra trắng
+ * trơn. Muốn thêm màu thì thêm một dòng vào đây, đừng dựng chuỗi động.
+ */
+export const CARTOON_COVERS: readonly string[] = [
+  "from-violet-300 via-fuchsia-400 to-rose-400",
+  "from-sky-300 via-blue-400 to-indigo-400",
+  "from-amber-300 via-orange-400 to-rose-400",
+  "from-lime-300 via-green-400 to-emerald-400",
+  "from-pink-300 via-rose-400 to-orange-400",
+  "from-cyan-300 via-teal-400 to-emerald-400",
+  "from-indigo-300 via-violet-400 to-purple-400",
+  "from-yellow-300 via-amber-400 to-orange-400",
+];
+
+/** Emoji gợi ý cho thẻ phim — bé chọn phim bằng hình trước khi đọc chữ. */
+export const CARTOON_EMOJIS: readonly string[] = [
+  "🎬", "🐷", "🐶", "🐱", "🐻", "🚂", "🦖", "🐟",
+  "🚗", "🌈", "⭐", "🎈", "🦄", "🐝", "🍎", "🏰",
+];
+
 /** Thứ tự cấp — phim dễ lên trước trong danh sách. */
 export const CARTOON_LEVEL_ORDER: CartoonLevel[] = [
   "tap-noi",

@@ -221,7 +221,7 @@ export function WordFlow({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-3 py-4">
         {onExit ? (
@@ -245,7 +245,7 @@ export function WordFlow({
       </div>
 
       {phase === "flashcards" ? (
-        <div className="flex flex-1 flex-col justify-center py-6">
+        <div className="study-body flex flex-col justify-center py-6">
           <h2 className="mb-6 text-center font-display text-xl font-extrabold">
             Ôn tập bằng flashcard
           </h2>
@@ -256,7 +256,7 @@ export function WordFlow({
           <div className="pb-2 text-center font-display text-sm font-extrabold text-muted-foreground">
             Từ {wordIndex + 1}/{words.length}
           </div>
-          <div className="flex flex-1 flex-col justify-center py-4">
+          <div className="study-body flex flex-col justify-center py-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${wordIndex}-${step}`}

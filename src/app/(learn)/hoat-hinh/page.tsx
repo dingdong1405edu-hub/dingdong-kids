@@ -6,11 +6,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { CartoonCard } from "@/components/learn/cartoon/cartoon-card";
 import { DingBuddy } from "@/components/marketing/ding-buddy";
-import {
-  CARTOON_LEVEL_ORDER,
-  CARTOON_SECTION,
-  PUBLISHED_CARTOONS,
-} from "@/lib/cartoons";
+import { CARTOON_LEVEL_ORDER, CARTOON_SECTION } from "@/lib/cartoons";
+import { listCartoons } from "@/lib/cartoons-db";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -32,14 +29,18 @@ export default async function CartoonListPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const progress = await db.cartoonProgress.findMany({
-    where: { userId: session.user.id },
-    select: { cartoonId: true, bestStars: true },
-  });
+  const [progress, published] = await Promise.all([
+    db.cartoonProgress.findMany({
+      where: { userId: session.user.id },
+      select: { cartoonId: true, bestStars: true },
+    }),
+    // Gộp phim gắn từ trang quản trị với phim nằm trong code.
+    listCartoons({ publishedOnly: true }),
+  ]);
   const starsBy = new Map(progress.map((p) => [p.cartoonId, p.bestStars]));
 
   // Phim dễ lên trước — bé mở trang là gặp ngay thứ mình nói theo được.
-  const cartoons = [...PUBLISHED_CARTOONS].sort(
+  const cartoons = [...published].sort(
     (a, b) => CARTOON_LEVEL_ORDER.indexOf(a.level) - CARTOON_LEVEL_ORDER.indexOf(b.level),
   );
 
@@ -78,12 +79,11 @@ export default async function CartoonListPage() {
           </p>
           {session.user.role === "ADMIN" && (
             <p className="mx-auto mt-4 max-w-md rounded-2xl bg-muted/60 p-3 text-[13px] font-semibold text-muted-foreground">
-              Quản trị: bắt mốc thời gian cho phim mới ở{" "}
+              Quản trị: dán link YouTube ở{" "}
               <Link href="/admin/hoat-hinh" className="text-primary underline underline-offset-2">
                 /admin/hoat-hinh
-              </Link>
-              , dán kết quả vào <code>src/lib/cartoon-data/pack-01.ts</code> rồi đặt{" "}
-              <code>published: true</code>.
+              </Link>{" "}
+              là gắn được phim ngay, không phải sửa code.
             </p>
           )}
         </div>

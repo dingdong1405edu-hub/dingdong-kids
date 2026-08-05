@@ -456,13 +456,17 @@ function checkFirstWords(): void {
  */
 function checkCartoons(): void {
   const open = CARTOONS.filter((c) => c.published);
-  console.log(`\n▸ Xem hoạt hình: ${CARTOONS.length} phim (${open.length} đã mở cho bé)`);
+  console.log(
+    `\n▸ Xem hoạt hình (kho trong code): ${CARTOONS.length} phim (${open.length} đã mở cho bé)`,
+  );
+  // Kho trong code rỗng là chuyện BÌNH THƯỜNG: đường gắn phim thường dùng là
+  // /admin/hoat-hinh → DB, mà cổng này không đọc DB được (chạy ngoài Next).
   if (CARTOONS.length === 0) {
-    warn("Xem hoạt hình", "CHƯA CÓ PHIM NÀO — bắt mốc thời gian ở /admin/hoat-hinh");
+    console.log("  (phim gắn từ /admin/hoat-hinh nằm trong DB, không kiểm ở đây)");
     return;
   }
   if (open.length === 0) {
-    warn("Xem hoạt hình", "chưa phim nào `published: true` — trang /hoat-hinh sẽ trống");
+    warn("Xem hoạt hình", "chưa phim nào trong code `published: true`");
   }
 
   const ids = new Set<string>();

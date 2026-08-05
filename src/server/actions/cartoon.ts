@@ -18,7 +18,8 @@ import { db } from "@/lib/db";
 import { Skill, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getCartoon, maxStarsOf, STARS_PER_LINE, XP_PER_CARTOON } from "@/lib/cartoons";
+import { maxStarsOf, STARS_PER_LINE, XP_PER_CARTOON } from "@/lib/cartoons";
+import { findCartoon } from "@/lib/cartoons-db";
 
 const schema = z.object({
   cartoonId: z.string().min(1).max(80),
@@ -44,8 +45,9 @@ export async function completeCartoonAction(params: z.infer<typeof schema>) {
   if (!parsed.success) return { ok: false as const, error: "Invalid input" };
 
   const { cartoonId, durationSec } = parsed.data;
-  // Phim là dữ liệu tĩnh — chặn id lạ để không sinh bản ghi tiến độ rác.
-  const cartoon = getCartoon(cartoonId);
+  // Phim phải có thật (kho tĩnh hoặc kho DB) — chặn id lạ để không sinh bản ghi
+  // tiến độ rác, và để số câu dùng khi kẹp mảng sao là số THẬT của phim.
+  const cartoon = await findCartoon(cartoonId);
   if (!cartoon) return { ok: false as const, error: "Cartoon not found" };
 
   const userId = session.user.id;

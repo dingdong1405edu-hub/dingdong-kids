@@ -72,7 +72,7 @@ export function GrammarReview({ title, exercises, closeHref }: Props) {
   if (stage === "review") {
     if (!deck) {
       return (
-        <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl items-center justify-center">
+        <div className="study-frame mx-auto w-full max-w-2xl justify-center">
           <div className="h-48 w-full animate-pulse rounded-2xl bg-muted/50" />
         </div>
       );

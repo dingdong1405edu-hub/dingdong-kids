@@ -292,7 +292,7 @@ export function ReviewFlow({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       <div className="flex items-center gap-3 py-4">
         <button
           type="button"
@@ -318,7 +318,7 @@ export function ReviewFlow({
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          className="flex flex-1 flex-col"
+          className="study-body flex flex-col"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
@@ -364,7 +364,7 @@ function PromptNode({ prompt }: { prompt: { type: PromptType; word: VocabWordCar
     );
   }
   if (prompt.type === "listen") {
-    return <div className="animate-bob text-7xl">🔊</div>;
+    return <div className="text-7xl">🔊</div>;
   }
   // Từ đang hỏi ≥40px, phông tập đọc.
   return (

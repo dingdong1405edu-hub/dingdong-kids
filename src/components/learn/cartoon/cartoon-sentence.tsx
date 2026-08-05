@@ -46,7 +46,9 @@ export function CartoonSentence({ text, vi, flags, hideEnglish, className }: Pro
           ))}
         </p>
       )}
-      <p className="mt-1.5 text-sm font-semibold text-muted-foreground">{vi}</p>
+      {/* Phim nhập từ phụ đề chưa có nghĩa tiếng Việt — bỏ trống hẳn dòng này
+          thay vì để một khoảng trắng lửng lơ. */}
+      {vi.trim() && <p className="mt-1.5 text-sm font-semibold text-muted-foreground">{vi}</p>}
     </div>
   );
 }

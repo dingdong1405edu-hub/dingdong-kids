@@ -30,14 +30,14 @@ export function SectionTheory({
   onContinue,
 }: Props) {
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       <FlowHeader progress={progress} closeHref={closeHref} onReviewTheory={onReviewTheory} />
 
       <div className="pb-2 text-center text-sm font-semibold text-muted-foreground">
         Chặng {sectionIndex + 1}/{sectionCount} · Cùng xem nào 👀
       </div>
 
-      <div className="flex-1 py-4">
+      <div className="study-body py-4">
         <motion.div
           key={section.id || sectionIndex}
           initial={{ opacity: 0, y: 12 }}

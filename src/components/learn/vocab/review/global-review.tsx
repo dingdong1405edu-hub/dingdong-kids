@@ -44,7 +44,7 @@ export function GlobalReview({ words, reviews }: Props) {
       <Card className="rounded-3xl shadow-soft-lg">
         <CardContent className="space-y-4 p-6 text-center">
           {/* Ôn tập mang màu oải hương — tách khỏi khối vàng "học bài mới". */}
-          <div className="mx-auto flex h-20 w-20 animate-bob items-center justify-center rounded-3xl bg-band-lav text-brand-grape">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-band-lav text-brand-grape">
             <Sparkles className="h-10 w-10" />
           </div>
           <h1 className="font-display text-2xl font-extrabold">Ôn tập tổng hợp</h1>

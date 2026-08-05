@@ -146,28 +146,28 @@ const config: Config = {
           "100%": { transform: "scale(1)", opacity: "1" },
         },
         wiggle: {
-          "0%, 100%": { transform: "rotate(-3deg)" },
-          "50%": { transform: "rotate(3deg)" },
+          "0%, 100%": { transform: "rotate(-2deg)" },
+          "50%": { transform: "rotate(2deg)" },
         },
         "bounce-soft": {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-12px)" },
+          "50%": { transform: "translateY(-7px)" },
         },
         /** Chữ cái trang trí trôi lên xuống quanh khối nội dung. */
         drift: {
           "0%, 100%": { transform: "translateY(0) rotate(var(--rot, 0deg))" },
-          "50%": { transform: "translateY(-24px) rotate(calc(var(--rot, 0deg) + 10deg))" },
+          "50%": { transform: "translateY(-14px) rotate(calc(var(--rot, 0deg) + 6deg))" },
         },
         /** Bong bóng tròn trang trí bay lơ lửng. */
         "float-blob": {
           "0%, 100%": { transform: "translate(0, 0) scale(1)" },
-          "33%": { transform: "translate(20px, -30px) scale(1.15)" },
-          "66%": { transform: "translate(-14px, -16px) scale(0.9)" },
+          "33%": { transform: "translate(12px, -18px) scale(1.08)" },
+          "66%": { transform: "translate(-8px, -10px) scale(0.95)" },
         },
         /** Emoji/thẻ từ nhún nhẹ như đang thở. */
         bob: {
           "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
-          "50%": { transform: "translateY(-11px) rotate(8deg)" },
+          "50%": { transform: "translateY(-6px) rotate(4deg)" },
         },
         /** Logo gấu Ding nghiêng đầu. */
         tilt: {

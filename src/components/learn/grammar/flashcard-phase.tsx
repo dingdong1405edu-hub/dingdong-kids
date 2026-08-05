@@ -98,14 +98,14 @@ export function FlashcardPhase({ flashcards, closeHref, label, onReviewTheory, o
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-2xl flex-col">
+    <div className="study-frame mx-auto w-full max-w-2xl">
       <FlowHeader progress={progress} closeHref={closeHref} onReviewTheory={onReviewTheory} />
 
       <div className="pb-2 text-center text-sm font-semibold text-muted-foreground">
         {label ? `${label} · ` : ""}Thẻ {index + 1}/{flashcards.length}
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-6">
+      <div className="study-body flex flex-col justify-center py-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={index}

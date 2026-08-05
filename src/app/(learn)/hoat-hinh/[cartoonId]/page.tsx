@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ShadowFlow } from "@/components/learn/cartoon/shadow-flow";
-import { CARTOON_SECTION, getCartoon, nextCartoon } from "@/lib/cartoons";
+import { CARTOON_SECTION } from "@/lib/cartoons";
+import { findCartoon, findNextCartoon } from "@/lib/cartoons-db";
 
 interface Props {
   params: Promise<{ cartoonId: string }>;
@@ -11,7 +12,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { cartoonId } = await params;
-  const cartoon = getCartoon(cartoonId);
+  const cartoon = await findCartoon(cartoonId);
   if (!cartoon) return { title: CARTOON_SECTION.label };
   return {
     title: `${cartoon.title} — ${CARTOON_SECTION.label}`,
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CartoonPlayPage({ params }: Props) {
   const { cartoonId } = await params;
-  const cartoon = getCartoon(cartoonId);
+  const cartoon = await findCartoon(cartoonId);
   if (!cartoon || cartoon.lines.length === 0) notFound();
 
   const session = await auth();
@@ -37,7 +38,7 @@ export default async function CartoonPlayPage({ params }: Props) {
     select: { bestStars: true },
   });
 
-  const next = nextCartoon(cartoonId);
+  const next = await findNextCartoon(cartoonId);
 
   return (
     <>
